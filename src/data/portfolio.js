@@ -7,13 +7,6 @@ export default [
         description: "This is a terminal website that I created using HTML, CSS and JS.",
     },
     {
-        title: 'Portfolio WebSite',
-        imgUrl: '/assets/portfolio.png',
-        stack: ['React', 'TailwindCSS', 'Vite'],
-        link: 'onurdrsn.netlify.com',
-        description: "This is my personal website that I created using React and TailwindCSS.",
-    },
-    {
         title: 'Old Portfolio WebSite',
         imgUrl: '/assets/oldportfolio.png',
         stack: ['PHP', 'CSS', 'JS'],
