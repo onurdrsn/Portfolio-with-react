@@ -3,7 +3,7 @@ export default [
         title: 'Termainal WebSite',
         imgUrl: '/assets/termui.png',
         stack: ['HTML', 'CSS', 'JS'],
-        link: 'https://termui.netlify.com',
+        link: 'https://termui.netlify.app',
         description: "This is a terminal website that I created using HTML, CSS and JS.",
     },
     {
