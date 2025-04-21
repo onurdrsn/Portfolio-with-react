@@ -31,18 +31,25 @@ const EventCalculator = () => {
       const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
       const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET;
 
+      console.log(CLIENT_ID)
+      console.log(CLIENT_SECRET)
       // Token alma
       const tokenData = await fetch('/.netlify/functions/getevents', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
         body: new URLSearchParams({
           grant_type: 'client_credentials',
           client_id: CLIENT_ID,
           client_secret: CLIENT_SECRET
         }).toString()
-      }).then(res => res.json());
+      });
+      
+      const data = await tokenData.json();
+      console.log('API response:', data);
 
-      const accessToken = tokenData.data.access_token;
+      const accessToken = data.access_token;
 
       // Kullanıcı bilgilerini alma
       const userResponse = await axios.get(`https://api.intra.42.fr/v2/users/${username}`, {
