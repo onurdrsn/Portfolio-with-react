@@ -27,15 +27,19 @@ const EventCalculator = () => {
     setError(null);
     
     try {
+
+      const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
+      const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET;
+
       // Token alma
       const tokenData = await fetch('/.netlify/functions/getevents', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
           grant_type: 'client_credentials',
           client_id: CLIENT_ID,
           client_secret: CLIENT_SECRET
-        })
+        }).toString()
       }).then(res => res.json());
 
       const accessToken = tokenData.data.access_token;
