@@ -45,21 +45,21 @@ const EventCalculator = () => {
       });
       
       const data = await tokenData.json();
+
       const accessToken = data.access_token;
 
       // Kullanıcı bilgilerini alma
-      const userResponse = await axios.get(`https://api.intra.42.fr/v2/users/${username}`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
+      const response = await fetch('/.netlify/functions/getuserinfo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username,
+          access_token: accessToken
+        })
       });
-      const userId = userResponse.data.id;
-
-      // Kullanıcının etkinliklerini alma
-      const userEventsResponse = await axios.get(`https://api.intra.42.fr/v2/users/${userId}/events`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-
       // Etkinlik sayısını hesapla
-      const events = userEventsResponse.data;
+      const { events } = await response.json();
+
       const validEvents = events.filter(event => event.kind !== 'extern' && event.kind !== 'association');
       const eventCount = validEvents.length;
 
