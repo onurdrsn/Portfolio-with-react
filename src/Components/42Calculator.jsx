@@ -28,18 +28,17 @@ const EventCalculator = () => {
     
     try {
       // Token alma
-      const tokenResponse = await axios.post('https://api.intra.42.fr/oauth/token', {
-        grant_type: 'client_credentials',
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        headers: {
-          "Cache-Control": "no-cache",
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Access-Control-Allow-Origin": "*",
-        },
-      });
+      const tokenData = await fetch('/.netlify/functions/get42token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          grant_type: 'client_credentials',
+          client_id: CLIENT_ID,
+          client_secret: CLIENT_SECRET
+        })
+      }).then(res => res.json());
 
-      const accessToken = tokenResponse.data.access_token;
+      const accessToken = tokenData.data.access_token;
 
       // Kullanıcı bilgilerini alma
       const userResponse = await axios.get(`https://api.intra.42.fr/v2/users/${username}`, {
