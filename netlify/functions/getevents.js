@@ -1,6 +1,5 @@
-// netlify/functions/get42token.js
-
 const axios = require('axios');
+const querystring = require('querystring'); // BU YENİ
 
 exports.handler = async function (event, context) {
   if (event.httpMethod !== 'POST') {
@@ -10,14 +9,20 @@ exports.handler = async function (event, context) {
     };
   }
 
-  const payload = JSON.parse(event.body);
+  // Gelen x-www-form-urlencoded veriyi çöz
+  const payload = querystring.parse(event.body); // BU YENİ
 
   try {
-    const response = await axios.post('https://api.intra.42.fr/oauth/token', payload, {
-      headers: {
-        'Content-Type': 'application/json'
+    const response = await axios.post('https://api.intra.42.fr/oauth/token',
+      new URLSearchParams({
+        ...payload,
+      }).toString(),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
       }
-    });
+    );
 
     return {
       statusCode: 200,
