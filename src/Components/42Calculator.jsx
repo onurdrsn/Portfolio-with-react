@@ -31,8 +31,6 @@ const EventCalculator = () => {
       const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
       const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET;
 
-      console.log(CLIENT_ID)
-      console.log(CLIENT_SECRET)
       // Token alma
       const tokenData = await fetch('/.netlify/functions/getevents', {
         method: 'POST',
@@ -47,8 +45,6 @@ const EventCalculator = () => {
       });
       
       const data = await tokenData.json();
-      console.log('API response:', data);
-
       const accessToken = data.access_token;
 
       // Kullanıcı bilgilerini alma
