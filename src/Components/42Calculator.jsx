@@ -28,7 +28,7 @@ const EventCalculator = () => {
     
     try {
       // Token alma
-      const tokenData = await fetch('/.netlify/functions/get42token', {
+      const tokenData = await fetch('/.netlify/functions/getevents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
