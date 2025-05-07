@@ -9,6 +9,8 @@ import Intro from "./Components/Intro";
 import Portfolio from "./Components/Portfolio";
 import Timeline from "./Components/Timeline";
 import EventCalculator from "./Components/42Calculator";
+import Games from "./Components/Games";
+import Minesweeper from "./Components/Minesweeper";
 
 export default function App() {
     // const [theme, setTheme] = useState(null);
@@ -63,6 +65,7 @@ export default function App() {
                                 <div className="flex items-center space-x-1">
                                     <Link to="/" className="py-5 px-3 dark:text-gray-300 hover:text-violet-500 dark:hover:text-blue-400">Ana Sayfa</Link>
                                     <Link to="/42calculator" className="py-5 px-3 dark:text-gray-300 hover:text-violet-500 dark:hover:text-blue-400">42 Calculator</Link>
+                                    <Link to="/games">Oyunları Görüntüle</Link>
                                 </div>
                             </div>
                         </div>
@@ -72,6 +75,8 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={<MainPage />} />
                     <Route path="/42calculator" element={<EventCalculator />} />
+                    <Route path="/games" element={<Games />} />
+                    <Route path="/games/minesweeper" element={<Minesweeper />} />
                 </Routes>
             </div>
         </Router>
