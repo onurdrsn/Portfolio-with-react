@@ -11,6 +11,7 @@ import Timeline from "./Components/Timeline";
 import EventCalculator from "./Components/42Calculator";
 import Games from "./Components/Games";
 import Minesweeper from "./Components/Minesweeper";
+import TicTacToe from "./Components/TicTacToe";
 
 export default function App() {
     // const [theme, setTheme] = useState(null);
@@ -77,6 +78,7 @@ export default function App() {
                     <Route path="/42calculator" element={<EventCalculator />} />
                     <Route path="/games" element={<Games />} />
                     <Route path="/games/minesweeper" element={<Minesweeper />} />
+                    <Route path="/games/tictactoe" element={<TicTacToe />} />
                 </Routes>
             </div>
         </Router>
