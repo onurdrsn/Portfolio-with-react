@@ -8,6 +8,7 @@ exports.handler = async function (event, context) {
     };
   }
 
+  console.log(event.body);
   const { username, access_token } = JSON.parse(event.body);
 
   try {

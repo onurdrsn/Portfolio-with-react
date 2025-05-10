@@ -22,6 +22,14 @@ function Games() {
           <h3 className="text-lg font-semibold">Tic Tac Toe</h3>
         </Link>
 
+        <Link
+          to="/games/hangman"
+          className="bg-gray-800 hover:bg-gray-700 p-6 rounded-xl text-center shadow-md transition duration-300"
+        >
+          <div className="text-4xl mb-2">🧍‍♂️</div>
+          <h3 className="text-lg font-semibold">Adam Asmaca</h3>
+        </Link>
+
       </div>
 
       <div className="text-center mt-10">
