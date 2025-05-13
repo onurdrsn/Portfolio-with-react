@@ -13,6 +13,7 @@ import Games from "./Components/Games";
 import Minesweeper from "./Components/Minesweeper";
 import TicTacToe from "./Components/TicTacToe";
 import Hangman from './Components/Hangman';
+import MemoryGame from './Components/MemoryGame';
 
 export default function App() {
     // const [theme, setTheme] = useState(null);
@@ -81,6 +82,7 @@ export default function App() {
                     <Route path="/games/minesweeper" element={<Minesweeper />} />
                     <Route path="/games/tictactoe" element={<TicTacToe />} />
                     <Route path="/games/hangman" element={<Hangman />} />
+                    <Route path="/games/memorygame" element={<MemoryGame />} />
                 </Routes>
             </div>
         </Router>
