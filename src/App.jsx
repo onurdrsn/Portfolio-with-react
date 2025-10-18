@@ -14,6 +14,9 @@ import Minesweeper from "./Components/Minesweeper";
 import TicTacToe from "./Components/TicTacToe";
 import Hangman from './Components/Hangman';
 import MemoryGame from './Components/MemoryGame';
+import RouterGame from './Components/RouterGame';
+import TowerDefense from './Components/TowerDefense';
+import TypingSpeedGame from './Components/TypingSpeedGame';
 
 export default function App() {
     // const [theme, setTheme] = useState(null);
@@ -82,7 +85,10 @@ export default function App() {
                     <Route path="/games/minesweeper" element={<Minesweeper />} />
                     <Route path="/games/tictactoe" element={<TicTacToe />} />
                     <Route path="/games/hangman" element={<Hangman />} />
-                    <Route path="/games/memorygame" element={<MemoryGame />} />
+                    <Route path="/games/memory" element={<MemoryGame />} />
+                    <Route path="/games/router" element={<RouterGame />} />
+                    <Route path="/games/towerdefense" element={<TowerDefense />} />
+                    <Route path="/games/typingspeed" element={<TypingSpeedGame />} />
                 </Routes>
             </div>
         </Router>

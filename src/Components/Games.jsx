@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { Castle, Skull, Coins, Heart, Zap, Shield, Target, Play, Pause, RotateCcw, Crown, Swords } from 'lucide-react';
+
 
 function Games() {
   return (
@@ -31,13 +33,43 @@ function Games() {
         </Link>
 
         <Link
-          to="/games/memorygame"
+          to="/games/memory"
           className="bg-gray-800 hover:bg-gray-700 p-6 rounded-xl text-center shadow-md transition duration-300"
         >
           <div className="text-4xl mb-2">🧍‍♂️</div>
           <h3 className="text-lg font-semibold">Hafıza Oyunu</h3>
         </Link>
 
+        <Link
+          to="/games/router"
+          className="bg-gray-800 hover:bg-gray-700 p-6 rounded-xl text-center shadow-md transition duration-300"
+        >
+          <div className="text-4xl mb-2">
+            <Router size={18} className="text-slate-900" />
+          </div>
+          <h3 className="text-lg font-semibold">Router Oyunu</h3>
+        </Link>
+        
+        <Link
+          to="/games/towerdefense"
+          className="bg-gray-800 hover:bg-gray-700 p-6 rounded-xl text-center shadow-md transition duration-300"
+        >
+          <div className="text-4xl mb-2">
+            <Castle className="text-purple-400" size={48} />
+          </div>
+          <h3 className="text-lg font-semibold">Kaleyi Savunma</h3>
+        </Link>
+      </div>
+
+      <Link
+          to="/games/typingspeed"
+          className="bg-gray-800 hover:bg-gray-700 p-6 rounded-xl text-center shadow-md transition duration-300"
+        >
+          <div className="text-4xl mb-2">
+            <Keyboard className="text-cyan-400" size={48} />
+          </div>
+          <h3 className="text-lg font-semibold">Kaleyi Savunma</h3>
+        </Link>
       </div>
 
       <div className="text-center mt-10">
