@@ -1,5 +1,5 @@
 // App.jsx
-import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 // Mevcut bileşenleri içe aktar

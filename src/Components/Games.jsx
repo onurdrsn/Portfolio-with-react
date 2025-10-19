@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Castle, Skull, Coins, Heart, Zap, Shield, Target, Play, Pause, RotateCcw, Crown, Swords } from 'lucide-react';
+import { Castle, Router, Keyboard } from 'lucide-react';
 
 
 function Games() {
@@ -45,7 +45,7 @@ function Games() {
           className="bg-gray-800 hover:bg-gray-700 p-6 rounded-xl text-center shadow-md transition duration-300"
         >
           <div className="text-4xl mb-2">
-            <Router size={18} className="text-slate-900" />
+            <Router size={48} className="text-slate-900" />
           </div>
           <h3 className="text-lg font-semibold">Router Oyunu</h3>
         </Link>
@@ -67,7 +67,7 @@ function Games() {
             <div className="text-4xl mb-2">
               <Keyboard className="text-cyan-400" size={48} />
             </div>
-            <h3 className="text-lg font-semibold">Kaleyi Savunma</h3>
+            <h3 className="text-lg font-semibold">Hız Yazma Oyunu</h3>
         </Link>
       </div>
 

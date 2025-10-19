@@ -34,7 +34,7 @@ const TypingSpeedGame = () => {
     useEffect(() => {
         let active = true;
         setIsLibLoading(true);
-        import(`@/TypingSpeedContent/${mode}.js`)
+        import(`../TypingSpeedContent/${mode}.js`)
             .then(mod => { if (active) setLibraryForMode(mod.default); })
             .catch(err => { console.error('İçerik yüklenemedi:', err); if (active) setLibraryForMode(null); })
             .finally(() => { if (active) setIsLibLoading(false); });
