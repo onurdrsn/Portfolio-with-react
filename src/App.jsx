@@ -18,7 +18,7 @@ import RouterGame from './Components/RouterGame';
 import TowerDefense from './Components/TowerDefense';
 import TypingSpeedGame from './Components/TypingSpeedGame';
 import FlappyBird from './Components/FlappyBird';
-import BreakoutGame from './Components/BreakoutGame';
+import BreakoutGame from './Components/Breakout';
 
 export default function App() {
     // const [theme, setTheme] = useState(null);

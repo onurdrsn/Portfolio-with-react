@@ -87,7 +87,7 @@ function Games() {
             <div className="text-4xl mb-2">
               <Target className="text-cyan-400" size={48} />
             </div>
-            <h3 className="text-lg font-semibold">Flappy Bird Oyunu</h3>
+            <h3 className="text-lg font-semibold">Tuğla kırma Oyunu</h3>
         </Link>
       </div>
 
