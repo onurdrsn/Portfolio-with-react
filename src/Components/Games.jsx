@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Castle, Router, Keyboardi, Target } from 'lucide-react';
+import { Castle, Router, Keyboard, Target } from 'lucide-react';
 
 
 function Games() {
