@@ -1,20 +1,54 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Castle, Skull, Coins, Heart, Zap, Shield, Target, Play, Pause, RotateCcw, Crown, Swords } from 'lucide-react';
+import {
+  Castle, Skull, Coins, Heart, Zap, Shield, Target, Play, Pause, RotateCcw, Crown, Swords
+} from 'lucide-react';
 
 const TowerDefense = () => {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
-  const [gameState, setGameState] = useState('menu'); // menu, playing, paused, gameOver, victory
+
+  // UI states
+  const [gameState, setGameState] = useState('menu'); // menu, playing, paused, gameOver
   const [gold, setGold] = useState(200);
   const [lives, setLives] = useState(20);
   const [wave, setWave] = useState(1);
   const [score, setScore] = useState(0);
   const [selectedTower, setSelectedTower] = useState(null);
+  const [showUpgrade, setShowUpgrade] = useState(null);
+
+  // Game arrays
   const [towers, setTowers] = useState([]);
   const [enemies, setEnemies] = useState([]);
   const [projectiles, setProjectiles] = useState([]);
   const [particles, setParticles] = useState([]);
-  const [showUpgrade, setShowUpgrade] = useState(null);
+
+  // Refs for freshest state inside a stable gameLoop
+  const gameStateRef = useRef(gameState);
+  const towersRef = useRef(towers);
+  const enemiesRef = useRef(enemies);
+  const projectilesRef = useRef(projectiles);
+  const particlesRef = useRef(particles);
+  const goldRef = useRef(gold);
+  const livesRef = useRef(lives);
+  const waveRef = useRef(wave);
+  const scoreRef = useRef(score);
+  const showUpgradeRef = useRef(showUpgrade);
+  const selectedTowerRef = useRef(selectedTower);
+
+  useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
+  useEffect(() => { towersRef.current = towers; }, [towers]);
+  useEffect(() => { enemiesRef.current = enemies; }, [enemies]);
+  useEffect(() => { projectilesRef.current = projectiles; }, [projectiles]);
+  useEffect(() => { particlesRef.current = particles; }, [particles]);
+  useEffect(() => { goldRef.current = gold; }, [gold]);
+  useEffect(() => { livesRef.current = lives; }, [lives]);
+  useEffect(() => { waveRef.current = wave; }, [wave]);
+  useEffect(() => { scoreRef.current = score; }, [score]);
+  useEffect(() => { showUpgradeRef.current = showUpgrade; }, [showUpgrade]);
+  useEffect(() => { selectedTowerRef.current = selectedTower; }, [selectedTower]);
+
+  // Hover cell preview
+  const [hoverCell, setHoverCell] = useState(null);
 
   const GRID_SIZE = 50;
   const CANVAS_WIDTH = 800;
@@ -22,7 +56,7 @@ const TowerDefense = () => {
   const COLS = Math.floor(CANVAS_WIDTH / GRID_SIZE);
   const ROWS = Math.floor(CANVAS_HEIGHT / GRID_SIZE);
 
-  // Path coordinates
+  // Path coordinates (grid)
   const PATH = [
     { x: 0, y: 3 },
     { x: 3, y: 3 },
@@ -39,502 +73,415 @@ const TowerDefense = () => {
   ];
 
   const TOWER_TYPES = {
-    arrow: {
-      name: 'Ok Kulesi',
-      cost: 100,
-      damage: 20,
-      range: 150,
-      fireRate: 1000,
-      color: '#10b981',
-      icon: '🏹',
-      upgradeCost: 150
-    },
-    cannon: {
-      name: 'Top Kulesi',
-      cost: 200,
-      damage: 50,
-      range: 120,
-      fireRate: 2000,
-      color: '#ef4444',
-      icon: '💣',
-      upgradeCost: 250
-    },
-    magic: {
-      name: 'Büyü Kulesi',
-      cost: 300,
-      damage: 30,
-      range: 180,
-      fireRate: 800,
-      color: '#8b5cf6',
-      icon: '⚡',
-      upgradeCost: 350
-    },
-    freeze: {
-      name: 'Dondurucu',
-      cost: 250,
-      damage: 10,
-      range: 160,
-      fireRate: 1500,
-      color: '#06b6d4',
-      icon: '❄️',
-      upgradeCost: 300
-    }
+    arrow: { name: 'Ok Kulesi', cost: 100, damage: 20, range: 150, fireRate: 1000, color: '#10b981', icon: '🏹', upgradeCost: 150 },
+    cannon:{ name: 'Top Kulesi', cost: 200, damage: 50, range: 120, fireRate: 2000, color: '#ef4444', icon: '💣', upgradeCost: 250 },
+    magic: { name: 'Büyü Kulesi', cost: 300, damage: 30, range: 180, fireRate: 800,  color: '#8b5cf6', icon: '⚡', upgradeCost: 350 },
+    freeze:{ name: 'Dondurucu',  cost: 250, damage: 10, range: 160, fireRate: 1500, color: '#06b6d4', icon: '❄️', upgradeCost: 300 }
   };
 
   const ENEMY_TYPES = {
-    basic: {
-      health: 100,
-      speed: 1,
-      reward: 25,
-      color: '#f87171',
-      size: 20
-    },
-    fast: {
-      health: 60,
-      speed: 2,
-      reward: 30,
-      color: '#fbbf24',
-      size: 15
-    },
-    tank: {
-      health: 300,
-      speed: 0.5,
-      reward: 50,
-      color: '#6366f1',
-      size: 30
-    },
-    boss: {
-      health: 1000,
-      speed: 0.3,
-      reward: 200,
-      color: '#dc2626',
-      size: 40
-    }
+    basic: { health: 100, speed: 1,   reward: 25,  color: '#f87171', size: 20 },
+    fast:  { health: 60,  speed: 2,   reward: 30,  color: '#fbbf24', size: 15 },
+    tank:  { health: 300, speed: 0.5, reward: 50,  color: '#6366f1', size: 30 },
+    boss:  { health: 1000,speed: 0.3, reward: 200, color: '#dc2626', size: 40 }
   };
 
   const getPathPoint = (index, progress) => {
-    if (index >= PATH.length - 1) {
-      return PATH[PATH.length - 1];
-    }
-    
+    if (index >= PATH.length - 1) return PATH[PATH.length - 1];
     const start = PATH[index];
     const end = PATH[index + 1];
-    
-    return {
-      x: start.x + (end.x - start.x) * progress,
-      y: start.y + (end.y - start.y) * progress
-    };
+    return { x: start.x + (end.x - start.x) * progress, y: start.y + (end.y - start.y) * progress };
   };
 
   const spawnWave = useCallback(() => {
+    const w = waveRef.current;
     const newEnemies = [];
-    const enemiesCount = 5 + wave * 2;
-    
+    const enemiesCount = 5 + w * 2;
+
     for (let i = 0; i < enemiesCount; i++) {
       let type = 'basic';
-      
-      if (wave >= 3 && Math.random() < 0.3) type = 'fast';
-      if (wave >= 5 && Math.random() < 0.2) type = 'tank';
-      if (wave % 5 === 0 && i === enemiesCount - 1) type = 'boss';
-      
-      const enemy = {
-        id: Date.now() + i,
+      if (w >= 3 && Math.random() < 0.3) type = 'fast';
+      if (w >= 5 && Math.random() < 0.2) type = 'tank';
+      if (w % 5 === 0 && i === enemiesCount - 1) type = 'boss';
+
+      const base = ENEMY_TYPES[type];
+      const hp = base.health * (1 + w * 0.1);
+      newEnemies.push({
+        id: Date.now() + i + Math.random(),
         type,
-        health: ENEMY_TYPES[type].health * (1 + wave * 0.1),
-        maxHealth: ENEMY_TYPES[type].health * (1 + wave * 0.1),
-        speed: ENEMY_TYPES[type].speed,
-        reward: ENEMY_TYPES[type].reward,
+        health: hp,
+        maxHealth: hp,
+        speed: base.speed,
+        reward: base.reward,
         pathIndex: 0,
-        pathProgress: -i * 0.2,
+        pathProgress: -i * 0.2, // ardışık doğuş
         frozen: false,
         freezeTime: 0
-      };
-      
-      newEnemies.push(enemy);
+      });
     }
-    
     setEnemies(prev => [...prev, ...newEnemies]);
-  }, [wave]);
+  }, []); // use refs inside
 
-  const placeTower = (gridX, gridY) => {
-    if (!selectedTower || gold < TOWER_TYPES[selectedTower].cost) return;
-    
-    const isOnPath = PATH.some(p => p.x === gridX && p.y === gridY);
-    if (isOnPath) return;
-    
-    const existingTower = towers.find(t => t.gridX === gridX && t.gridY === gridY);
-    if (existingTower) return;
-    
-    const newTower = {
-      id: Date.now(),
-      type: selectedTower,
-      gridX,
-      gridY,
-      x: gridX * GRID_SIZE + GRID_SIZE / 2,
-      y: gridY * GRID_SIZE + GRID_SIZE / 2,
-      lastFire: 0,
-      level: 1,
-      kills: 0
-    };
-    
-    setTowers(prev => [...prev, newTower]);
-    setGold(prev => prev - TOWER_TYPES[selectedTower].cost);
-    setSelectedTower(null);
-  };
-
-  const upgradeTower = (towerId) => {
-    const tower = towers.find(t => t.id === towerId);
-    if (!tower) return;
-    
-    const upgradeCost = TOWER_TYPES[tower.type].upgradeCost * tower.level;
-    if (gold < upgradeCost) return;
-    
-    setTowers(prev => prev.map(t => 
-      t.id === towerId ? { ...t, level: t.level + 1 } : t
-    ));
-    setGold(prev => prev - upgradeCost);
-    setShowUpgrade(null);
-  };
-
-  const sellTower = (towerId) => {
-    const tower = towers.find(t => t.id === towerId);
-    if (!tower) return;
-    
-    const sellValue = Math.floor(TOWER_TYPES[tower.type].cost * 0.7 * tower.level);
-    setGold(prev => prev + sellValue);
-    setTowers(prev => prev.filter(t => t.id !== towerId));
-    setShowUpgrade(null);
-  };
-
-  const createParticle = (x, y, color) => {
-    const newParticles = [];
+  const createParticleBurst = (x, y, color) => {
+    const items = [];
     for (let i = 0; i < 8; i++) {
-      newParticles.push({
-        id: Date.now() + i,
-        x,
-        y,
+      items.push({
+        id: Date.now() + i + Math.random(),
+        x, y,
         vx: (Math.random() - 0.5) * 4,
         vy: (Math.random() - 0.5) * 4,
         color,
         life: 30
       });
     }
-    setParticles(prev => [...prev, ...newParticles]);
+    setParticles(prev => [...prev, ...items]);
   };
 
+  const placeTower = (gridX, gridY) => {
+    const tKey = selectedTowerRef.current;
+    if (!tKey) return;
+    const def = TOWER_TYPES[tKey];
+    if (goldRef.current < def.cost) return;
+
+    // path üstü kontrolü: sadece düğümler değil, tam karede yol var mı? (basit: düğüm eşitliği + opsiyonel çizgi)
+    const isOnPathNode = PATH.some(p => p.x === gridX && p.y === gridY);
+    if (isOnPathNode) return;
+
+    // mevcut kule kontrolü
+    if (towersRef.current.some(t => t.gridX === gridX && t.gridY === gridY)) return;
+
+    const newTower = {
+      id: Date.now() + Math.random(),
+      type: tKey,
+      gridX, gridY,
+      x: gridX * GRID_SIZE + GRID_SIZE / 2,
+      y: gridY * GRID_SIZE + GRID_SIZE / 2,
+      lastFire: 0,
+      level: 1,
+      kills: 0
+    };
+
+    setTowers(prev => [...prev, newTower]);
+    setGold(prev => prev - def.cost);
+    setSelectedTower(null);
+  };
+
+  const upgradeTower = (towerId) => {
+    const tList = towersRef.current;
+    const idx = tList.findIndex(t => t.id === towerId);
+    if (idx === -1) return;
+    const t = tList[idx];
+    const cost = TOWER_TYPES[t.type].upgradeCost * t.level;
+    if (goldRef.current < cost) return;
+
+    setTowers(prev => prev.map(x => x.id === towerId ? { ...x, level: x.level + 1 } : x));
+    setGold(prev => prev - cost);
+    setShowUpgrade(null);
+  };
+
+  const sellTower = (towerId) => {
+    const t = towersRef.current.find(t => t.id === towerId);
+    if (!t) return;
+    const value = Math.floor(TOWER_TYPES[t.type].cost * 0.7 * t.level);
+    setGold(prev => prev + value);
+    setTowers(prev => prev.filter(x => x.id !== towerId));
+    setShowUpgrade(null);
+  };
+
+  // MAIN GAME LOOP (stable)
   const gameLoop = useCallback(() => {
-    if (gameState !== 'playing') return;
+    if (gameStateRef.current !== 'playing') return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    
-    // Clear canvas
+
+    // locals
+    const now = Date.now();
+    const currentTowers = [...towersRef.current];
+    const currentEnemies = [...enemiesRef.current];
+    const currentProjectiles = [...projectilesRef.current];
+    const currentParticles = [...particlesRef.current];
+
+    // ===== CLEAR BACKGROUND
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    
-    // Draw grid
+
+    // grid
     ctx.strokeStyle = '#1e293b';
     for (let x = 0; x <= CANVAS_WIDTH; x += GRID_SIZE) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, CANVAS_HEIGHT);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, CANVAS_HEIGHT); ctx.stroke();
     }
     for (let y = 0; y <= CANVAS_HEIGHT; y += GRID_SIZE) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(CANVAS_WIDTH, y);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(CANVAS_WIDTH, y); ctx.stroke();
     }
-    
-    // Draw path
+
+    // path
     ctx.strokeStyle = '#475569';
     ctx.lineWidth = GRID_SIZE * 0.8;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.beginPath();
-    PATH.forEach((point, i) => {
-      const x = point.x * GRID_SIZE + GRID_SIZE / 2;
-      const y = point.y * GRID_SIZE + GRID_SIZE / 2;
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
+    PATH.forEach((p, i) => {
+      const x = p.x * GRID_SIZE + GRID_SIZE / 2;
+      const y = p.y * GRID_SIZE + GRID_SIZE / 2;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.stroke();
-    
-    // Update and draw enemies
-    setEnemies(prev => {
-      const updated = prev.map(enemy => {
-        if (enemy.pathProgress < 0) {
-          return { ...enemy, pathProgress: enemy.pathProgress + 0.02 };
-        }
+    ctx.lineWidth = 1;
 
-        const speed = enemy.frozen ? enemy.speed * 0.3 : enemy.speed;
-        let newProgress = enemy.pathProgress + speed * 0.02;
-        let newIndex = enemy.pathIndex;
-        
-        if (newProgress >= 1) {
-          newProgress = 0;
-          newIndex++;
-          
-          if (newIndex >= PATH.length - 1) {
-            setLives(l => l - 1);
-            return null;
-          }
+    // ===== ENEMIES: move + draw
+    let livesLoss = 0;
+    const movedEnemies = currentEnemies.map(enemy => {
+      let e = { ...enemy };
+
+      if (e.pathProgress < 0) {
+        e.pathProgress = e.pathProgress + 0.02;
+        return e;
+      }
+
+      const speed = e.frozen ? e.speed * 0.3 : e.speed;
+      let newProg = e.pathProgress + speed * 0.02;
+      let newIdx = e.pathIndex;
+
+      if (newProg >= 1) {
+        newProg = 0;
+        newIdx++;
+        if (newIdx >= PATH.length - 1) {
+          livesLoss += 1;
+          return null; // remove, reached end
         }
-        
-        if (enemy.frozen && enemy.freezeTime > 0) {
-          return {
-            ...enemy,
-            pathIndex: newIndex,
-            pathProgress: newProgress,
-            freezeTime: enemy.freezeTime - 1
-          };
-        }
-        
-        return {
-          ...enemy,
-          pathIndex: newIndex,
-          pathProgress: newProgress,
-          frozen: enemy.freezeTime > 0,
-          freezeTime: Math.max(0, enemy.freezeTime - 1)
-        };
-      }).filter(e => e !== null && e.health > 0);
-      
-      // Draw enemies
-      updated.forEach(enemy => {
-        if (enemy.pathProgress >= 0) {
-          const pos = getPathPoint(enemy.pathIndex, enemy.pathProgress);
-          const x = pos.x * GRID_SIZE + GRID_SIZE / 2;
-          const y = pos.y * GRID_SIZE + GRID_SIZE / 2;
-          
-          const enemyData = ENEMY_TYPES[enemy.type];
-          
-          // Enemy body
-          ctx.fillStyle = enemy.frozen ? '#06b6d4' : enemyData.color;
-          ctx.beginPath();
-          ctx.arc(x, y, enemyData.size / 2, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Health bar
-          const healthBarWidth = enemyData.size;
-          const healthPercentage = enemy.health / enemy.maxHealth;
-          ctx.fillStyle = '#1f2937';
-          ctx.fillRect(x - healthBarWidth / 2, y - enemyData.size / 2 - 8, healthBarWidth, 4);
-          ctx.fillStyle = healthPercentage > 0.5 ? '#10b981' : healthPercentage > 0.25 ? '#f59e0b' : '#ef4444';
-          ctx.fillRect(x - healthBarWidth / 2, y - enemyData.size / 2 - 8, healthBarWidth * healthPercentage, 4);
-        }
-      });
-      
-      return updated;
+      }
+
+      if (e.frozen && e.freezeTime > 0) {
+        e.freezeTime -= 1;
+      } else if (e.freezeTime <= 0) {
+        e.frozen = false;
+      }
+
+      e.pathProgress = newProg;
+      e.pathIndex = newIdx;
+      return e;
+    }).filter(Boolean);
+
+    // draw enemies
+    movedEnemies.forEach(e => {
+      if (e.pathProgress < 0) return;
+      const pos = getPathPoint(e.pathIndex, e.pathProgress);
+      const x = pos.x * GRID_SIZE + GRID_SIZE / 2;
+      const y = pos.y * GRID_SIZE + GRID_SIZE / 2;
+      const def = ENEMY_TYPES[e.type];
+
+      ctx.fillStyle = e.frozen ? '#06b6d4' : def.color;
+      ctx.beginPath(); ctx.arc(x, y, def.size / 2, 0, Math.PI * 2); ctx.fill();
+
+      // health bar
+      const w = def.size;
+      const pct = e.health / e.maxHealth;
+      ctx.fillStyle = '#1f2937';
+      ctx.fillRect(x - w / 2, y - def.size / 2 - 8, w, 4);
+      ctx.fillStyle = pct > 0.5 ? '#10b981' : pct > 0.25 ? '#f59e0b' : '#ef4444';
+      ctx.fillRect(x - w / 2, y - def.size / 2 - 8, w * pct, 4);
     });
-    
-    // Draw towers
-    towers.forEach(tower => {
-      const towerData = TOWER_TYPES[tower.type];
-      
-      // Range circle (if selected)
-      if (showUpgrade === tower.id) {
-        ctx.strokeStyle = towerData.color + '40';
-        ctx.fillStyle = towerData.color + '10';
+
+    // ===== TOWERS: draw + shoot (collect new projectiles)
+    let towersNext = currentTowers.map(t => ({ ...t })); // allow lastFire update immutably
+    const newProjectiles = [];
+
+    towersNext.forEach(tower => {
+      const def = TOWER_TYPES[tower.type];
+
+      // range preview if selected for upgrade
+      if (showUpgradeRef.current === tower.id) {
+        ctx.strokeStyle = def.color + '40';
+        ctx.fillStyle = def.color + '10';
         ctx.beginPath();
-        ctx.arc(tower.x, tower.y, towerData.range * tower.level * 0.9, 0, Math.PI * 2);
+        ctx.arc(tower.x, tower.y, def.range * tower.level * 0.9, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
       }
-      
-      // Tower base
+
+      // base
       ctx.fillStyle = '#334155';
       ctx.fillRect(tower.x - 20, tower.y - 20, 40, 40);
-      
-      // Tower top
-      ctx.fillStyle = towerData.color;
-      ctx.beginPath();
-      ctx.arc(tower.x, tower.y, 15 + tower.level * 2, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Tower icon
+      // top
+      ctx.fillStyle = def.color;
+      ctx.beginPath(); ctx.arc(tower.x, tower.y, 15 + tower.level * 2, 0, Math.PI * 2); ctx.fill();
+      // icon
       ctx.font = `${20 + tower.level * 2}px Arial`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(towerData.icon, tower.x, tower.y);
-      
-      // Level indicator
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(def.icon, tower.x, tower.y);
+      // level
       if (tower.level > 1) {
         ctx.fillStyle = '#fbbf24';
         ctx.font = 'bold 12px Arial';
         ctx.fillText(`★${tower.level}`, tower.x, tower.y - 25);
       }
-    });
-    
-    // Update and draw projectiles
-    setProjectiles(prev => {
-      const updated = prev.map(proj => {
-        const target = enemies.find(e => e.id === proj.targetId);
-        if (!target || target.health <= 0) return null;
-        
-        const targetPos = getPathPoint(target.pathIndex, target.pathProgress);
-        const tx = targetPos.x * GRID_SIZE + GRID_SIZE / 2;
-        const ty = targetPos.y * GRID_SIZE + GRID_SIZE / 2;
-        
-        const dx = tx - proj.x;
-        const dy = ty - proj.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist < 10) {
-          // Hit target
-          setEnemies(e => e.map(enemy => {
-            if (enemy.id === proj.targetId) {
-              const newHealth = enemy.health - proj.damage;
-              
-              if (proj.type === 'freeze') {
-                enemy.frozen = true;
-                enemy.freezeTime = 60;
-              }
-              
-              if (newHealth <= 0) {
-                setGold(g => g + enemy.reward);
-                setScore(s => s + enemy.reward);
-                setTowers(t => t.map(tower => 
-                  tower.id === proj.towerId ? { ...tower, kills: tower.kills + 1 } : tower
-                ));
-                createParticle(tx, ty, ENEMY_TYPES[enemy.type].color);
-              }
-              
-              return { ...enemy, health: newHealth };
-            }
-            return enemy;
-          }));
-          return null;
+
+      // shooting
+      const fireRate = def.fireRate / (1 + (tower.level - 1) * 0.2);
+      if (now - tower.lastFire >= fireRate) {
+        const range = def.range * (1 + (tower.level - 1) * 0.15);
+        const damage = def.damage * tower.level;
+
+        const target = movedEnemies.find(e => {
+          if (e.health <= 0 || e.pathProgress < 0) return false;
+          const pos = getPathPoint(e.pathIndex, e.pathProgress);
+          const ex = pos.x * GRID_SIZE + GRID_SIZE / 2;
+          const ey = pos.y * GRID_SIZE + GRID_SIZE / 2;
+          const dist = Math.hypot(ex - tower.x, ey - tower.y);
+          return dist <= range;
+        });
+
+        if (target) {
+          newProjectiles.push({
+            id: Date.now() + Math.random(),
+            towerId: tower.id,
+            targetId: target.id,
+            x: tower.x,
+            y: tower.y,
+            damage,
+            color: def.color,
+            size: 5 + tower.level,
+            type: tower.type,
+            vx: 0, vy: 0
+          });
+          tower.lastFire = now; // on local copy (immutably managed via towersNext)
         }
-        
-        const speed = 5;
-        const angle = Math.atan2(dy, dx);
-        
-        return {
-          ...proj,
-          x: proj.x + Math.cos(angle) * speed,
-          y: proj.y + Math.sin(angle) * speed
-        };
-      }).filter(p => p !== null);
-      
-      // Draw projectiles
-      updated.forEach(proj => {
-        ctx.fillStyle = proj.color;
-        ctx.beginPath();
-        ctx.arc(proj.x, proj.y, proj.size, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Trail effect
-        ctx.fillStyle = proj.color + '40';
-        ctx.beginPath();
-        ctx.arc(proj.x - proj.vx, proj.y - proj.vy, proj.size * 0.7, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      
-      return updated;
-    });
-    
-    // Update and draw particles
-    setParticles(prev => {
-      const updated = prev.map(particle => ({
-        ...particle,
-        x: particle.x + particle.vx,
-        y: particle.y + particle.vy,
-        life: particle.life - 1,
-        vy: particle.vy + 0.1
-      })).filter(p => p.life > 0);
-      
-      updated.forEach(particle => {
-        ctx.fillStyle = particle.color;
-        ctx.globalAlpha = particle.life / 30;
-        ctx.fillRect(particle.x - 2, particle.y - 2, 4, 4);
-        ctx.globalAlpha = 1;
-      });
-      
-      return updated;
-    });
-    
-    // Tower shooting logic
-    const now = Date.now();
-    towers.forEach(tower => {
-      const towerData = TOWER_TYPES[tower.type];
-      const fireRate = towerData.fireRate / (1 + (tower.level - 1) * 0.2);
-      
-      if (now - tower.lastFire < fireRate) return;
-      
-      const range = towerData.range * (1 + (tower.level - 1) * 0.15);
-      const damage = towerData.damage * tower.level;
-      
-      const target = enemies.find(enemy => {
-        if (enemy.health <= 0 || enemy.pathProgress < 0) return false;
-        
-        const pos = getPathPoint(enemy.pathIndex, enemy.pathProgress);
-        const ex = pos.x * GRID_SIZE + GRID_SIZE / 2;
-        const ey = pos.y * GRID_SIZE + GRID_SIZE / 2;
-        
-        const dist = Math.sqrt(
-          Math.pow(ex - tower.x, 2) + Math.pow(ey - tower.y, 2)
-        );
-        
-        return dist <= range;
-      });
-      
-      if (target) {
-        const proj = {
-          id: Date.now() + Math.random(),
-          towerId: tower.id,
-          targetId: target.id,
-          x: tower.x,
-          y: tower.y,
-          damage,
-          color: towerData.color,
-          size: 5 + tower.level,
-          type: tower.type
-        };
-        
-        setProjectiles(prev => [...prev, proj]);
-        tower.lastFire = now;
       }
     });
-    
-    animationRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState, towers, enemies, projectiles, particles, showUpgrade]);
 
+    // ===== PROJECTILES: move, hit, draw
+    let goldGain = 0;
+    let scoreGain = 0;
+    const killIncrements = new Map(); // towerId -> +kills
+    const projAfterMove = [...currentProjectiles, ...newProjectiles].map(p => {
+      const target = movedEnemies.find(e => e.id === p.targetId && e.health > 0);
+      if (!target) return null;
+
+      const pos = getPathPoint(target.pathIndex, target.pathProgress);
+      const tx = pos.x * GRID_SIZE + GRID_SIZE / 2;
+      const ty = pos.y * GRID_SIZE + GRID_SIZE / 2;
+
+      const dx = tx - p.x;
+      const dy = ty - p.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < 10) {
+        // hit
+        const def = ENEMY_TYPES[target.type];
+        const idx = movedEnemies.findIndex(e => e.id === target.id);
+        if (idx !== -1) {
+          const e = { ...movedEnemies[idx] };
+          e.health -= p.damage;
+
+          if (p.type === 'freeze') {
+            e.frozen = true;
+            e.freezeTime = 60;
+          }
+
+          if (e.health <= 0) {
+            goldGain += e.reward;
+            scoreGain += e.reward;
+            killIncrements.set(p.towerId, (killIncrements.get(p.towerId) || 0) + 1);
+            createParticleBurst(tx, ty, def.color);
+            movedEnemies.splice(idx, 1); // remove dead
+          } else {
+            movedEnemies[idx] = e; // write back damaged enemy
+          }
+        }
+        return null;
+      }
+
+      const speed = 5;
+      const angle = Math.atan2(dy, dx);
+      return { ...p, x: p.x + Math.cos(angle) * speed, y: p.y + Math.sin(angle) * speed, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed };
+    }).filter(Boolean);
+
+    // draw projectiles
+    projAfterMove.forEach(proj => {
+      ctx.fillStyle = proj.color;
+      ctx.beginPath(); ctx.arc(proj.x, proj.y, proj.size, 0, Math.PI * 2); ctx.fill();
+      // trail
+      ctx.fillStyle = proj.color + '40';
+      ctx.beginPath(); ctx.arc(proj.x - proj.vx, proj.y - proj.vy, proj.size * 0.7, 0, Math.PI * 2); ctx.fill();
+    });
+
+    // ===== PARTICLES: update + draw
+    const particlesNext = currentParticles.map(pt => {
+      const p = { ...pt, x: pt.x + pt.vx, y: pt.y + pt.vy, life: pt.life - 1, vy: pt.vy + 0.1 };
+      return p.life > 0 ? p : null;
+    }).filter(Boolean);
+
+    particlesNext.forEach(particle => {
+      ctx.fillStyle = particle.color;
+      ctx.globalAlpha = particle.life / 30;
+      ctx.fillRect(particle.x - 2, particle.y - 2, 4, 4);
+      ctx.globalAlpha = 1;
+    });
+
+    // ===== HOVER CELL PREVIEW
+    if (hoverCell && selectedTowerRef.current) {
+      ctx.save();
+      ctx.strokeStyle = '#22c55e';
+      ctx.lineWidth = 2;
+      ctx.fillStyle = '#22c55e22';
+      ctx.fillRect(hoverCell.x * GRID_SIZE, hoverCell.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+      ctx.strokeRect(hoverCell.x * GRID_SIZE, hoverCell.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+      ctx.restore();
+    }
+
+    // ===== APPLY ACCUMULATED STATE CHANGES (once)
+    if (livesLoss > 0) setLives(prev => Math.max(0, prev - livesLoss));
+    if (goldGain > 0) setGold(prev => prev + goldGain);
+    if (scoreGain > 0) setScore(prev => prev + scoreGain);
+
+    // apply kill increments + lastFire changes
+    if (killIncrements.size > 0 || true) {
+      towersNext = towersNext.map(t => {
+        const inc = killIncrements.get(t.id) || 0;
+        return inc ? { ...t, kills: t.kills + inc } : { ...t };
+      });
+    }
+
+    setEnemies(movedEnemies);
+    setProjectiles(projAfterMove);
+    setParticles(particlesNext);
+    setTowers(towersNext);
+
+    // schedule next frame
+    animationRef.current = requestAnimationFrame(gameLoop);
+  }, []); // stable
+
+  // Start/Stop the loop on state change
   useEffect(() => {
     if (gameState === 'playing') {
       animationRef.current = requestAnimationFrame(gameLoop);
     }
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, [gameState, gameLoop]);
 
+  // game over
   useEffect(() => {
-    if (lives <= 0 && gameState === 'playing') {
-      setGameState('gameOver');
-    }
+    if (lives <= 0 && gameState === 'playing') setGameState('gameOver');
   }, [lives, gameState]);
 
+  // spawn next wave when enemies cleared
   useEffect(() => {
     if (enemies.length === 0 && gameState === 'playing' && wave > 0) {
       setTimeout(() => {
         setWave(w => w + 1);
-        setGold(g => g + 50 * wave);
+        setGold(g => g + 50 * waveRef.current);
       }, 2000);
     }
   }, [enemies.length, gameState, wave]);
 
+  // when wave increments during play, spawn immediately
   useEffect(() => {
-    if (wave > 1 && gameState === 'playing') {
-      spawnWave();
-    }
-  }, [wave, spawnWave, gameState]);
+    if (wave > 1 && gameState === 'playing') spawnWave();
+  }, [wave, gameState, spawnWave]);
 
   const startGame = () => {
     setGameState('playing');
@@ -546,27 +493,52 @@ const TowerDefense = () => {
     setEnemies([]);
     setProjectiles([]);
     setParticles([]);
-    setTimeout(() => spawnWave(), 1000);
+    setTimeout(() => spawnWave(), 800);
   };
 
   const handleCanvasClick = (e) => {
-    if (gameState !== 'playing') return;
-    
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    if (gameStateRef.current !== 'playing') return;
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
     const gridX = Math.floor(x / GRID_SIZE);
     const gridY = Math.floor(y / GRID_SIZE);
-    
-    const clickedTower = towers.find(t => t.gridX === gridX && t.gridY === gridY);
-    
-    if (clickedTower) {
-      setShowUpgrade(showUpgrade === clickedTower.id ? null : clickedTower.id);
+
+    // if clicked on tower -> toggle upgrade panel
+    const clicked = towersRef.current.find(t => t.gridX === gridX && t.gridY === gridY);
+    if (clicked) {
+      setShowUpgrade(prev => (prev === clicked.id ? null : clicked.id));
       setSelectedTower(null);
-    } else if (selectedTower) {
+      return;
+    }
+
+    if (selectedTowerRef.current) {
       placeTower(gridX, gridY);
     } else {
       setShowUpgrade(null);
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    const gridX = Math.floor(x / GRID_SIZE);
+    const gridY = Math.floor(y / GRID_SIZE);
+    if (gridX >= 0 && gridX < COLS && gridY >= 0 && gridY < ROWS) {
+      setHoverCell({ x: gridX, y: gridY });
+    } else {
+      setHoverCell(null);
     }
   };
 
@@ -583,7 +555,7 @@ const TowerDefense = () => {
           <p className="text-slate-300 text-lg">Düşmanları durdurun, kaleyi koruyun!</p>
         </div>
 
-        {/* Menu Screen */}
+        {/* Menu */}
         {gameState === 'menu' && (
           <div className="bg-black/40 backdrop-blur-md rounded-xl p-12 border border-purple-500/30 text-center max-w-2xl mx-auto">
             <Castle className="text-purple-400 mx-auto mb-6" size={80} />
@@ -591,15 +563,15 @@ const TowerDefense = () => {
             <p className="text-slate-300 text-lg mb-8">
               Yolu boyunca kuleler yerleştirin ve düşman dalgalarını durdurun!
             </p>
-            
+
             <div className="grid grid-cols-2 gap-4 mb-8 text-left">
               {Object.entries(TOWER_TYPES).map(([key, tower]) => (
                 <div key={key} className="bg-white/5 rounded-lg p-4 border border-white/10">
                   <div className="text-3xl mb-2">{tower.icon}</div>
                   <h3 className="text-white font-bold mb-1">{tower.name}</h3>
-                  <p className="text-sm text-slate-400 mb-2">Maliyet: {tower.cost} altın</p>
-                  <p className="text-xs text-slate-500">
-                    Hasar: {tower.damage} | Menzil: {tower.range} | Hız: {(1000/tower.fireRate).toFixed(1)}/s
+                  <p className="text-sm text-slate-300 mb-2">Maliyet: {tower.cost} altın</p>
+                  <p className="text-xs text-slate-400">
+                    Hasar: {tower.damage} | Menzil: {tower.range} | Hız: {(1000 / tower.fireRate).toFixed(1)}/s
                   </p>
                 </div>
               ))}
@@ -615,7 +587,7 @@ const TowerDefense = () => {
           </div>
         )}
 
-        {/* Game Over Screen */}
+        {/* Game Over */}
         {gameState === 'gameOver' && (
           <div className="bg-black/40 backdrop-blur-md rounded-xl p-12 border border-red-500/30 text-center max-w-2xl mx-auto">
             <Skull className="text-red-400 mx-auto mb-6 animate-pulse" size={80} />
@@ -634,11 +606,11 @@ const TowerDefense = () => {
           </div>
         )}
 
-        {/* Playing Screen */}
+        {/* Playing & Paused */}
         {(gameState === 'playing' || gameState === 'paused') && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Game Canvas */}
-            <div className="lg:col-span-3">
+            {/* Canvas */}
+            <div className="lg:col-span-3 relative">
               <div className="bg-black/40 backdrop-blur-md rounded-xl p-4 border border-purple-500/30">
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex gap-4">
@@ -655,16 +627,13 @@ const TowerDefense = () => {
                       <span className="text-white font-bold text-xl">Dalga {wave}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-2">
                     <button
                       onClick={() => setGameState(gameState === 'playing' ? 'paused' : 'playing')}
                       className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all"
                     >
-                      {gameState === 'playing' ? 
-                        <Pause className="text-white" size={24} /> : 
-                        <Play className="text-white" size={24} />
-                      }
+                      {gameState === 'playing' ? <Pause className="text-white" size={24} /> : <Play className="text-white" size={24} />}
                     </button>
                   </div>
                 </div>
@@ -674,6 +643,7 @@ const TowerDefense = () => {
                   width={CANVAS_WIDTH}
                   height={CANVAS_HEIGHT}
                   onClick={handleCanvasClick}
+                  onMouseMove={handleMouseMove}
                   className="w-full border-2 border-purple-500/30 rounded-lg cursor-crosshair"
                   style={{ imageRendering: 'pixelated' }}
                 />
@@ -687,7 +657,7 @@ const TowerDefense = () => {
                 )}
 
                 {gameState === 'paused' && (
-                  <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                  <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-lg pointer-events-none">
                     <div className="text-center">
                       <Pause className="text-white mx-auto mb-4" size={64} />
                       <h3 className="text-3xl font-bold text-white">Oyun Duraklatıldı</h3>
@@ -697,14 +667,14 @@ const TowerDefense = () => {
               </div>
             </div>
 
-            {/* Tower Selection */}
+            {/* Sidebar */}
             <div className="space-y-4">
+              {/* Tower selection */}
               <div className="bg-black/40 backdrop-blur-md rounded-xl p-6 border border-purple-500/30">
                 <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <Target className="text-purple-400" />
                   Kule Seçimi
                 </h3>
-                
                 <div className="space-y-3">
                   {Object.entries(TOWER_TYPES).map(([key, tower]) => (
                     <button
@@ -740,7 +710,7 @@ const TowerDefense = () => {
                         </div>
                         <div className="bg-black/30 rounded p-1">
                           <p className="text-gray-400">Hız</p>
-                          <p className="text-white font-bold">{(1000/tower.fireRate).toFixed(1)}/s</p>
+                          <p className="text-white font-bold">{(1000 / tower.fireRate).toFixed(1)}/s</p>
                         </div>
                       </div>
                     </button>
@@ -748,22 +718,22 @@ const TowerDefense = () => {
                 </div>
               </div>
 
-              {/* Tower Info */}
+              {/* Upgrade panel */}
               {showUpgrade && (
                 <div className="bg-black/40 backdrop-blur-md rounded-xl p-6 border border-yellow-500/30">
                   {(() => {
                     const tower = towers.find(t => t.id === showUpgrade);
                     if (!tower) return null;
-                    const towerData = TOWER_TYPES[tower.type];
-                    const upgradeCost = towerData.upgradeCost * tower.level;
-                    const sellValue = Math.floor(towerData.cost * 0.7 * tower.level);
+                    const def = TOWER_TYPES[tower.type];
+                    const upgradeCost = def.upgradeCost * tower.level;
+                    const sellValue = Math.floor(def.cost * 0.7 * tower.level);
 
                     return (
                       <>
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="text-4xl">{towerData.icon}</div>
+                          <div className="text-4xl">{def.icon}</div>
                           <div>
-                            <h3 className="text-white font-bold text-lg">{towerData.name}</h3>
+                            <h3 className="text-white font-bold text-lg">{def.name}</h3>
                             <p className="text-yellow-400 text-sm">Seviye {tower.level}</p>
                           </div>
                         </div>
@@ -771,11 +741,13 @@ const TowerDefense = () => {
                         <div className="space-y-2 mb-4 text-sm">
                           <div className="flex justify-between">
                             <span className="text-gray-400">Hasar:</span>
-                            <span className="text-white font-bold">{towerData.damage * tower.level}</span>
+                            <span className="text-white font-bold">{def.damage * tower.level}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-400">Menzil:</span>
-                            <span className="text-white font-bold">{Math.floor(towerData.range * (1 + (tower.level - 1) * 0.15))}</span>
+                            <span className="text-white font-bold">
+                              {Math.floor(def.range * (1 + (tower.level - 1) * 0.15))}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-400">Öldürülen:</span>
@@ -788,9 +760,7 @@ const TowerDefense = () => {
                             onClick={() => upgradeTower(tower.id)}
                             disabled={gold < upgradeCost}
                             className={`w-full py-2 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-                              gold >= upgradeCost
-                                ? 'bg-green-500 hover:bg-green-600 text-white'
-                                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                              gold >= upgradeCost ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                             }`}
                           >
                             <Zap size={16} />
@@ -824,7 +794,7 @@ const TowerDefense = () => {
                   <Shield className="text-cyan-400" />
                   İstatistikler
                 </h3>
-                
+
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between p-2 bg-white/5 rounded">
                     <span className="text-gray-400">Toplam Skor:</span>

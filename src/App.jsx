@@ -17,6 +17,8 @@ import MemoryGame from './Components/MemoryGame';
 import RouterGame from './Components/RouterGame';
 import TowerDefense from './Components/TowerDefense';
 import TypingSpeedGame from './Components/TypingSpeedGame';
+import FlappyBird from './Components/FlappyBird';
+import BreakoutGame from './Components/BreakoutGame';
 
 export default function App() {
     // const [theme, setTheme] = useState(null);
@@ -89,6 +91,9 @@ export default function App() {
                     <Route path="/games/router" element={<RouterGame />} />
                     <Route path="/games/towerdefense" element={<TowerDefense />} />
                     <Route path="/games/typingspeed" element={<TypingSpeedGame />} />
+                    <Route path="/games/flappybird" element={<FlappyBird />} />
+                    <Route path="/games/breakout" element={<BreakoutGame />} />
+                    
                 </Routes>
             </div>
         </Router>
