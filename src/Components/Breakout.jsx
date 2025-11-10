@@ -48,6 +48,8 @@ const BreakoutGame = () => {
   }]);
 
   const [bricks, setBricks] = useState([]);
+  const [isMouseLocked, setIsMouseLocked] = useState(false);
+  const keysRef = useRef({ ArrowLeft: false, ArrowRight: false }); // Klavye basma durumunu tutar
 
   const BRICK_COLORS = [
     { color: '#ef4444', points: 70, hits: 3 },
@@ -168,16 +170,50 @@ const BreakoutGame = () => {
 
   const handleMouseMove = useCallback((e) => {
     if (gameState !== 'playing') return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
     
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    
-    setPaddle(prev => ({
-      ...prev,
-      x: Math.max(0, Math.min(CANVAS_WIDTH - prev.width, mouseX - prev.width / 2))
-    }));
+    // Eğer fare kilitliyse (pointerLockElement varsa), fare hareketini kullan
+    if (document.pointerLockElement === canvasRef.current) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      
+      // Canvas boyutuna göre ölçekleme
+      const scaleX = CANVAS_WIDTH / rect.width;
+      const scaledMouseX = mouseX * scaleX;
+      
+      setPaddle(prev => ({
+        ...prev,
+        x: Math.max(0, Math.min(CANVAS_WIDTH - prev.width, scaledMouseX - prev.width / 2))
+      }));
+    }
+  }, [gameState]);
+
+
+  const handleMouseEnter = useCallback(() => {
+    if (gameState === 'playing') {
+      setIsMouseLocked(true);
+    }
+  }, [gameState]);
+
+  const handleMouseLeave = useCallback((e) => {
+    // Allow leaving only if Ctrl key is pressed
+    if (!e.ctrlKey && gameState === 'playing') {
+      e.preventDefault();
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        // Keep cursor within canvas bounds
+        if (e.clientX < rect.left) {
+          // Left edge
+        } else if (e.clientX > rect.right) {
+          // Right edge
+        }
+      }
+    } else {
+      setIsMouseLocked(false);
+    }
   }, [gameState]);
 
   const handleClick = () => {
@@ -200,6 +236,135 @@ const BreakoutGame = () => {
       }
     }
   };
+
+  // --- YENİ EKLENEN KLAVYE DİNLEYİCİSİ ---
+   useEffect(() => {
+   const handleKeyDown = (e) => {
+       if (gameState === 'playing') {
+         if (e.key === 'ArrowLeft') {
+            keysRef.current.ArrowLeft = true;
+         } else if (e.key === 'ArrowRight') {
+            keysRef.current.ArrowRight = true;
+         }
+       }
+       // Ctrl ile kilidi açma/kapama zaten eski useEffect'te yapılıyordu, onu temizleyeceğiz.
+   };
+
+   const handleKeyUp = (e) => {
+       if (e.key === 'ArrowLeft') {
+         keysRef.current.ArrowLeft = false;
+       } else if (e.key === 'ArrowRight') {
+         keysRef.current.ArrowRight = false;
+       }
+   };
+
+   document.addEventListener('keydown', handleKeyDown);
+   document.addEventListener('keyup', handleKeyUp);
+
+   return () => {
+       document.removeEventListener('keydown', handleKeyDown);
+       document.removeEventListener('keyup', handleKeyUp);
+   };
+   }, [gameState]); // Sadece gameState değiştiğinde bu listener'ları kurup temizle
+
+   // Lock cursor to canvas
+   useEffect(() => {
+     const canvas = canvasRef.current;
+     if (!canvas) return;
+
+     // Raket hareketi için bir durum tutucu (Klavye için)
+     const keysPressed = { ArrowLeft: false, ArrowRight: false };
+    const PADDLE_MOVE_STEP = paddle.speed; // Mevcut paddle hızı
+
+     const requestPointerLock = () => {
+        if (gameState === 'playing' && !isMouseLocked) {
+          canvas.requestPointerLock = canvas.requestPointerLock || 
+                                           canvas.mozRequestPointerLock || 
+                                           canvas.webkitRequestPointerLock;
+          if (canvas.requestPointerLock) {
+             canvas.requestPointerLock();
+          }
+        }
+     };
+
+     const exitPointerLock = () => {
+        document.exitPointerLock = document.exitPointerLock || 
+                                           document.mozExitPointerLock || 
+                                           document.webkitExitPointerLock;
+        if (document.exitPointerLock) {
+          document.exitPointerLock();
+        }
+     };
+
+     // --- YENİ EKLENEN KLAVYE KONTROLÜ ---
+    const handlePointerLockChange = () => {
+        const locked = document.pointerLockElement === canvas;
+        setIsMouseLocked(locked);
+
+        // Fare kilitli değilse (yani oyuncu Ctrl ile çıktıysa veya hiç kilitlenmediyse)
+        if (!locked) {
+            // Klavye dinleyicisini etkinleştir
+            document.addEventListener('keydown', handleKeyboardDown);
+            document.addEventListener('keyup', handleKeyboardUp);
+        } else {
+            // Fare kilitliyse, klavye dinleyicisini devre dışı bırak
+            document.removeEventListener('keydown', handleKeyboardDown);
+            document.removeEventListener('keyup', handleKeyboardUp);
+        }
+    };
+
+    const handleKeyboardDown = (e) => {
+      if (gameState === 'playing') {
+        if (e.key === 'ArrowLeft') {
+            keysPressed.ArrowLeft = true;
+        } else if (e.key === 'ArrowRight') {
+            keysPressed.ArrowRight = true;
+        }
+      }
+        // Ctrl ile kilidi açma/kapama
+        if (e.key === 'Control' && document.pointerLockElement === canvas) {
+            exitPointerLock();
+        }
+    };
+    
+    const handleKeyboardUp = (e) => {
+        if (e.key === 'ArrowLeft') {
+            keysPressed.ArrowLeft = false;
+        } else if (e.key === 'ArrowRight') {
+            keysPressed.ArrowRight = false;
+        }
+    };
+
+    // Klavye hareketini gameLoop'ta işlemek için useEffect içinde bir state güncellemesi yapmalıyız.
+    // Bunun yerine, gameLoop'a doğrudan erişim sağlayıp (useRef ile) veya mouse/klavye inputlarını tek bir yerde toplamak daha iyi.
+    // Şimdilik, klavye durumunu güncellemek için bir ref kullanalım (veya paddle state'ini doğrudan güncelleyebiliriz, ancak performans için hareketleri gameLoop içinde toplamak daha iyidir).
+    
+    // Paddle hareketini gameLoop'tan bağımsız olarak güncellemek için bir useEffect daha ekliyorum.
+    
+     // --- EKLENEN KLAVYE KONTROLÜ SONU ---
+
+     const handleControlKeyRelease = (e) => {
+        if (e.key === 'Control' && document.pointerLockElement === canvas) {
+          exitPointerLock();
+          setIsMouseLocked(false);
+        }
+     };
+
+     canvas.addEventListener('click', requestPointerLock);
+     document.addEventListener('pointerlockchange', handlePointerLockChange);
+    document.addEventListener('pointerlockerror', handlePointerLockChange); // Hata durumunda da kontrol et
+
+     return () => {
+        canvas.removeEventListener('click', requestPointerLock);
+        document.removeEventListener('pointerlockchange', handlePointerLockChange);
+      document.removeEventListener('pointerlockerror', handlePointerLockChange);
+      document.removeEventListener('keydown', handleKeyboardDown); // Temizlik
+      document.removeEventListener('keyup', handleKeyboardUp);     // Temizlik
+        if (document.pointerLockElement === canvas) {
+          exitPointerLock();
+        }
+     };
+   }, [gameState, isMouseLocked, paddle.speed]); // paddle.speed bağımlılığı eklendi
 
   const startGame = () => {
     setGameState('playing');
@@ -232,6 +397,7 @@ const BreakoutGame = () => {
 
   const nextLevel = () => {
     setLevel(prev => prev + 1);
+    setCombo(0);
     setBalls([{
       x: CANVAS_WIDTH / 2,
       y: CANVAS_HEIGHT - 60,
@@ -273,6 +439,22 @@ const BreakoutGame = () => {
       ctx.moveTo(0, i);
       ctx.lineTo(CANVAS_WIDTH, i);
       ctx.stroke();
+    }
+    let paddleMoved = false;
+    
+    if (keysRef.current.ArrowLeft) {
+        setPaddle(prev => ({
+            ...prev,
+            x: Math.max(0, prev.x - paddle.speed)
+        }));
+        paddleMoved = true;
+    }
+    if (keysRef.current.ArrowRight) {
+        setPaddle(prev => ({
+            ...prev,
+            x: Math.min(CANVAS_WIDTH - prev.width, prev.x + paddle.speed)
+        }));
+        paddleMoved = true;
     }
 
     // Draw bricks
@@ -659,7 +841,7 @@ const BreakoutGame = () => {
 
         {/* Playing Screen */}
         {(gameState === 'playing' || gameState === 'paused') && (
-          <div className="space-y-4">
+          <div className="space-y-4 max-w-5xl mx-auto">
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <div className="bg-black/40 backdrop-blur-md rounded-lg p-3 border border-cyan-500/30 flex items-center gap-2">
@@ -815,7 +997,19 @@ const BreakoutGame = () => {
 
             <button
               onClick={() => {
-                nextLevel();
+                const newLevel = level + 1;
+                setLevel(newLevel);
+                setCombo(0);
+                setBalls([{
+                  x: CANVAS_WIDTH / 2,
+                  y: CANVAS_HEIGHT - 60,
+                  dx: 4 + newLevel * 0.5,
+                  dy: -4 - newLevel * 0.5,
+                  radius: BALL_RADIUS,
+                  stuck: true
+                }]);
+                setPowerUps([]);
+                setActivePowerUps({});
                 setGameState('playing');
               }}
               className="px-12 py-4 bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white rounded-lg font-bold text-xl transition-all shadow-lg hover:scale-105 flex items-center gap-3 mx-auto"

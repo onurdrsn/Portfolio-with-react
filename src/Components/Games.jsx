@@ -81,7 +81,7 @@ function Games() {
         </Link>
 
          <Link
-            to="/games/breakoutgame"
+            to="/games/breakout"
             className="bg-gray-800 hover:bg-gray-700 p-6 rounded-xl text-center shadow-md transition duration-300"
           >
             <div className="text-4xl mb-2">
