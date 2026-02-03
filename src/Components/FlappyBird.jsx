@@ -23,10 +23,11 @@ const FlappyBird = () => {
   const BIRD_SIZE = 30;
   const PIPE_WIDTH = 60;
   const PIPE_GAP = 150;
-  const GRAVITY = 0.5;
-  const JUMP_STRENGTH = -8;
+  const GRAVITY = 0.35; // Reduced from 0.5 for gentler fall
+  const JUMP_STRENGTH = -6.5; // Reduced from -8 for smoother jump
   const PIPE_SPEED = 3;
   const GROUND_HEIGHT = 100;
+  const MAX_FALL_SPEED = 8; // Cap fall speed
 
   const characters = {
     bird: { emoji: '🐦', color: '#fbbf24', name: 'Kuş' },
@@ -128,7 +129,7 @@ const FlappyBird = () => {
         return prev;
       }
 
-      const newVelocity = prev.velocity + GRAVITY;
+      const newVelocity = Math.min(prev.velocity + GRAVITY, MAX_FALL_SPEED); // Cap fall speed
       const newY = prev.y + newVelocity;
 
       // Check ground collision
@@ -196,7 +197,7 @@ const FlappyBird = () => {
     setGround(prev => (prev - difficulties[difficulty].speed) % 50);
 
     // Update particles
-    setParticles(prev => 
+    setParticles(prev =>
       prev.map(p => ({
         ...p,
         x: p.x + p.vx,
@@ -283,7 +284,7 @@ const FlappyBird = () => {
     // Draw bird
     ctx.save();
     ctx.translate(50, bird.y);
-    
+
     // Rotate bird based on velocity
     const rotation = Math.min(Math.max(bird.velocity * 0.05, -0.5), 0.5);
     ctx.rotate(rotation);
@@ -401,11 +402,10 @@ const FlappyBird = () => {
                     <button
                       key={key}
                       onClick={() => setDifficulty(key)}
-                      className={`w-full p-3 rounded-lg transition-all ${
-                        difficulty === key
-                          ? 'bg-cyan-500 text-white'
-                          : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                      }`}
+                      className={`w-full p-3 rounded-lg transition-all ${difficulty === key
+                        ? 'bg-cyan-500 text-white'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                        }`}
                     >
                       {diff.name}
                     </button>
@@ -423,11 +423,10 @@ const FlappyBird = () => {
                     <button
                       key={key}
                       onClick={() => setCharacter(key)}
-                      className={`p-3 rounded-lg transition-all ${
-                        character === key
-                          ? 'bg-purple-500 scale-110'
-                          : 'bg-white/10 hover:bg-white/20'
-                      }`}
+                      className={`p-3 rounded-lg transition-all ${character === key
+                        ? 'bg-purple-500 scale-110'
+                        : 'bg-white/10 hover:bg-white/20'
+                        }`}
                     >
                       <div className="text-3xl">{char.emoji}</div>
                       <p className="text-xs text-white mt-1">{char.name}</p>

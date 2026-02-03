@@ -73,17 +73,17 @@ const TowerDefense = () => {
   ];
 
   const TOWER_TYPES = {
-    arrow: { name: 'Ok Kulesi', cost: 100, damage: 20, range: 150, fireRate: 1000, color: '#10b981', icon: '🏹', upgradeCost: 150 },
-    cannon:{ name: 'Top Kulesi', cost: 200, damage: 50, range: 120, fireRate: 2000, color: '#ef4444', icon: '💣', upgradeCost: 250 },
-    magic: { name: 'Büyü Kulesi', cost: 300, damage: 30, range: 180, fireRate: 800,  color: '#8b5cf6', icon: '⚡', upgradeCost: 350 },
-    freeze:{ name: 'Dondurucu',  cost: 250, damage: 10, range: 160, fireRate: 1500, color: '#06b6d4', icon: '❄️', upgradeCost: 300 }
+    arrow: { name: 'Ok Kulesi', cost: 100, damage: 20, range: 150, fireRate: 700, color: '#10b981', icon: '🏹', upgradeCost: 150 },
+    cannon: { name: 'Top Kulesi', cost: 200, damage: 50, range: 120, fireRate: 1500, color: '#ef4444', icon: '💣', upgradeCost: 250 },
+    magic: { name: 'Büyü Kulesi', cost: 300, damage: 30, range: 180, fireRate: 600, color: '#8b5cf6', icon: '⚡', upgradeCost: 350 },
+    freeze: { name: 'Dondurucu', cost: 250, damage: 10, range: 160, fireRate: 1200, color: '#06b6d4', icon: '❄️', upgradeCost: 300 }
   };
 
   const ENEMY_TYPES = {
-    basic: { health: 100, speed: 1,   reward: 25,  color: '#f87171', size: 20 },
-    fast:  { health: 60,  speed: 2,   reward: 30,  color: '#fbbf24', size: 15 },
-    tank:  { health: 300, speed: 0.5, reward: 50,  color: '#6366f1', size: 30 },
-    boss:  { health: 1000,speed: 0.3, reward: 200, color: '#dc2626', size: 40 }
+    basic: { health: 100, speed: 0.6, reward: 25, color: '#f87171', size: 20 }, // Reduced from 1
+    fast: { health: 60, speed: 1.2, reward: 30, color: '#fbbf24', size: 15 }, // Reduced from 2
+    tank: { health: 300, speed: 0.3, reward: 50, color: '#6366f1', size: 30 }, // Reduced from 0.5
+    boss: { health: 1000, speed: 0.2, reward: 200, color: '#dc2626', size: 40 }  // Reduced from 0.3
   };
 
   const getPathPoint = (index, progress) => {
@@ -681,13 +681,12 @@ const TowerDefense = () => {
                       key={key}
                       onClick={() => setSelectedTower(selectedTower === key ? null : key)}
                       disabled={gold < tower.cost}
-                      className={`w-full p-4 rounded-lg border-2 transition-all ${
-                        selectedTower === key
-                          ? 'border-green-400 bg-green-500/20'
-                          : gold >= tower.cost
+                      className={`w-full p-4 rounded-lg border-2 transition-all ${selectedTower === key
+                        ? 'border-green-400 bg-green-500/20'
+                        : gold >= tower.cost
                           ? 'border-white/20 bg-white/5 hover:bg-white/10'
                           : 'border-gray-600 bg-gray-800/50 opacity-50 cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className="text-3xl">{tower.icon}</div>
@@ -759,9 +758,8 @@ const TowerDefense = () => {
                           <button
                             onClick={() => upgradeTower(tower.id)}
                             disabled={gold < upgradeCost}
-                            className={`w-full py-2 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-                              gold >= upgradeCost ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                            }`}
+                            className={`w-full py-2 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${gold >= upgradeCost ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                              }`}
                           >
                             <Zap size={16} />
                             Yükselt ({upgradeCost} <Coins size={14} />)

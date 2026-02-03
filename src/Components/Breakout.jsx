@@ -4,7 +4,7 @@ import { Play, Pause, RotateCcw, Trophy, Heart, Zap, Target, Crown, Shield, Flam
 const BreakoutGame = () => {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
-  
+
   const [gameState, setGameState] = useState('menu'); // menu, playing, paused, gameOver, victory
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -123,7 +123,7 @@ const BreakoutGame = () => {
   };
 
   const activatePowerUp = (type) => {
-    switch(type) {
+    switch (type) {
       case 'expandPaddle':
         setPaddle(prev => ({ ...prev, width: 150 }));
         break;
@@ -170,19 +170,19 @@ const BreakoutGame = () => {
 
   const handleMouseMove = useCallback((e) => {
     if (gameState !== 'playing') return;
-    
+
     // Eğer fare kilitliyse (pointerLockElement varsa), fare hareketini kullan
     if (document.pointerLockElement === canvasRef.current) {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      
+
       const rect = canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
-      
+
       // Canvas boyutuna göre ölçekleme
       const scaleX = CANVAS_WIDTH / rect.width;
       const scaledMouseX = mouseX * scaleX;
-      
+
       setPaddle(prev => ({
         ...prev,
         x: Math.max(0, Math.min(CANVAS_WIDTH - prev.width, scaledMouseX - prev.width / 2))
@@ -218,7 +218,7 @@ const BreakoutGame = () => {
 
   const handleClick = () => {
     if (gameState === 'playing') {
-      setBalls(prev => prev.map(ball => 
+      setBalls(prev => prev.map(ball =>
         ball.stuck ? { ...ball, stuck: false } : ball
       ));
 
@@ -238,133 +238,142 @@ const BreakoutGame = () => {
   };
 
   // --- YENİ EKLENEN KLAVYE DİNLEYİCİSİ ---
-   useEffect(() => {
-   const handleKeyDown = (e) => {
-       if (gameState === 'playing') {
-         if (e.key === 'ArrowLeft') {
-            keysRef.current.ArrowLeft = true;
-         } else if (e.key === 'ArrowRight') {
-            keysRef.current.ArrowRight = true;
-         }
-       }
-       // Ctrl ile kilidi açma/kapama zaten eski useEffect'te yapılıyordu, onu temizleyeceğiz.
-   };
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (gameState === 'playing') {
+        if (e.key === 'ArrowLeft') {
+          keysRef.current.ArrowLeft = true;
+        } else if (e.key === 'ArrowRight') {
+          keysRef.current.ArrowRight = true;
+        } else if (e.key === ' ' || e.code === 'Space') {
+          // Space tuşu ile topu serbest bırak
+          e.preventDefault();
+          setBalls(prev => prev.map(ball =>
+            ball.stuck ? { ...ball, stuck: false } : ball
+          ));
+        }
+      } else if (gameState === 'menu' && (e.key === ' ' || e.code === 'Space')) {
+        // Menüden oyunu başlat
+        e.preventDefault();
+        startGame();
+      }
+    };
 
-   const handleKeyUp = (e) => {
-       if (e.key === 'ArrowLeft') {
-         keysRef.current.ArrowLeft = false;
-       } else if (e.key === 'ArrowRight') {
-         keysRef.current.ArrowRight = false;
-       }
-   };
+    const handleKeyUp = (e) => {
+      if (e.key === 'ArrowLeft') {
+        keysRef.current.ArrowLeft = false;
+      } else if (e.key === 'ArrowRight') {
+        keysRef.current.ArrowRight = false;
+      }
+    };
 
-   document.addEventListener('keydown', handleKeyDown);
-   document.addEventListener('keyup', handleKeyUp);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
 
-   return () => {
-       document.removeEventListener('keydown', handleKeyDown);
-       document.removeEventListener('keyup', handleKeyUp);
-   };
-   }, [gameState]); // Sadece gameState değiştiğinde bu listener'ları kurup temizle
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [gameState]); // Sadece gameState değiştiğinde bu listener'ları kurup temizle
 
-   // Lock cursor to canvas
-   useEffect(() => {
-     const canvas = canvasRef.current;
-     if (!canvas) return;
+  // Lock cursor to canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-     // Raket hareketi için bir durum tutucu (Klavye için)
-     const keysPressed = { ArrowLeft: false, ArrowRight: false };
+    // Raket hareketi için bir durum tutucu (Klavye için)
+    const keysPressed = { ArrowLeft: false, ArrowRight: false };
     const PADDLE_MOVE_STEP = paddle.speed; // Mevcut paddle hızı
 
-     const requestPointerLock = () => {
-        if (gameState === 'playing' && !isMouseLocked) {
-          canvas.requestPointerLock = canvas.requestPointerLock || 
-                                           canvas.mozRequestPointerLock || 
-                                           canvas.webkitRequestPointerLock;
-          if (canvas.requestPointerLock) {
-             canvas.requestPointerLock();
-          }
+    const requestPointerLock = () => {
+      if (gameState === 'playing' && !isMouseLocked) {
+        canvas.requestPointerLock = canvas.requestPointerLock ||
+          canvas.mozRequestPointerLock ||
+          canvas.webkitRequestPointerLock;
+        if (canvas.requestPointerLock) {
+          canvas.requestPointerLock();
         }
-     };
+      }
+    };
 
-     const exitPointerLock = () => {
-        document.exitPointerLock = document.exitPointerLock || 
-                                           document.mozExitPointerLock || 
-                                           document.webkitExitPointerLock;
-        if (document.exitPointerLock) {
-          document.exitPointerLock();
-        }
-     };
+    const exitPointerLock = () => {
+      document.exitPointerLock = document.exitPointerLock ||
+        document.mozExitPointerLock ||
+        document.webkitExitPointerLock;
+      if (document.exitPointerLock) {
+        document.exitPointerLock();
+      }
+    };
 
-     // --- YENİ EKLENEN KLAVYE KONTROLÜ ---
+    // --- YENİ EKLENEN KLAVYE KONTROLÜ ---
     const handlePointerLockChange = () => {
-        const locked = document.pointerLockElement === canvas;
-        setIsMouseLocked(locked);
+      const locked = document.pointerLockElement === canvas;
+      setIsMouseLocked(locked);
 
-        // Fare kilitli değilse (yani oyuncu Ctrl ile çıktıysa veya hiç kilitlenmediyse)
-        if (!locked) {
-            // Klavye dinleyicisini etkinleştir
-            document.addEventListener('keydown', handleKeyboardDown);
-            document.addEventListener('keyup', handleKeyboardUp);
-        } else {
-            // Fare kilitliyse, klavye dinleyicisini devre dışı bırak
-            document.removeEventListener('keydown', handleKeyboardDown);
-            document.removeEventListener('keyup', handleKeyboardUp);
-        }
+      // Fare kilitli değilse (yani oyuncu Ctrl ile çıktıysa veya hiç kilitlenmediyse)
+      if (!locked) {
+        // Klavye dinleyicisini etkinleştir
+        document.addEventListener('keydown', handleKeyboardDown);
+        document.addEventListener('keyup', handleKeyboardUp);
+      } else {
+        // Fare kilitliyse, klavye dinleyicisini devre dışı bırak
+        document.removeEventListener('keydown', handleKeyboardDown);
+        document.removeEventListener('keyup', handleKeyboardUp);
+      }
     };
 
     const handleKeyboardDown = (e) => {
       if (gameState === 'playing') {
         if (e.key === 'ArrowLeft') {
-            keysPressed.ArrowLeft = true;
+          keysPressed.ArrowLeft = true;
         } else if (e.key === 'ArrowRight') {
-            keysPressed.ArrowRight = true;
+          keysPressed.ArrowRight = true;
         }
       }
-        // Ctrl ile kilidi açma/kapama
-        if (e.key === 'Control' && document.pointerLockElement === canvas) {
-            exitPointerLock();
-        }
+      // Ctrl ile kilidi açma/kapama
+      if (e.key === 'Control' && document.pointerLockElement === canvas) {
+        exitPointerLock();
+      }
     };
-    
+
     const handleKeyboardUp = (e) => {
-        if (e.key === 'ArrowLeft') {
-            keysPressed.ArrowLeft = false;
-        } else if (e.key === 'ArrowRight') {
-            keysPressed.ArrowRight = false;
-        }
+      if (e.key === 'ArrowLeft') {
+        keysPressed.ArrowLeft = false;
+      } else if (e.key === 'ArrowRight') {
+        keysPressed.ArrowRight = false;
+      }
     };
 
     // Klavye hareketini gameLoop'ta işlemek için useEffect içinde bir state güncellemesi yapmalıyız.
     // Bunun yerine, gameLoop'a doğrudan erişim sağlayıp (useRef ile) veya mouse/klavye inputlarını tek bir yerde toplamak daha iyi.
     // Şimdilik, klavye durumunu güncellemek için bir ref kullanalım (veya paddle state'ini doğrudan güncelleyebiliriz, ancak performans için hareketleri gameLoop içinde toplamak daha iyidir).
-    
+
     // Paddle hareketini gameLoop'tan bağımsız olarak güncellemek için bir useEffect daha ekliyorum.
-    
-     // --- EKLENEN KLAVYE KONTROLÜ SONU ---
 
-     const handleControlKeyRelease = (e) => {
-        if (e.key === 'Control' && document.pointerLockElement === canvas) {
-          exitPointerLock();
-          setIsMouseLocked(false);
-        }
-     };
+    // --- EKLENEN KLAVYE KONTROLÜ SONU ---
 
-     canvas.addEventListener('click', requestPointerLock);
-     document.addEventListener('pointerlockchange', handlePointerLockChange);
+    const handleControlKeyRelease = (e) => {
+      if (e.key === 'Control' && document.pointerLockElement === canvas) {
+        exitPointerLock();
+        setIsMouseLocked(false);
+      }
+    };
+
+    canvas.addEventListener('click', requestPointerLock);
+    document.addEventListener('pointerlockchange', handlePointerLockChange);
     document.addEventListener('pointerlockerror', handlePointerLockChange); // Hata durumunda da kontrol et
 
-     return () => {
-        canvas.removeEventListener('click', requestPointerLock);
-        document.removeEventListener('pointerlockchange', handlePointerLockChange);
+    return () => {
+      canvas.removeEventListener('click', requestPointerLock);
+      document.removeEventListener('pointerlockchange', handlePointerLockChange);
       document.removeEventListener('pointerlockerror', handlePointerLockChange);
       document.removeEventListener('keydown', handleKeyboardDown); // Temizlik
       document.removeEventListener('keyup', handleKeyboardUp);     // Temizlik
-        if (document.pointerLockElement === canvas) {
-          exitPointerLock();
-        }
-     };
-   }, [gameState, isMouseLocked, paddle.speed]); // paddle.speed bağımlılığı eklendi
+      if (document.pointerLockElement === canvas) {
+        exitPointerLock();
+      }
+    };
+  }, [gameState, isMouseLocked, paddle.speed]); // paddle.speed bağımlılığı eklendi
 
   const startGame = () => {
     setGameState('playing');
@@ -441,20 +450,20 @@ const BreakoutGame = () => {
       ctx.stroke();
     }
     let paddleMoved = false;
-    
+
     if (keysRef.current.ArrowLeft) {
-        setPaddle(prev => ({
-            ...prev,
-            x: Math.max(0, prev.x - paddle.speed)
-        }));
-        paddleMoved = true;
+      setPaddle(prev => ({
+        ...prev,
+        x: Math.max(0, prev.x - paddle.speed)
+      }));
+      paddleMoved = true;
     }
     if (keysRef.current.ArrowRight) {
-        setPaddle(prev => ({
-            ...prev,
-            x: Math.min(CANVAS_WIDTH - prev.width, prev.x + paddle.speed)
-        }));
-        paddleMoved = true;
+      setPaddle(prev => ({
+        ...prev,
+        x: Math.min(CANVAS_WIDTH - prev.width, prev.x + paddle.speed)
+      }));
+      paddleMoved = true;
     }
 
     // Draw bricks
@@ -466,12 +475,12 @@ const BreakoutGame = () => {
         ctx.fillStyle = brick.color;
         ctx.globalAlpha = opacity;
         ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
-        
+
         // Brick border
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 2;
         ctx.strokeRect(brick.x, brick.y, brick.width, brick.height);
-        
+
         // Hit indicator
         if (brick.hits < brick.maxHits) {
           ctx.globalAlpha = 1;
@@ -497,7 +506,7 @@ const BreakoutGame = () => {
     paddleGradient.addColorStop(1, '#0284c7');
     ctx.fillStyle = paddleGradient;
     ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-    
+
     // Paddle glow
     ctx.shadowBlur = 15;
     ctx.shadowColor = '#06b6d4';
@@ -585,7 +594,7 @@ const BreakoutGame = () => {
               newY - ball.radius < brick.y + brick.height
             ) {
               hit = true;
-              
+
               if (activePowerUps.fireball) {
                 updatedBricks[i] = { ...brick, visible: false };
               } else {
@@ -913,7 +922,7 @@ const BreakoutGame = () => {
                 onClick={handleClick}
                 className="w-full border-2 border-cyan-500/30 rounded-lg cursor-none"
               />
-              
+
               <div className="mt-3 flex justify-center gap-3">
                 <button
                   onClick={() => setGameState(gameState === 'playing' ? 'paused' : 'playing')}
@@ -946,7 +955,7 @@ const BreakoutGame = () => {
           <div className="bg-black/40 backdrop-blur-md rounded-xl p-12 border border-red-500/30 text-center">
             <div className="text-6xl mb-4">💥</div>
             <h2 className="text-4xl font-bold text-white mb-4">Oyun Bitti!</h2>
-            
+
             <div className="grid grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
               <div className="bg-white/5 rounded-lg p-4">
                 <p className="text-gray-400 text-sm mb-1">Final Skoru</p>
@@ -988,7 +997,7 @@ const BreakoutGame = () => {
           <div className="bg-black/40 backdrop-blur-md rounded-xl p-12 border border-green-500/30 text-center">
             <div className="text-6xl mb-4 animate-bounce">🎉</div>
             <h2 className="text-4xl font-bold text-white mb-4">Seviye Tamamlandı!</h2>
-            
+
             <div className="bg-gradient-to-r from-green-500/20 to-cyan-500/20 rounded-lg p-6 mb-8">
               <p className="text-white text-2xl mb-2">Seviye {level} ✓</p>
               <p className="text-cyan-400 font-bold text-4xl mb-2">{score} Puan</p>

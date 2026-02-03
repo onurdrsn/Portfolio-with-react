@@ -25,14 +25,14 @@ const TicTacToe = () => {
     if (timer) {
       clearInterval(timer);
     }
-    
+
     if (!gameOver && gameStarted) {
       const newTimer = setInterval(() => {
         setMoveTime(prev => prev + 1);
       }, 1000);
       setTimer(newTimer);
     }
-    
+
     return () => {
       if (timer) clearInterval(timer);
     };
@@ -49,21 +49,89 @@ const TicTacToe = () => {
     setGameStarted(false); // Oyun sıfırlandığında, başlamamış olarak işaretlenir
   };
 
+  // Minimax algoritması ile AI hamlesi (Hard mode için)
+  const minimax = (board, depth, isMaximizing, alpha = -Infinity, beta = Infinity) => {
+    const winner = checkWinner(board);
+
+    // Terminal durumları
+    if (winner === 'O') return 10 - depth; // AI kazandı (daha hızlı kazanmayı tercih et)
+    if (winner === 'X') return depth - 10; // İnsan kazandı
+    if (board.every(cell => cell !== null)) return 0; // Beraberlik
+
+    if (isMaximizing) {
+      // AI'nin sırası (O)
+      let bestScore = -Infinity;
+      for (let i = 0; i < board.length; i++) {
+        if (board[i] === null) {
+          board[i] = 'O';
+          const score = minimax(board, depth + 1, false, alpha, beta);
+          board[i] = null;
+          bestScore = Math.max(score, bestScore);
+          alpha = Math.max(alpha, score);
+          if (beta <= alpha) break; // Alpha-beta pruning
+        }
+      }
+      return bestScore;
+    } else {
+      // İnsanın sırası (X)
+      let bestScore = Infinity;
+      for (let i = 0; i < board.length; i++) {
+        if (board[i] === null) {
+          board[i] = 'X';
+          const score = minimax(board, depth + 1, true, alpha, beta);
+          board[i] = null;
+          bestScore = Math.min(score, bestScore);
+          beta = Math.min(beta, score);
+          if (beta <= alpha) break; // Alpha-beta pruning
+        }
+      }
+      return bestScore;
+    }
+  };
+
+  // En iyi hamleyi bul (minimax kullanarak)
+  const findBestAIMove = (board) => {
+    let bestScore = -Infinity;
+    let bestMove = -1;
+
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === null) {
+        board[i] = 'O';
+        const score = minimax(board, 0, false);
+        board[i] = null;
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = i;
+        }
+      }
+    }
+
+    return bestMove;
+  };
+
   // Gelişmiş AI mantığı
   const aiMove = (board) => {
-    // Zor seviyede daha akıllı hamle yapma
+    // Zor seviyede minimax algoritması kullan
     if (difficulty === "hard") {
+      // 3x3 için minimax kullan (performans için)
+      if (size === 3) {
+        return findBestAIMove([...board]);
+      }
+
+      // 4x4 ve 5x5 için heuristik yaklaşım (minimax çok yavaş olur)
       // 1. Kazanma hamlesi varsa yap
       const winMove = findBestMove(board, "O");
       if (winMove !== -1) return winMove;
-      
+
       // 2. Rakibin kazanma hamlesi varsa engelle
       const blockMove = findBestMove(board, "X");
       if (blockMove !== -1) return blockMove;
-      
-      // 3. Merkez boşsa al (3x3 için)
-      if (size === 3 && board[4] === null) return 4;
-      
+
+      // 3. Merkez boşsa al
+      const center = Math.floor((size * size) / 2);
+      if (board[center] === null) return center;
+
       // 4. Köşeler boşsa tercih et
       const corners = [0, size - 1, size * (size - 1), size * size - 1];
       const emptyCorners = corners.filter(index => board[index] === null);
@@ -71,12 +139,12 @@ const TicTacToe = () => {
         return emptyCorners[Math.floor(Math.random() * emptyCorners.length)];
       }
     }
-    
-    // Kolay seviye veya diğer durumlar için rastgele hamle
+
+    // Kolay seviye için rastgele hamle
     const emptySquares = board
       .map((val, index) => (val === null ? index : null))
       .filter(val => val !== null);
-    
+
     if (emptySquares.length === 0) return -1;
     return emptySquares[Math.floor(Math.random() * emptySquares.length)];
   };
@@ -89,45 +157,45 @@ const TicTacToe = () => {
       const rowStart = i * size;
       const row = board.slice(rowStart, rowStart + size);
       const rowEmpty = row.findIndex((val, idx) => val === null);
-      
+
       if (rowEmpty !== -1 && countInArray(row, player) === size - 1) {
         return rowStart + rowEmpty;
       }
-      
+
       // Dikey kontrol
       const colValues = [];
       for (let j = 0; j < size; j++) {
         colValues.push(board[i + j * size]);
       }
-      
+
       const colEmpty = colValues.findIndex(val => val === null);
       if (colEmpty !== -1 && countInArray(colValues, player) === size - 1) {
         return i + colEmpty * size;
       }
     }
-    
+
     // Çapraz kontrol (soldan sağa)
     const diag1 = [];
     for (let i = 0; i < size; i++) {
       diag1.push(board[i * size + i]);
     }
-    
+
     const diag1Empty = diag1.findIndex(val => val === null);
     if (diag1Empty !== -1 && countInArray(diag1, player) === size - 1) {
       return diag1Empty * size + diag1Empty;
     }
-    
+
     // Çapraz kontrol (sağdan sola)
     const diag2 = [];
     for (let i = 0; i < size; i++) {
       diag2.push(board[i * size + (size - 1 - i)]);
     }
-    
+
     const diag2Empty = diag2.findIndex(val => val === null);
     if (diag2Empty !== -1 && countInArray(diag2, player) === size - 1) {
       return diag2Empty * size + (size - 1 - diag2Empty);
     }
-    
+
     return -1;
   };
 
@@ -143,44 +211,44 @@ const TicTacToe = () => {
       const rowStart = i * size;
       const rowEnd = rowStart + size;
       const row = board.slice(rowStart, rowEnd);
-      
+
       if (row[0] && row.every(cell => cell === row[0])) {
         return row[0];
       }
     }
-    
+
     // Dikey kontrol
     for (let i = 0; i < size; i++) {
       const col = [];
       for (let j = 0; j < size; j++) {
         col.push(board[i + j * size]);
       }
-      
+
       if (col[0] && col.every(cell => cell === col[0])) {
         return col[0];
       }
     }
-    
+
     // Çapraz kontrol (soldan sağa)
     const diag1 = [];
     for (let i = 0; i < size; i++) {
       diag1.push(board[i * size + i]);
     }
-    
+
     if (diag1[0] && diag1.every(cell => cell === diag1[0])) {
       return diag1[0];
     }
-    
+
     // Çapraz kontrol (sağdan sola)
     const diag2 = [];
     for (let i = 0; i < size; i++) {
       diag2.push(board[i * size + (size - 1 - i)]);
     }
-    
+
     if (diag2[0] && diag2.every(cell => cell === diag2[0])) {
       return diag2[0];
     }
-    
+
     return null;
   };
 
@@ -191,18 +259,18 @@ const TicTacToe = () => {
       if (aiIndex === -1) return; // Eğer yapılacak hamle kalmadıysa
 
       newBoard[aiIndex] = "O";
-      
+
       // Hamleyi geçmişe ekle
-      setHistory(prev => [...prev, { 
-        player: "O", 
-        position: aiIndex, 
+      setHistory(prev => [...prev, {
+        player: "O",
+        position: aiIndex,
         board: [...newBoard],
         time: moveTime
       }]);
-      
+
       setBoard([...newBoard]);
       setIsXNext(true);
-  
+
       const winnerResult = checkWinner(newBoard);
       if (winnerResult) {
         handleGameEnd(winnerResult);
@@ -216,7 +284,7 @@ const TicTacToe = () => {
   const handleGameEnd = (winnerResult) => {
     setGameOver(true);
     setWinner(winnerResult);
-    
+
     // İstatistikleri güncelle
     setStats(prev => {
       if (winnerResult === "X") {
@@ -227,7 +295,7 @@ const TicTacToe = () => {
         return { ...prev, ties: prev.ties + 1 };
       }
     });
-    
+
     if (timer) {
       clearInterval(timer);
       setTimer(null);
@@ -245,15 +313,15 @@ const TicTacToe = () => {
 
     const newBoard = [...board];
     newBoard[index] = isXNext ? "X" : "O";
-    
+
     // Hamleyi geçmişe ekle
-    setHistory(prev => [...prev, { 
-      player: isXNext ? "X" : "O", 
-      position: index, 
+    setHistory(prev => [...prev, {
+      player: isXNext ? "X" : "O",
+      position: index,
       board: [...newBoard],
       time: moveTime
     }]);
-    
+
     setBoard(newBoard);
     setIsXNext(!isXNext);
 
@@ -272,7 +340,7 @@ const TicTacToe = () => {
   const renderSquare = (index) => {
     const value = board[index];
     let cellClass = "w-16 h-16 md:w-20 md:h-20 text-3xl font-bold flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out";
-    
+
     // Temaya göre hücre stilini ayarla
     if (theme === "classic") {
       cellClass += " bg-gray-700 hover:bg-gray-600 border-2 border-gray-500";
@@ -281,7 +349,7 @@ const TicTacToe = () => {
     } else if (theme === "minimal") {
       cellClass += " bg-gray-100 hover:bg-gray-200 text-gray-800";
     }
-    
+
     // X ve O için stiller
     const xClass = theme === "neon" ? "text-cyan-400" : (theme === "minimal" ? "text-blue-600" : "text-blue-400");
     const oClass = theme === "neon" ? "text-pink-400" : (theme === "minimal" ? "text-red-600" : "text-red-400");
@@ -365,7 +433,7 @@ const TicTacToe = () => {
   return (
     <div className={`flex flex-col items-center justify-center min-h-screen p-4 ${getThemeClasses()}`}>
       <h1 className="text-4xl font-bold mb-4">Tic Tac Toe</h1>
-      
+
       {/* Ayarlar Paneli */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 w-full max-w-xl">
         <div className="flex flex-col">
@@ -380,7 +448,7 @@ const TicTacToe = () => {
             <option value="hard">Zor AI</option>
           </select>
         </div>
-        
+
         <div className="flex flex-col">
           <label className="mb-1 text-sm">Boyut</label>
           <select
@@ -393,7 +461,7 @@ const TicTacToe = () => {
             <option value="5">5x5</option>
           </select>
         </div>
-        
+
         <div className="flex flex-col">
           <label className="mb-1 text-sm">Tema</label>
           <select
@@ -407,7 +475,7 @@ const TicTacToe = () => {
           </select>
         </div>
       </div>
-      
+
       {/* Oyun Durumu */}
       <div className={`flex justify-between items-center w-full max-w-xl mb-4 p-3 rounded-lg ${theme === "neon" ? "bg-gray-900 border border-purple-500" : "bg-opacity-20 bg-gray-700"}`}>
         <div className="flex items-center">
@@ -426,7 +494,7 @@ const TicTacToe = () => {
           🔄
         </button>
       </div>
-      
+
       {/* Oyun Tahtası */}
       <div
         className={`grid gap-1 mb-6 p-2 rounded-lg ${theme === "neon" ? "bg-gray-900 border border-purple-500" : (theme === "minimal" ? "shadow-lg bg-gray-50" : "bg-gray-700")}`}
@@ -437,7 +505,7 @@ const TicTacToe = () => {
       >
         {Array.from({ length: size * size }).map((_, index) => renderSquare(index))}
       </div>
-      
+
       {/* İstatistikler */}
       <div className={`w-full max-w-xl grid grid-cols-3 gap-2 mb-6 p-4 rounded-lg ${theme === "neon" ? "bg-gray-900 border border-purple-500" : "bg-opacity-20 bg-gray-700"}`}>
         <div className="flex flex-col items-center">
@@ -453,24 +521,24 @@ const TicTacToe = () => {
           <span className={`text-xl font-bold ${theme === "neon" ? "text-pink-400" : "text-red-400"}`}>{stats.o}</span>
         </div>
       </div>
-      
+
       {/* Geçmiş ve Kontroller */}
       <div className="w-full max-w-xl flex justify-between">
-        <button 
+        <button
           onClick={toggleHistory}
           className={`px-4 py-2 rounded-lg ${theme === "neon" ? "bg-purple-800 hover:bg-purple-700" : (theme === "minimal" ? "bg-gray-200 hover:bg-gray-300 text-gray-800" : "bg-blue-600 hover:bg-blue-500")}`}
         >
-          {showHistory ? "Geçmişi Gizle" : "Geçmişi Göster"} 
+          {showHistory ? "Geçmişi Gizle" : "Geçmişi Göster"}
         </button>
-        
-        <button 
+
+        <button
           onClick={resetStats}
           className={`px-4 py-2 rounded-lg ${theme === "neon" ? "bg-gray-800 hover:bg-gray-700" : (theme === "minimal" ? "bg-gray-200 hover:bg-gray-300 text-gray-800" : "bg-gray-600 hover:bg-gray-500")}`}
         >
           İstatistikleri Sıfırla
         </button>
       </div>
-      
+
       {/* Hamle Geçmişi */}
       {showHistory && (
         <div className={`w-full max-w-xl mt-6 p-4 rounded-lg overflow-auto max-h-60 ${theme === "neon" ? "bg-gray-900 border border-purple-500" : "bg-opacity-20 bg-gray-700"}`}>
