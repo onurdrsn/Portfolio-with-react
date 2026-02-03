@@ -1,0 +1,181 @@
+{
+    "nav": {
+        "home": "Home",
+        "projects": "Projects",
+        "experience": "Experience",
+        "contact": "Contact",
+        "games": "Games",
+        "calculator": "42 Calculator"
+    },
+    "hero": {
+        "welcome": "👋 Welcome",
+        "name": "Onur Dursun",
+        "title": "Full Stack Developer & Data Scientist",
+        "description": "I build modern web applications and develop AI-powered solutions. Passionate about creating innovative products with cutting-edge technologies.",
+        "viewWork": "View My Work",
+        "getInTouch": "Get In Touch",
+        "scrollDown": "Scroll Down"
+    },
+    "projects": {
+        "title": "Featured",
+        "titleHighlight": "Projects",
+        "subtitle": "A collection of my recent work showcasing full-stack development, machine learning, and creative problem-solving.",
+        "featured": "Featured",
+        "liveDemo": "Live Demo",
+        "viewGithub": "GitHub",
+        "ai": {
+            "title": "AI & Machine Learning",
+            "titleHighlight": "Projects",
+            "subtitle": "Intelligent solutions using machine learning and data science"
+        },
+        "web": {
+            "title": "Web Development",
+            "titleHighlight": "Projects",
+            "subtitle": "Full-stack applications and interactive web experiences"
+        },
+        "categories": {
+            "fullStack": "Full Stack",
+            "frontend": "Frontend",
+            "machineLearning": "Machine Learning"
+        },
+        "items": {
+            "insuranceML": {
+                "title": "Insurance ML Project",
+                "description": "Machine learning customer risk analysis project. Developed using various ML algorithms to predict insurance customer risk profiles. Includes data preprocessing, feature engineering, and model optimization."
+            },
+            "urbanSound": {
+                "title": "UrbanSound8K Classification",
+                "description": "CNN-based environmental sound classification model. Deep learning model that classifies city sounds (car horns, dog barking, etc.) with high accuracy using the UrbanSound8K dataset."
+            },
+            "transcendence": {
+                "title": "ft_transcendence",
+                "description": "Real-time web platform using Docker, PostgreSQL, and Redis. Developed as a 42 School final project featuring multiplayer Pong game, tournament system, chat functionality, and user profiles."
+            },
+            "qrManager": {
+                "title": "QR Code Manager",
+                "description": "A comprehensive QR code management system with dynamic QR generation, analytics tracking, and user authentication. Features include QR code creation, scanning statistics, and role-based access control."
+            },
+            "chatApp": {
+                "title": "Real-time Chat Application",
+                "description": "A real-time chat application with global chat rooms, private messaging, and WebSocket integration. Supports multiple users with nickname system and message history."
+            },
+            "terminalWebsite": {
+                "title": "Terminal Website",
+                "description": "Interactive terminal-style portfolio website with command-line interface. Features custom commands, file system navigation, and retro terminal aesthetics."
+            },
+            "footprintCO2": {
+                "title": "FootprintCO2",
+                "description": "Carbon footprint tracking application built with TypeScript. Helps users monitor and reduce their environmental impact through data visualization and analytics."
+            },
+            "interactivePDF": {
+                "title": "PDF Book",
+                "description": "Interactive PDF book reader with annotation features. Built with TypeScript, allows users to highlight, comment, and bookmark content."
+            },
+            "pdfProcessing": {
+                "title": "PDF Data Processing",
+                "description": "PDF data extraction and processing tool. Automates data extraction from PDF documents using TypeScript and Python."
+            },
+            "airbnbNYC": {
+                "title": "AirBnb NYC Analysis",
+                "description": "Data analysis of New York City's Airbnb 2019 dataset from Kaggle. Exploratory data analysis, visualization, and insights extraction using Python and Jupyter Notebook."
+            },
+            "akbankML": {
+                "title": "Akbank Machine Learning",
+                "description": "Global AI Hub Akbank Machine Learning project using Melbourne Housing Market Dataset. Predictive modeling and data analysis for housing prices."
+            },
+            "aygazML": {
+                "title": "Aygaz Machine Learning",
+                "description": "Machine learning project developed for Aygaz. Includes data preprocessing, model training, and evaluation using various ML algorithms."
+            },
+            "depthAI": {
+                "title": "Depth - Video FPS Upscaling",
+                "description": "Uses Neural Artificial Intelligence for Video FPS Upscaling. Deep learning model that enhances video frame rates using AI techniques."
+            },
+            "globalAI": {
+                "title": "UrbanSounds CNN Project",
+                "description": "Global AI Hub CNN Project team solution. Convolutional Neural Network for urban sound classification and analysis."
+            },
+            "pythonDataScience": {
+                "title": "Python For Data Science",
+                "description": "Comprehensive Python data science projects and tutorials. Covers pandas, numpy, matplotlib, and machine learning fundamentals."
+            },
+            "cliAnnotation": {
+                "title": "CLI Annotation Tool",
+                "description": "Command-line interface annotation tool for TNLP (Turkish Natural Language Processing). Python-based tool for text annotation and labeling."
+            }
+        }
+    },
+    "timeline": {
+        "items": {
+            "solvent": {
+                "title": "Full Stack Developer",
+                "details": [
+                    "Developed end-to-end systems by integrating AI models into ASP.NET and Angular-based applications.",
+                    "Developed AI-based solutions integrated into production environments.",
+                    "Took an active role in deployment, testing, and operational monitoring processes in live environments.",
+                    "Improved efficiency in data labeling processes with Python-based automations."
+                ]
+            },
+            "havelsan": {
+                "title": "Data Analyst Intern",
+                "details": [
+                    "Performed big data processing tasks using Elasticsearch, Hadoop, and Apache Spark.",
+                    "Analyzed the performance and accuracy of software components."
+                ]
+            },
+            "koc": {
+                "title": "NLP Research Intern",
+                "details": [
+                    "Conducted data preparation, model evaluation, and analysis work for NLP projects."
+                ]
+            }
+        }
+    },
+    "experience": {
+        "title": "Work",
+        "titleHighlight": "Experience",
+        "subtitle": "My professional journey and key accomplishments in software development and data analysis."
+    },
+    "contact": {
+        "title": "Get In",
+        "titleHighlight": "Touch",
+        "subtitle": "Have a question or want to work together? Feel free to reach out!",
+        "form": {
+            "nameLabel": "Your Name",
+            "namePlaceholder": "John Doe",
+            "emailLabel": "Your Email",
+            "emailPlaceholder": "john@example.com",
+            "messageLabel": "Your Message",
+            "messagePlaceholder": "Tell me about your project...",
+            "sendButton": "Send Message",
+            "sending": "Sending..."
+        },
+        "info": {
+            "email": "Email",
+            "github": "GitHub",
+            "linkedin": "LinkedIn"
+        },
+        "toast": {
+            "success": "Your message has been sent successfully!",
+            "error": "An error occurred. Please try again."
+        }
+    },
+    "games": {
+        "title": "Game",
+        "titleHighlight": "Collection",
+        "subtitle": "A collection of classic games built with React. Choose your favorite and start playing!",
+        "playNow": "Play Now",
+        "backToHome": "Back to Home",
+        "gameNames": {
+            "minesweeper": "Minesweeper",
+            "tictactoe": "Tic Tac Toe",
+            "hangman": "Hangman",
+            "memory": "Memory Game",
+            "router": "Router Game",
+            "towerDefense": "Tower Defense",
+            "typingSpeed": "Typing Speed",
+            "flappyBird": "Flappy Bird",
+            "breakout": "Breakout"
+        }
+    }
+}

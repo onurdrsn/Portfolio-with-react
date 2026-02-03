@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { CopyIcon, CheckIcon } from './Icons';
- 
+
 
 const EventCalculator = () => {
   const [username, setUsername] = useState('');
@@ -17,7 +17,7 @@ const EventCalculator = () => {
   const fetchData = async (e) => {
     e.preventDefault();
     setCopySuccess('');
-    
+
     if (!username.trim()) {
       setError('Lütfen bir intra kullanıcı adı giriniz.');
       return;
@@ -25,14 +25,17 @@ const EventCalculator = () => {
 
     setLoading(true);
     setError(null);
-    
-    try {
 
+    try {
       const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
       const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET;
 
-      // Token alma
-      const tokenData = await fetch('/.netlify/functions/getevents', {
+      if (!CLIENT_ID || !CLIENT_SECRET) {
+        throw new Error('API credentials are not configured. Please check your .env file.');
+      }
+
+      // Token alma - Direkt 42 API'ye çağrı
+      const tokenResponse = await fetch('https://api.intra.42.fr/oauth/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -43,23 +46,32 @@ const EventCalculator = () => {
           client_secret: CLIENT_SECRET
         }).toString()
       });
-      
-      const data = await tokenData.json();
 
-      const accessToken = data.access_token;
+      if (!tokenResponse.ok) {
+        throw new Error(`Token alma başarısız: ${tokenResponse.status}`);
+      }
+
+      const tokenData = await tokenResponse.json();
+      const accessToken = tokenData.access_token;
 
       // Kullanıcı bilgilerini alma
-      const response = await fetch('/.netlify/functions/getuserinfo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: username,
-          access_token: accessToken
-        })
+      const userResponse = await fetch(`https://api.intra.42.fr/v2/users/${username}/events`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
       });
-      // Etkinlik sayısını hesapla
-      const { events } = await response.json();
 
+      if (!userResponse.ok) {
+        if (userResponse.status === 404) {
+          throw new Error(`Kullanıcı "${username}" bulunamadı.`);
+        }
+        throw new Error(`Kullanıcı bilgileri alınamadı: ${userResponse.status}`);
+      }
+
+      const events = await userResponse.json();
+
+      // Etkinlik sayısını hesapla
       const validEvents = events.filter(event => event.kind !== 'extern' && event.kind !== 'association');
       const eventCount = validEvents.length;
 
@@ -77,11 +89,8 @@ const EventCalculator = () => {
       setAnimation(true);
 
     } catch (err) {
-      if (err.response && err.response.status === 404) {
-        setError(`Kullanıcı "${username}" bulunamadı.`);
-      } else {
-        setError(`İşlem sırasında bir hata oluştu: ${err.message}`);
-      }
+      console.error('Error:', err);
+      setError(`İşlem sırasında bir hata oluştu: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -106,7 +115,7 @@ const EventCalculator = () => {
     <div className="flex justify-center items-center min-h-screen p-5 bg-gray-900 text-gray-200">
       <div className="w-full max-w-md bg-gray-800 rounded-xl p-6 shadow-xl">
         <h2 className="text-center text-2xl font-bold mb-6 text-blue-400">42 Etkinlik Hesaplayıcı</h2>
-        
+
         <form onSubmit={fetchData}>
           <div className="flex mb-5">
             <input
@@ -118,8 +127,8 @@ const EventCalculator = () => {
               required
               className="flex-1 p-3 bg-gray-700 rounded-l-lg border-0 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className={`py-3 px-5 rounded-r-lg font-medium ${loading ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white transition-colors`}
             >
@@ -142,17 +151,17 @@ const EventCalculator = () => {
         )}
 
         {result && (
-          <div 
+          <div
             className={`mt-6 p-5 bg-gray-700 rounded-lg transform transition-all duration-500 ${animation ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xl font-semibold text-blue-400">Sonuçlar</h3>
               <button onClick={copyToClipboard} title="Kopyala">
-                    {!copySuccess
-                        ? <CopyIcon className="text-gray-200" />
-                        : <CheckIcon className="text-green-400" />
-                    }
-                </button>
+                {!copySuccess
+                  ? <CopyIcon className="text-gray-200" />
+                  : <CheckIcon className="text-green-400" />
+                }
+              </button>
             </div>
             {copySuccess && (
               <p className="text-green-400 mb-2 text-sm">{copySuccess}</p>
@@ -161,7 +170,7 @@ const EventCalculator = () => {
               <span>Toplam Geçerli Etkinlik:</span>
               <span className="font-bold text-blue-400">{result.totalEvents}</span>
             </div>
-            
+
             <h4 className="text-lg font-medium mt-4 mb-2">Etkinlik Türleri:</h4>
             <div className="flex flex-col gap-2">
               {Object.entries(result.eventCounts).map(([kind, count]) => (

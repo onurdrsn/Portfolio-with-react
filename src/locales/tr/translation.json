@@ -1,0 +1,181 @@
+{
+    "nav": {
+        "home": "Ana Sayfa",
+        "projects": "Projeler",
+        "experience": "Deneyim",
+        "contact": "İletişim",
+        "games": "Oyunlar",
+        "calculator": "42 Hesaplayıcı"
+    },
+    "hero": {
+        "welcome": "👋 Hoş Geldiniz",
+        "name": "Onur Dursun",
+        "title": "Full Stack Developer & Veri Bilimci",
+        "description": "Modern web uygulamaları geliştiriyor ve yapay zeka destekli çözümler üretiyorum. En son teknolojilerle yenilikçi ürünler yaratma tutkusu.",
+        "viewWork": "Çalışmalarımı Gör",
+        "getInTouch": "İletişime Geç",
+        "scrollDown": "Aşağı Kaydır"
+    },
+    "projects": {
+        "title": "Öne Çıkan",
+        "titleHighlight": "Projeler",
+        "subtitle": "Full-stack geliştirme, makine öğrenmesi ve yaratıcı problem çözme becerilerimi sergileyen son çalışmalarım.",
+        "featured": "Öne Çıkan",
+        "liveDemo": "Canlı Demo",
+        "viewGithub": "GitHub",
+        "ai": {
+            "title": "Yapay Zeka ve Makine Öğrenmesi",
+            "titleHighlight": "Projeleri",
+            "subtitle": "Makine öğrenmesi ve veri bilimi kullanarak geliştirilen akıllı çözümler"
+        },
+        "web": {
+            "title": "Web Geliştirme",
+            "titleHighlight": "Projeleri",
+            "subtitle": "Full-stack uygulamalar ve interaktif web deneyimleri"
+        },
+        "categories": {
+            "fullStack": "Full Stack",
+            "frontend": "Frontend",
+            "machineLearning": "Makine Öğrenmesi"
+        },
+        "items": {
+            "insuranceML": {
+                "title": "Insurance ML Project",
+                "description": "Makine öğrenmesi ile müşteri risk analizi projesi. Sigorta müşterilerinin risk profillerini tahmin etmek için çeşitli ML algoritmaları kullanılarak geliştirildi. Veri ön işleme, özellik mühendisliği ve model optimizasyonu içerir."
+            },
+            "urbanSound": {
+                "title": "UrbanSound8K Classification",
+                "description": "CNN tabanlı çevresel ses sınıflandırma modeli. UrbanSound8K veri seti kullanılarak şehir seslerini (araba kornası, köpek havlaması, vb.) yüksek doğrulukla sınıflandıran derin öğrenme modeli."
+            },
+            "transcendence": {
+                "title": "ft_transcendence",
+                "description": "Docker, PostgreSQL ve Redis kullanan gerçek zamanlı web platformu. 42 School final projesi olarak geliştirilen multiplayer Pong oyunu, turnuva sistemi, chat fonksiyonelliği ve kullanıcı profilleri içerir."
+            },
+            "qrManager": {
+                "title": "QR Code Manager",
+                "description": "Dinamik QR oluşturma, analitik takibi ve kullanıcı kimlik doğrulaması içeren kapsamlı bir QR kod yönetim sistemi. QR kod oluşturma, tarama istatistikleri ve rol tabanlı erişim kontrolü özellikleri içerir."
+            },
+            "chatApp": {
+                "title": "Real-time Chat Application",
+                "description": "Global sohbet odaları, özel mesajlaşma ve WebSocket entegrasyonu içeren gerçek zamanlı sohbet uygulaması. Takma ad sistemi ve mesaj geçmişi ile çoklu kullanıcı desteği."
+            },
+            "terminalWebsite": {
+                "title": "Terminal Website",
+                "description": "Komut satırı arayüzü ile interaktif terminal tarzı portföy web sitesi. Özel komutlar, dosya sistemi navigasyonu ve retro terminal estetiği içerir."
+            },
+            "footprintCO2": {
+                "title": "FootprintCO2",
+                "description": "TypeScript ile geliştirilmiş karbon ayak izi takip uygulaması. Kullanıcıların veri görselleştirme ve analitik ile çevresel etkilerini izlemelerine ve azaltmalarına yardımcı olur."
+            },
+            "interactivePDF": {
+                "title": "PDF Book",
+                "description": "Açıklama özellikleri olan interaktif PDF kitap okuyucu. TypeScript ile geliştirilmiş, kullanıcıların içeriği vurgulamasına, yorum yapmasına ve yer imi eklemesine olanak tanır."
+            },
+            "pdfProcessing": {
+                "title": "PDF Data Processing",
+                "description": "PDF veri çıkarma ve işleme aracı. TypeScript ve Python kullanarak PDF belgelerinden otomatik veri çıkarma."
+            },
+            "airbnbNYC": {
+                "title": "AirBnb NYC Analysis",
+                "description": "Kaggle'dan New York City'nin 2019 Airbnb veri seti analizi. Python ve Jupyter Notebook kullanarak keşifsel veri analizi, görselleştirme ve içgörü çıkarımı."
+            },
+            "akbankML": {
+                "title": "Akbank Machine Learning",
+                "description": "Melbourne Konut Piyasası Veri Seti kullanılarak Global AI Hub Akbank Makine Öğrenmesi projesi. Konut fiyatları için tahmine dayalı modelleme ve veri analizi."
+            },
+            "aygazML": {
+                "title": "Aygaz Machine Learning",
+                "description": "Aygaz için geliştirilmiş makine öğrenmesi projesi. Çeşitli ML algoritmaları kullanarak veri ön işleme, model eğitimi ve değerlendirme içerir."
+            },
+            "depthAI": {
+                "title": "Depth - Video FPS Upscaling",
+                "description": "Video FPS Yükseltme için Yapay Sinir Ağları kullanır. Yapay zeka teknikleri kullanarak video kare hızlarını artıran derin öğrenme modeli."
+            },
+            "globalAI": {
+                "title": "UrbanSounds CNN Project",
+                "description": "Global AI Hub CNN Projesi takım çözümü. Şehir sesi sınıflandırma ve analizi için Evrişimli Sinir Ağı."
+            },
+            "pythonDataScience": {
+                "title": "Python For Data Science",
+                "description": "Kapsamlı Python veri bilimi projeleri ve eğitimleri. Pandas, numpy, matplotlib ve makine öğrenmesi temellerini kapsar."
+            },
+            "cliAnnotation": {
+                "title": "CLI Annotation Tool",
+                "description": "TNLP (Türkçe Doğal Dil İşleme) için komut satırı arayüzü açıklama aracı. Metin açıklama ve etiketleme için Python tabanlı araç."
+            }
+        }
+    },
+    "timeline": {
+        "items": {
+            "solvent": {
+                "title": "Full Stack Developer",
+                "details": [
+                    "ASP.NET ve Angular tabanlı uygulamalara yapay zekâ modelleri entegre edilerek uçtan uca sistemler geliştirildi.",
+                    "Üretim ortamına entegre edilen yapay zekâ tabanlı çözümler geliştirildi.",
+                    "Canlı ortamlarda devreye alma, test ve operasyonel izleme süreçlerinde aktif rol alındı.",
+                    "Python tabanlı otomasyonlar ile veri etiketleme süreçlerinde verimlilik sağlandı."
+                ]
+            },
+            "havelsan": {
+                "title": "Data Analyst Intern",
+                "details": [
+                    "Elasticsearch, Hadoop ve Apache Spark kullanılarak büyük veri işleme görevleri yürütüldü.",
+                    "Yazılım bileşenlerinin performans ve doğruluğu analiz edildi."
+                ]
+            },
+            "koc": {
+                "title": "NLP Research Intern",
+                "details": [
+                    "NLP projeleri için veri hazırlama, model değerlendirme ve analiz çalışmaları gerçekleştirildi."
+                ]
+            }
+        }
+    },
+    "experience": {
+        "title": "İş",
+        "titleHighlight": "Deneyimi",
+        "subtitle": "Yazılım geliştirme ve veri analizindeki profesyonel yolculuğum ve önemli başarılarım."
+    },
+    "contact": {
+        "title": "İletişime",
+        "titleHighlight": "Geçin",
+        "subtitle": "Bir sorunuz mu var veya birlikte çalışmak mı istiyorsunuz? Benimle iletişime geçmekten çekinmeyin!",
+        "form": {
+            "nameLabel": "Adınız",
+            "namePlaceholder": "Ahmet Yılmaz",
+            "emailLabel": "E-posta Adresiniz",
+            "emailPlaceholder": "ahmet@example.com",
+            "messageLabel": "Mesajınız",
+            "messagePlaceholder": "Projeniz hakkında bana bilgi verin...",
+            "sendButton": "Mesaj Gönder",
+            "sending": "Gönderiliyor..."
+        },
+        "info": {
+            "email": "E-posta",
+            "github": "GitHub",
+            "linkedin": "LinkedIn"
+        },
+        "toast": {
+            "success": "Mesajınız başarıyla gönderildi!",
+            "error": "Bir hata oluştu. Lütfen tekrar deneyin."
+        }
+    },
+    "games": {
+        "title": "Oyun",
+        "titleHighlight": "Koleksiyonu",
+        "subtitle": "React ile oluşturulmuş klasik oyunlar koleksiyonu. Favori oyununuzu seçin ve oynamaya başlayın!",
+        "playNow": "Şimdi Oyna",
+        "backToHome": "Ana Sayfaya Dön",
+        "gameNames": {
+            "minesweeper": "Mayın Tarlası",
+            "tictactoe": "Tic Tac Toe",
+            "hangman": "Adam Asmaca",
+            "memory": "Hafıza Oyunu",
+            "router": "Router Oyunu",
+            "towerDefense": "Kaleyi Savunma",
+            "typingSpeed": "Hız Yazma Oyunu",
+            "flappyBird": "Flappy Bird",
+            "breakout": "Tuğla Kırma Oyunu"
+        }
+    }
+}

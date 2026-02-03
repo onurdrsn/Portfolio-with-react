@@ -2,18 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Animations */
+@keyframes gradient {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 
 @keyframes explode {
   0% {
     transform: scale(1);
     opacity: 1;
   }
+
   100% {
     transform: scale(4);
     opacity: 0;
   }
 }
-  
+
+/* Gradient Animation */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+/* Slide In Animation */
+.animate-slideIn {
+  animation: slideIn 0.2s ease-out forwards;
+}
+
+/* Line Clamp Utility */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .explosion {
   position: fixed;
   top: 50%;
@@ -26,7 +75,7 @@
   z-index: 50;
   pointer-events: none;
 }
-  
+
 .perspective-500 {
   perspective: 1000px;
 }
@@ -38,8 +87,26 @@
 .transform-gpu {
   transform: translateZ(0);
 }
-  
+
 .backface-hidden {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1F2937;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #8B5CF6, #6366F1);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #7C3AED, #4F46E5);
 }

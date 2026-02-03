@@ -1,22 +1,37 @@
 import React from "react";
-import portfolio from "../data/portfolio";
-import PortfolioItem from "./PortfolioItem";
+import { useTranslation } from 'react-i18next';
+import getPortfolioData from "../data/portfolio";
+import ProjectSection from "./ProjectSection";
 
 export default function Portfolio() {
+    const { t } = useTranslation();
+    const portfolio = getPortfolioData(t);
+
+    // Filter projects by category
+    const aiProjects = portfolio.filter(p => p.category === 'Machine Learning');
+    const webProjects = portfolio.filter(p =>
+        p.category === 'Full Stack' || p.category === 'Frontend'
+    );
+
     return (
-        <div className="flex flex-col md:flex-row items-center justify-center">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {portfolio.map((project) => (
-                    <PortfolioItem
-                        key={project.title} // Unique key prop eklemeyi unutmayın
-                        imgUrl={project.imgUrl}
-                        title={project.title}
-                        stack={project.stack}
-                        link={project.link}
-                        description={project.description}
-                    />
-                ))}
-            </div>
+        <div className="py-16" id="projects">
+            {/* AI & Machine Learning Projects Section */}
+            <ProjectSection
+                title={t('projects.ai.title')}
+                titleHighlight={t('projects.ai.titleHighlight')}
+                subtitle={t('projects.ai.subtitle')}
+                projects={aiProjects}
+                icon="🤖"
+            />
+
+            {/* Web Development Projects Section */}
+            <ProjectSection
+                title={t('projects.web.title')}
+                titleHighlight={t('projects.web.titleHighlight')}
+                subtitle={t('projects.web.subtitle')}
+                projects={webProjects}
+                icon="🌐"
+            />
         </div>
     );
 }
