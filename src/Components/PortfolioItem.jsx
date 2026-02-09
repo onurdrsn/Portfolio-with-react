@@ -28,7 +28,7 @@ export default function PortfolioItem({ title, imgUrl, stack = [], link, github,
                     alt={title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/1920x1080/1F2937/8B5CF6?text=' + encodeURIComponent(title);
+                        e.target.src = 'https://placehold.co/600x400?text=' + encodeURIComponent(title);
                     }}
                 />
                 {/* Gradient Overlay */}
