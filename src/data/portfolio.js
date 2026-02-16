@@ -2,6 +2,26 @@
 export default function getPortfolioData(t) {
     return [
         {
+            title: 'Nexus ERP System',
+            imgUrl: '/assets/nexus-erp.png',
+            stack: ['Vite', 'TypeScript', 'Hono', 'Cloudflare Workers', 'PostgreSQL (Neon)', 'Tailwind CSS'],
+            link: 'https://nexuserp.onurdrsn.com.tr',
+            github: 'https://github.com/onurdrsn/NexusERP',
+            description: 'My previous personal portfolio website built with PHP. Features project showcase, contact form, and responsive design.',
+            category: 'Full Stack',
+            featured: true
+        },
+        {
+            title: t('projects.items.tenant.title'),
+            imgUrl: '/assets/tenant.png',
+            stack: ['Vite', 'TypeScript', 'Hono', 'Cloudflare Workers', 'PostgreSQL (Neon)', 'Tailwind CSS', 'Makefile', 'WebSocket'],
+            link: 'https://tenant.onurdrsn.com.tr',
+            github: 'https://github.com/onurdrsn/MultiTenant',
+            description: t('projects.items.tenant.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
             title: t('projects.items.insuranceML.title'),
             imgUrl: '/assets/insurance-ml.png',
             stack: ['Python', 'Scikit-learn', 'Pandas', 'Machine Learning'],
@@ -34,7 +54,7 @@ export default function getPortfolioData(t) {
         {
             title: t('projects.items.qrManager.title'),
             imgUrl: '/assets/qr-manager.png',
-            stack: ['Vite', 'TypeScript', 'PostgreSQL', 'Netlify'],
+            stack: ['Vite', 'TypeScript', 'Hono', 'Cloudflare Workers', 'PostgreSQL (Neon)', 'Tailwind CSS'],
             link: 'https://qrcode.onurdrsn.com.tr',
             github: 'https://github.com/onurdrsn/qr-manager',
             description: t('projects.items.qrManager.description'),
@@ -57,7 +77,7 @@ export default function getPortfolioData(t) {
         //     stack: ['Vite', 'JavaScript', 'Canvas API'],
         //     link: 'games',
         //     github: 'https://github.com/onurdrsn',
-        //     description: 'A collection of classic games built with React including Minesweeper, Tic-Tac-Toe, Hangman, Memory Game, Tower Defense, Flappy Bird, and Breakout. All games feature smooth animations and responsive controls.',
+        //     description: 'A collection of classic games built with Vite including Minesweeper, Tic-Tac-Toe, Hangman, Memory Game, Tower Defense, Flappy Bird, and Breakout. All games feature smooth animations and responsive controls.',
         //     category: 'Frontend',
         //     featured: false
         // },
@@ -166,7 +186,7 @@ export default function getPortfolioData(t) {
         {
             title: t('projects.items.footprintCO2.title'),
             imgUrl: '/assets/footprint-co2.png',
-            stack: ['TypeScript', 'React', 'Data Visualization'],
+            stack: ['TypeScript', 'Vite', 'Data Visualization'],
             link: 'https://footprintco2.onurdrsn.com.tr',
             github: 'https://github.com/onurdrsn/FootprintCO2',
             description: t('projects.items.footprintCO2.description'),
@@ -176,7 +196,7 @@ export default function getPortfolioData(t) {
         {
             title: t('projects.items.interactivePDF.title'),
             imgUrl: '/assets/interactive-pdf.png',
-            stack: ['TypeScript', 'React', 'PDF.js'],
+            stack: ['TypeScript', 'Vite', 'PDF.js'],
             link: '#',
             github: 'https://github.com/onurdrsn/interactive-pdf-book-frontend',
             description: t('projects.items.interactivePDF.description'),

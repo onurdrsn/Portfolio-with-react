@@ -39,6 +39,10 @@
             "machineLearning": "Makine Öğrenmesi"
         },
         "items": {
+            "tenant": {
+                "title": "Multi Tenant Projesi",
+                "description": "Modern, ölçeklenebilir ve çok kiracılı (multi-tenant) bir proje yönetim platformu. Cloudflare Workers üzerinde Hono gateway ile çalışan serverless mimarisi, gerçek zamanlı veri yönetimi ve gelişmiş tenant izolasyonu sunan kurumsal seviye bir SaaS uygulaması."
+            },
             "insuranceML": {
                 "title": "Insurance ML Project",
                 "description": "Makine öğrenmesi ile müşteri risk analizi projesi. Sigorta müşterilerinin risk profillerini tahmin etmek için çeşitli ML algoritmaları kullanılarak geliştirildi. Veri ön işleme, özellik mühendisliği ve model optimizasyonu içerir."

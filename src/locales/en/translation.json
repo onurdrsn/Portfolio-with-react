@@ -39,6 +39,10 @@
             "machineLearning": "Machine Learning"
         },
         "items": {
+            "tenant": {
+                "title": "Multi Tenant Project",
+                "description": "A modern, scalable, and multi-tenant project management platform. An enterprise-level SaaS application featuring a serverless architecture running on Cloudflare Workers with the Hono gateway, offering real-time data management and advanced tenant isolation."
+            },
             "insuranceML": {
                 "title": "Insurance ML Project",
                 "description": "Machine learning customer risk analysis project. Developed using various ML algorithms to predict insurance customer risk profiles. Includes data preprocessing, feature engineering, and model optimization."
