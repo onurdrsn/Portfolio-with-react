@@ -7,7 +7,7 @@ export default function getPortfolioData(t) {
             stack: ['Vite', 'TypeScript', 'Hono', 'Cloudflare Workers', 'PostgreSQL (Neon)', 'Tailwind CSS'],
             link: 'https://nexuserp.onurdrsn.com.tr',
             github: 'https://github.com/onurdrsn/NexusERP',
-            description: 'My previous personal portfolio website built with PHP. Features project showcase, contact form, and responsive design.',
+            description: 'A comprehensive ERP system designed for small to medium-sized businesses. Built with a modern tech stack, it offers modules for inventory management, sales tracking, customer relationship management (CRM), and financial reporting. The serverless architecture ensures scalability and reliability while providing a seamless user experience.',
             category: 'Full Stack',
             featured: true
         },
