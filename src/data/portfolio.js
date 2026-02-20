@@ -2,6 +2,27 @@
 export default function getPortfolioData(t) {
     return [
         {
+            title: 'Boardra',
+            imgUrl: '/assets/Boardra.png',
+            stack: [
+                'React',
+                'TypeScript',
+                'Vite',
+                'Tailwind CSS',
+                'Zustand',
+                'Cloudflare Workers',
+                'Cloudflare Durable Objects',
+                'Hono',
+                'PostgreSQL',
+                'WebSockets'
+            ],
+            link: 'https://boardra.onurdrsn.com.tr',
+            github: 'https://github.com/onurdrsn/Boardra',
+            description: 'A real-time, multi-tenant collaborative whiteboard and workspace platform. Features global Edge-network live cursors, shape drawing, secure authentication, and team task management.',
+            category: 'Full Stack',
+            featured: true
+        },
+        {
             title: 'Nexus ERP System',
             imgUrl: '/assets/nexus-erp.png',
             stack: ['Vite', 'TypeScript', 'Hono', 'Cloudflare Workers', 'PostgreSQL (Neon)', 'Tailwind CSS'],
