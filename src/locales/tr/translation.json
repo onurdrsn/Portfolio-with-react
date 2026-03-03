@@ -23,6 +23,8 @@
         "featured": "Öne Çıkan",
         "liveDemo": "Canlı Demo",
         "viewGithub": "GitHub",
+        "readMore": "Devamını Oku",
+        "readLess": "Daha Az Göster",
         "ai": {
             "title": "Yapay Zeka ve Makine Öğrenmesi",
             "titleHighlight": "Projeleri",
@@ -44,11 +46,11 @@
                 "description": "Modern, ölçeklenebilir ve çok kiracılı (multi-tenant) bir proje yönetim platformu. Cloudflare Workers üzerinde Hono gateway ile çalışan serverless mimarisi, gerçek zamanlı veri yönetimi ve gelişmiş tenant izolasyonu sunan kurumsal seviye bir SaaS uygulaması."
             },
             "insuranceML": {
-                "title": "Insurance ML Project",
+                "title": "Insurance ML Projesi",
                 "description": "Makine öğrenmesi ile müşteri risk analizi projesi. Sigorta müşterilerinin risk profillerini tahmin etmek için çeşitli ML algoritmaları kullanılarak geliştirildi. Veri ön işleme, özellik mühendisliği ve model optimizasyonu içerir."
             },
             "urbanSound": {
-                "title": "UrbanSound8K Classification",
+                "title": "UrbanSound8K Sınıflandırma",
                 "description": "CNN tabanlı çevresel ses sınıflandırma modeli. UrbanSound8K veri seti kullanılarak şehir seslerini (araba kornası, köpek havlaması, vb.) yüksek doğrulukla sınıflandıran derin öğrenme modeli."
             },
             "transcendence": {
@@ -56,15 +58,15 @@
                 "description": "Docker, PostgreSQL ve Redis kullanan gerçek zamanlı web platformu. 42 School final projesi olarak geliştirilen multiplayer Pong oyunu, turnuva sistemi, chat fonksiyonelliği ve kullanıcı profilleri içerir."
             },
             "qrManager": {
-                "title": "QR Code Manager",
+                "title": "QR Kod Yöneticisi",
                 "description": "Dinamik QR oluşturma, analitik takibi ve kullanıcı kimlik doğrulaması içeren kapsamlı bir QR kod yönetim sistemi. QR kod oluşturma, tarama istatistikleri ve rol tabanlı erişim kontrolü özellikleri içerir."
             },
             "chatApp": {
-                "title": "Real-time Chat Application",
+                "title": "Real-time Chat Uygulaması",
                 "description": "Global sohbet odaları, özel mesajlaşma ve WebSocket entegrasyonu içeren gerçek zamanlı sohbet uygulaması. Takma ad sistemi ve mesaj geçmişi ile çoklu kullanıcı desteği."
             },
             "terminalWebsite": {
-                "title": "Terminal Website",
+                "title": "Terminal Web Sitesi",
                 "description": "Komut satırı arayüzü ile interaktif terminal tarzı portföy web sitesi. Özel komutlar, dosya sistemi navigasyonu ve retro terminal estetiği içerir."
             },
             "footprintCO2": {
@@ -72,40 +74,52 @@
                 "description": "TypeScript ile geliştirilmiş karbon ayak izi takip uygulaması. Kullanıcıların veri görselleştirme ve analitik ile çevresel etkilerini izlemelerine ve azaltmalarına yardımcı olur."
             },
             "interactivePDF": {
-                "title": "PDF Book",
+                "title": "PDF Kitap",
                 "description": "Açıklama özellikleri olan interaktif PDF kitap okuyucu. TypeScript ile geliştirilmiş, kullanıcıların içeriği vurgulamasına, yorum yapmasına ve yer imi eklemesine olanak tanır."
             },
             "pdfProcessing": {
-                "title": "PDF Data Processing",
+                "title": "PDF Veri İşleme",
                 "description": "PDF veri çıkarma ve işleme aracı. TypeScript ve Python kullanarak PDF belgelerinden otomatik veri çıkarma."
             },
             "airbnbNYC": {
-                "title": "AirBnb NYC Analysis",
+                "title": "AirBnb NYC Analizi",
                 "description": "Kaggle'dan New York City'nin 2019 Airbnb veri seti analizi. Python ve Jupyter Notebook kullanarak keşifsel veri analizi, görselleştirme ve içgörü çıkarımı."
             },
             "akbankML": {
-                "title": "Akbank Machine Learning",
+                "title": "Akbank Makine Öğrenmesi",
                 "description": "Melbourne Konut Piyasası Veri Seti kullanılarak Global AI Hub Akbank Makine Öğrenmesi projesi. Konut fiyatları için tahmine dayalı modelleme ve veri analizi."
             },
             "aygazML": {
-                "title": "Aygaz Machine Learning",
+                "title": "Aygaz Makine Öğrenmesi",
                 "description": "Aygaz için geliştirilmiş makine öğrenmesi projesi. Çeşitli ML algoritmaları kullanarak veri ön işleme, model eğitimi ve değerlendirme içerir."
             },
             "depthAI": {
-                "title": "Depth - Video FPS Upscaling",
+                "title": "Depth - Video FPS Yükseltme",
                 "description": "Video FPS Yükseltme için Yapay Sinir Ağları kullanır. Yapay zeka teknikleri kullanarak video kare hızlarını artıran derin öğrenme modeli."
             },
             "globalAI": {
-                "title": "UrbanSounds CNN Project",
+                "title": "UrbanSounds CNN Projesi",
                 "description": "Global AI Hub CNN Projesi takım çözümü. Şehir sesi sınıflandırma ve analizi için Evrişimli Sinir Ağı."
             },
             "pythonDataScience": {
-                "title": "Python For Data Science",
+                "title": "Python Veri Bilimi",
                 "description": "Kapsamlı Python veri bilimi projeleri ve eğitimleri. Pandas, numpy, matplotlib ve makine öğrenmesi temellerini kapsar."
             },
             "cliAnnotation": {
-                "title": "CLI Annotation Tool",
+                "title": "CLI Açıklama Aracı",
                 "description": "TNLP (Türkçe Doğal Dil İşleme) için komut satırı arayüzü açıklama aracı. Metin açıklama ve etiketleme için Python tabanlı araç."
+            },
+            "orbitEdge": {
+                "title": "OrbitEdge",
+                "description": "Uluslararası Uzay İstasyonu (ISS) ve diğer uyduları Cloudflare\\'in küresel ağı sayesinde milisaniyelik gecikmelerle canlı izlemenizi sağlayan gerçek zamanlı yörünge telemetri platformu."
+            },
+            "nexusERP": {
+                "title": "Nexus ERP System",
+                "description": "Küçük ve orta ölçekli işletmeler için tasarlanmış kapsamlı ERP sistemi. Modern bir teknoloji püskülü ile geliştirildi. Stok yönetimi, satış izleme, müşteri ilişkileri yönetimi (CRM) ve finansal raporlama modülleri sunar. Serverless mimarisi, ölçeklenebilirlik ve güvenilirlik sağlar."
+            },
+            "boardra": {
+                "title": "Boardra",
+                "description": "Gerçek zamanlı, çok kullanıcılı işbirliğine dayalı beyaz tahta ve çalışma alanı platformu. Küresel Edge ağı canlı imleçleri, şekil çizimi, güvenli kimlik doğrulama ve ekip görev yönetimi özelliklerine sahiptir."
             }
         }
     },

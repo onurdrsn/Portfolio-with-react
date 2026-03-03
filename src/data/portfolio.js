@@ -2,10 +2,9 @@
 export default function getPortfolioData(t) {
     return [
         {
-            title: 'Boardra',
+            title: t('projects.items.boardra.title'),
             imgUrl: '/assets/Boardra.png',
             stack: [
-                'React',
                 'TypeScript',
                 'Vite',
                 'Tailwind CSS',
@@ -18,17 +17,27 @@ export default function getPortfolioData(t) {
             ],
             link: 'https://boardra.onurdrsn.com.tr',
             github: 'https://github.com/onurdrsn/Boardra',
-            description: 'A real-time, multi-tenant collaborative whiteboard and workspace platform. Features global Edge-network live cursors, shape drawing, secure authentication, and team task management.',
+            description: t('projects.items.boardra.description'),
             category: 'Full Stack',
             featured: true
         },
         {
-            title: 'Nexus ERP System',
+            title: t('projects.items.orbitEdge.title'),
+            imgUrl: '/assets/orbitedge.png',
+            stack: ['Vite', 'TypeScript', 'Hono', 'Cloudflare Workers', 'PostgreSQL (Neon)', 'Tailwind CSS'],
+            link: 'https://orbitedge.onurdrsn.com.tr',
+            github: 'https://github.com/onurdrsn/OrbitEdge',
+            description: t('projects.items.orbitEdge.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
+            title: t('projects.items.nexusERP.title'),
             imgUrl: '/assets/nexus-erp.png',
             stack: ['Vite', 'TypeScript', 'Hono', 'Cloudflare Workers', 'PostgreSQL (Neon)', 'Tailwind CSS'],
             link: 'https://nexuserp.onurdrsn.com.tr',
             github: 'https://github.com/onurdrsn/NexusERP',
-            description: 'A comprehensive ERP system designed for small to medium-sized businesses. Built with a modern tech stack, it offers modules for inventory management, sales tracking, customer relationship management (CRM), and financial reporting. The serverless architecture ensures scalability and reliability while providing a seamless user experience.',
+            description: t('projects.items.nexusERP.description'),
             category: 'Full Stack',
             featured: true
         },

@@ -23,6 +23,8 @@
         "featured": "Featured",
         "liveDemo": "Live Demo",
         "viewGithub": "GitHub",
+        "readMore": "Read More",
+        "readLess": "Read Less",
         "ai": {
             "title": "AI & Machine Learning",
             "titleHighlight": "Projects",
@@ -106,6 +108,18 @@
             "cliAnnotation": {
                 "title": "CLI Annotation Tool",
                 "description": "Command-line interface annotation tool for TNLP (Turkish Natural Language Processing). Python-based tool for text annotation and labeling."
+            },
+            "orbitEdge": {
+                "title": "OrbitEdge",
+                "description": "International Space Station (ISS) and other satellites live telemetry platform. Real-time orbit tracking with Cloudflare's global network, providing sub-millisecond latency for live tracking."
+            },
+            "nexusERP": {
+                "title": "Nexus ERP System",
+                "description": "A comprehensive ERP system designed for small to medium-sized businesses. Built with a modern tech stack, it offers modules for inventory management, sales tracking, customer relationship management (CRM), and financial reporting. The serverless architecture ensures scalability and reliability while providing a seamless user experience."
+            },
+            "boardra": {
+                "title": "Boardra",
+                "description": "A real-time, multi-tenant collaborative whiteboard and workspace platform. Features global Edge-network live cursors, shape drawing, secure authentication, and team task management."
             }
         }
     },

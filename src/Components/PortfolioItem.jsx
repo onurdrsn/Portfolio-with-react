@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function PortfolioItem({ title, imgUrl, stack = [], link, github, description, category, featured }) {
     const { t } = useTranslation();
+    const [isExpanded, setIsExpanded] = useState(false);
 
     // Translate category
     const getCategoryTranslation = (cat) => {
@@ -50,9 +52,19 @@ export default function PortfolioItem({ title, imgUrl, stack = [], link, github,
                 </h3>
 
                 {/* Description */}
-                <p className="text-gray-400 text-sm mb-4 line-clamp-3 leading-relaxed">
-                    {description}
-                </p>
+                <div className="mb-4">
+                    <p className={`text-gray-400 text-sm leading-relaxed ${isExpanded ? '' : 'line-clamp-3'}`}>
+                        {description}
+                    </p>
+                    {description && description.length > 100 && (
+                        <button
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            className="text-violet-400 text-xs font-semibold mt-1 hover:text-violet-300 transition-colors focus:outline-none"
+                        >
+                            {isExpanded ? t('projects.readLess') : t('projects.readMore')}
+                        </button>
+                    )}
+                </div>
 
                 {/* Tech Stack */}
                 {stack.length > 0 && (
