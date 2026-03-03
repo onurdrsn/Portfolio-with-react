@@ -125,7 +125,7 @@
                 "title": "GitHubStats",
                 "description": "A real-time, multi-tenant collaborative whiteboard and workspace platform. Features global Edge-network live cursors, shape drawing, secure authentication, and team task management."
             },
-            "chronamesh": {
+            "chronaMesh": {
                 "title": "ChronaMesh",
                 "description": "A multi-tenant SaaS platform enabling teams to model strategic decisions, run Monte Carlo simulations, and achieve distributed consensus in real-time via weighted voting."
             }
