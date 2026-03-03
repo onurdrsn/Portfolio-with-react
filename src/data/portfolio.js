@@ -2,6 +2,26 @@
 export default function getPortfolioData(t) {
     return [
         {
+            title: t('projects.items.githubStats.title'),
+            imgUrl: '/assets/github-stats.png',
+            stack: ['Vite', 'TypeScript', 'Tailwind CSS', 'Hono', 'Cloudflare Workers', 'PostgreSQL', 'WebSockets'],
+            link: 'https://githubstats.onurdrsn.com.tr',
+            github: 'https://github.com/onurdrsn/GitHubStats',
+            description: t('projects.items.githubStats.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
+            title: t('projects.items.chronaMesh.title'),
+            imgUrl: '/assets/chronamesh.png',
+            stack: ['Vite', 'React', 'TypeScript', 'Tailwind CSS', 'Hono', 'Cloudflare Workers', 'Cloudflare D1', 'WebSockets'],
+            link: 'https://chronamesh.onurdrsn.com.tr',
+            github: 'https://github.com/onurdrsn/ChronaMesh',
+            description: t('projects.items.chronaMesh.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
             title: t('projects.items.boardra.title'),
             imgUrl: '/assets/Boardra.png',
             stack: [

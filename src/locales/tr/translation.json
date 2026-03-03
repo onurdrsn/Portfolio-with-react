@@ -120,6 +120,14 @@
             "boardra": {
                 "title": "Boardra",
                 "description": "Gerçek zamanlı, çok kullanıcılı işbirliğine dayalı beyaz tahta ve çalışma alanı platformu. Küresel Edge ağı canlı imleçleri, şekil çizimi, güvenli kimlik doğrulama ve ekip görev yönetimi özelliklerine sahiptir."
+            },
+            "githubStats": {
+                "title": "GitHubStats",
+                "description": "Gerçek zamanlı, çok kullanıcılı işbirliğine dayalı beyaz tahta ve çalışma alanı platformu. Küresel Edge ağı canlı imleçleri, şekil çizimi, güvenli kimlik doğrulama ve ekip görev yönetimi özelliklerine sahiptir."
+            },
+            "chronaMesh": {
+                "title": "ChronaMesh",
+                "description": "Ekiplerin stratejik kararları modellemesini, Monte Carlo simülasyonları çalıştırmasını ve ağırlıklı oylama ile gerçek zamanlı dağıtık konsensüs sağlamasını kolaylaştıran çok kiracılı SaaS platformu."
             }
         }
     },
