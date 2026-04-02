@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "description": "Portfolio Mono-repo combining React Vite Frontend and Cloudflare Worker Backend",
+  "workspaces": [
+    "pages",
+    "worker"
+  ],
   "scripts": {
     "install:all": "make install",
     "dev:pages": "make dev-pages",
@@ -10,6 +14,7 @@
     "build:all": "make build"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0"
+    "@types/node": "^25.5.0",
+    "concurrently": "^8.2.2"
   }
 }

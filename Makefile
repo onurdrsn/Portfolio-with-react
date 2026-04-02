@@ -1,71 +1,41 @@
-.PHONY: install install-pages install-worker dev dev-pages dev-worker build build-pages build-worker db-push db-studio
+.PHONY: install install-worker install-pages dev dev-pages dev-worker build build-pages build-worker db-migrate-local deploy-pages deploy-worker
 
-# ==========================================
-# 📦 KURULUM KOMUTLARI (INSTALL)
-# ==========================================
-
-# Her iki projenin bağımlılıklarını kurar
-install: install-pages install-worker
-
-install-pages:
-	@echo "==> Frontend (Pages) paketleri kuruluyor..."
-	cd pages && npm install
+# Kurulum Kuralları
+install:
+	npm install
 
 install-worker:
-	@echo "==> Backend (Worker) paketleri kuruluyor..."
 	cd worker && npm install
 
+install-pages:
+	cd pages && npm install
 
-# ==========================================
-# 🚀 GELİŞTİRME KOMUTLARI (DEV)
-# ==========================================
-
+# Geliştirici Ortamı Kuralları (Dev)
 dev:
-	npx concurrently "make dev-pages" "make dev-worker"
+	npx concurrently "make dev-worker" "make dev-pages"
 
-# Frontend uygulamasını ayağa kaldırır (React/Vite)
 dev-pages:
-	@echo "==> Frontend (Pages) geliştirme sunucusu başlatılıyor..."
-	cd pages && npm run dev
+	npm run dev -w portfolio-react
 
-# Backend worker uygulamasını lokalde ayağa kaldırır (Wrangler/Hono)
 dev-worker:
-	@echo "==> Backend (Worker) yerel sunucusu başlatılıyor..."
-	cd worker && npm run dev
+	npm run dev -w portfolio-worker
 
+# Derleme Kuralları (Build)
+build: build-worker build-pages
 
-# ==========================================
-# 🔨 DERLEME KOMUTLARI (BUILD)
-# ==========================================
-
-# Her iki projeyi canlıya hazır hale getirir
-build: build-pages build-worker
-
-# Frontend için production bundle oluşturur
 build-pages:
-	@echo "==> Frontend derleniyor..."
-	cd pages && npm run build
+	npm run build -w portfolio-react
 
-# Cloudflare Worker'ı Cloudflare ağına dağıtır (deploy)
-# *Not: Wrangler login işlemi gerektirir
 build-worker: install-worker
-	@echo "==> Backend Worker Cloudflare'e build ediliyor..."
-	cd worker && npm run build
+	npm run build -w portfolio-worker
+
+# Veritabanı (NeonDB) Göç Kuralı
+db-migrate-local:
+	npm run db:migrate -w portfolio-worker
+
+# Dağıtım Kuralları (Deploy - Cloudflare Pages / Workers)
+deploy-pages: build-pages
+	npx wrangler pages deploy pages/dist --project-name portfolio-react
 
 deploy-worker: build-worker
-	@echo "==> Backend Worker Cloudflare'e deploy ediliyor..."
-	cd worker && npm run deploy
-
-# ==========================================
-# 🗄️ VERİTABANI KOMUTLARI (DB)
-# ==========================================
-
-# Şema değişikliklerini veritabanına uygular
-db-push:
-	@echo "==> Veritabanı şeması NeonDB'ye yükleniyor..."
-	cd worker && npm run db:push
-
-# Veritabanını görsel bir arayüzle izlemek/düzenlemek için Drizzle Studio açar
-db-studio:
-	@echo "==> Drizzle Studio tarayıcıda başlatılıyor..."
-	cd worker && npm run db:studio
+	npx wrangler deploy -c worker/wrangler.toml
