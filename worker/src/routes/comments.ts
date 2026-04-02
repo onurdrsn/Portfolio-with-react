@@ -99,8 +99,8 @@ commentsRouter.post("/:postId", optionalAuth, async (c) => {
     {
       comment,
       message: autoApproved
-        ? "Comment posted"
-        : "Comment submitted and awaiting moderation",
+        ? "Yorumunuz başarıyla paylaşıldı."
+        : "Admin onayı bekleniyor.",
     },
     201
   );

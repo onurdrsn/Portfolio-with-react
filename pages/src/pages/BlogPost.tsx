@@ -43,7 +43,7 @@ export default function BlogPost() {
 
   useEffect(() => {
     if (!post) return;
-    apiGet<Comment[]>(`/api/comments/${post.id}`).then(setComments).catch(() => {});
+    apiGet<Comment[]>(`/api/comments/${post.id}`).then(setComments).catch(() => { });
   }, [post]);
 
   if (loadingPost) {
@@ -125,9 +125,9 @@ export default function BlogPost() {
               </div>
             </div>
           )}
-          
+
           <div className="h-8 w-px bg-gray-800 hidden sm:block"></div>
-          
+
           <div className="flex flex-col justify-center">
             <span className="text-gray-300 font-medium">{date}</span>
             <span className="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">Yayınlanma Tarihi</span>
@@ -135,7 +135,7 @@ export default function BlogPost() {
         </div>
 
         {/* Content */}
-        <article 
+        <article
           className="prose prose-lg prose-invert prose-violet max-w-none prose-img:rounded-2xl prose-img:shadow-2xl prose-img:mx-auto prose-p:text-gray-300 prose-p:leading-relaxed prose-headings:text-white prose-a:text-violet-400 hover:prose-a:text-violet-300"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
@@ -229,7 +229,12 @@ function CommentSection({
                 </span>
                 {c.userId && (
                   <span className="px-1.5 py-0.5 text-xs bg-violet-500/10 text-violet-400 rounded">
-                    üye
+                    Üye
+                  </span>
+                )}
+                {!c.userId && (
+                  <span className="px-1.5 py-0.5 text-xs bg-violet-500/10 text-violet-400 rounded">
+                    Misafir
                   </span>
                 )}
               </div>
@@ -260,11 +265,10 @@ function CommentSection({
 
         {feedback && (
           <div
-            className={`mb-4 p-3 rounded-lg text-sm ${
-              feedback.type === "ok"
-                ? "bg-green-500/10 border border-green-500/30 text-green-400"
-                : "bg-red-500/10 border border-red-500/30 text-red-400"
-            }`}
+            className={`mb-4 p-3 rounded-lg text-sm ${feedback.type === "ok"
+              ? "bg-green-500/10 border border-green-500/30 text-green-400"
+              : "bg-red-500/10 border border-red-500/30 text-red-400"
+              }`}
           >
             {feedback.msg}
           </div>
