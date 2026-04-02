@@ -48,7 +48,7 @@ build-pages:
 
 # Cloudflare Worker'ı Cloudflare ağına dağıtır (deploy)
 # *Not: Wrangler login işlemi gerektirir
-build-worker:
+build-worker: install-worker
 	@echo "==> Backend Worker Cloudflare'e deploy ediliyor..."
 	cd worker && npm run deploy
 
