@@ -27,5 +27,9 @@ dist-ssr
 .netlify
 
 # Worker Secrets
-worker/.dev.vars
-worker/node_modules
+.dev.vars
+.env
+.env.local
+.env.production
+
+

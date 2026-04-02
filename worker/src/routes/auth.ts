@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { hash, compare } from "bcryptjs";
 import { getDb } from "../db";
 import { users } from "../db/schema";
-import { signToken } from "../middleware/auth";
+import { signToken, signRefreshToken } from "../middleware/auth";
 import type { Env } from "../middleware/auth";
 
 export const authRouter = new Hono<{ Bindings: Env }>();
@@ -50,9 +50,15 @@ authRouter.post("/register", async (c) => {
     { sub: user.id, isAdmin: user.isAdmin },
     c.env.JWT_SECRET || "default_local_dev_secret_xyz123"
   );
+  
+  const refreshToken = await signRefreshToken(
+    { sub: user.id, isAdmin: user.isAdmin },
+    c.env.REFRESH_TOKEN_SECRET || "default_local_dev_secret_xyz123"
+  );
 
   return c.json({
     token,
+    refreshToken,
     user: {
       id: user.id,
       username: user.username,
@@ -91,8 +97,14 @@ authRouter.post("/login", async (c) => {
     c.env.JWT_SECRET || "default_local_dev_secret_xyz123"
   );
 
+  const refreshToken = await signRefreshToken(
+    { sub: user.id, isAdmin: user.isAdmin },
+    c.env.REFRESH_TOKEN_SECRET || "default_local_dev_secret_xyz123"
+  );
+
   return c.json({
     token,
+    refreshToken,
     user: {
       id: user.id,
       username: user.username,

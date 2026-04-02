@@ -1,10 +1,10 @@
 import { createMiddleware } from "hono/factory";
 import { SignJWT, jwtVerify } from "jose";
-import type { DB } from "../db";
 
 export type Env = {
   DATABASE_URL: string;
   JWT_SECRET: string;
+  REFRESH_TOKEN_SECRET: string;
 };
 
 export type Variables = {
@@ -23,7 +23,18 @@ export async function signToken(
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime("7d") // jwt 7 days expiry
+    .sign(getJwtSecret(secret));
+}
+
+export async function signRefreshToken(
+  payload: { sub: string; isAdmin: boolean },
+  secret: string
+): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("30d") // refresh token expiry
     .sign(getJwtSecret(secret));
 }
 
