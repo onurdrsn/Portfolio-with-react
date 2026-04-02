@@ -1,14 +1,8 @@
-.PHONY: install install-worker install-pages dev dev-pages dev-worker build build-pages build-worker db-migrate-local deploy-pages deploy-worker
+.PHONY: install dev dev-pages dev-worker build build-pages build-worker db-migrate-local deploy-pages deploy-worker
 
 # Kurulum Kuralları
 install:
 	npm install
-
-install-worker:
-	cd worker && npm install
-
-install-pages:
-	cd pages && npm install
 
 # Geliştirici Ortamı Kuralları (Dev)
 dev:
@@ -26,7 +20,7 @@ build: build-worker build-pages
 build-pages:
 	npm run build -w portfolio-react
 
-build-worker: install-worker
+build-worker:
 	npm run build -w portfolio-worker
 
 # Veritabanı (NeonDB) Göç Kuralı
