@@ -36,6 +36,8 @@ export const comments = pgTable("comments", {
     .references(() => posts.id, { onDelete: "cascade" }),
   // Nullable for anonymous comments
   userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  // Reply support: parentId references another comment
+  parentId: text("parent_id"), // self-reference added via migration (circular ref workaround)
   authorName: text("author_name").notNull(),
   authorEmail: text("author_email").notNull(),
   content: text("content").notNull(),
