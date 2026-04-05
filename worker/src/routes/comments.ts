@@ -23,8 +23,10 @@ commentsRouter.get("/:postId", async (c) => {
       createdAt: comments.createdAt,
       userId: comments.userId,
       parentId: comments.parentId,
+      isAdmin: users.isAdmin,
     })
     .from(comments)
+    .leftJoin(users, eq(comments.userId, users.id))
     .where(
       and(
         eq(comments.postId, postId),

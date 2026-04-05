@@ -29,7 +29,5 @@ dist-ssr
 
 # Worker Secrets
 .dev.vars
-.env
-.env.local
-.env.production
-.sql
+*.env*
+*.sql

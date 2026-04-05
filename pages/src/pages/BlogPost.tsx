@@ -55,6 +55,7 @@ interface Comment {
   id: string; authorName: string; content: string;
   createdAt: string; userId: string | null; parentId: string | null;
   approved?: boolean;
+  isAdmin?: boolean;
 }
 
 // ─── BlogPost ────────────────────────────────────────────────────────────
@@ -501,7 +502,9 @@ function CommentCard({
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-white text-sm">{c.authorName}</span>
-              {c.userId
+              {c.isAdmin
+                ? <span className="px-1.5 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-400 rounded border border-emerald-500/15 font-bold">Admin</span>
+                : c.userId
                 ? <span className="px-1.5 py-0.5 text-[10px] bg-violet-500/10 text-violet-400 rounded border border-violet-500/15">Üye</span>
                 : <span className="px-1.5 py-0.5 text-[10px] bg-white/5 text-gray-500 rounded border border-white/5">Misafir</span>
               }

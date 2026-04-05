@@ -36,6 +36,38 @@ const QUILL_STYLE = `
   .animate-slideIn{animation:slideIn 0.2s ease forwards}
 `;
 
+const PROSE_STYLE = `
+  .blog-content h1,.blog-content h2,.blog-content h3,.blog-content h4{color:#fff;font-weight:700;line-height:1.3;margin:1.8em 0 0.7em}
+  .blog-content h1{font-size:2rem}.blog-content h2{font-size:1.5rem;padding-bottom:0.3em;border-bottom:1px solid #1f2937}
+  .blog-content h3{font-size:1.2rem}.blog-content h4{font-size:1rem}
+  .blog-content p{color:#d1d5db;line-height:1.85;margin:0 0 1.2em}
+  .blog-content a{color:#a78bfa;text-decoration:underline;text-underline-offset:2px}
+  .blog-content a:hover{color:#c4b5fd}
+  .blog-content strong{color:#f3f4f6;font-weight:700}
+  .blog-content em{color:#e5e7eb;font-style:italic}
+  .blog-content del{color:#6b7280;text-decoration:line-through}
+  .blog-content blockquote{border-left:3px solid #7c3aed;margin:1.5em 0;padding:0.8em 1.2em;background:#0d1117;border-radius:0 8px 8px 0}
+  .blog-content blockquote p{color:#9ca3af;margin:0;font-style:italic}
+  .blog-content ul,.blog-content ol{color:#d1d5db;padding-left:1.5em;margin:1em 0}
+  .blog-content li{margin:0.4em 0;line-height:1.7}
+  .blog-content ul li::marker{color:#7c3aed}
+  .blog-content ol li::marker{color:#7c3aed;font-weight:600}
+  .blog-content hr{border:none;border-top:1px solid #1f2937;margin:2.5em 0}
+  .blog-content img{border-radius:12px;max-width:100%;margin:1.5em auto;display:block;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+  .blog-content table{width:100%;border-collapse:collapse;margin:1.5em 0;font-size:0.9rem}
+  .blog-content th{background:#0d1117;color:#e5e7eb;padding:10px 14px;border:1px solid #1f2937;font-weight:600;text-align:left}
+  .blog-content td{padding:9px 14px;border:1px solid #1f2937;color:#d1d5db}
+  .blog-content tr:nth-child(even) td{background:#080b12}
+  .blog-content .code-block{background:#0d1117;border:1px solid #1f2937;border-radius:10px;padding:1rem 1.25rem;overflow-x:auto;margin:1.5em 0;position:relative}
+  .blog-content .code-lang{position:absolute;top:8px;right:12px;font-size:10px;color:#6b7280;font-family:monospace;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+  .blog-content .code-block code{color:#e5e7eb;font-family:'Fira Code','Cascadia Code',ui-monospace,monospace;font-size:0.875rem;line-height:1.7;background:none;padding:0}
+  .blog-content .inline-code{background:#0d1117;color:#a78bfa;font-family:'Fira Code','Cascadia Code',ui-monospace,monospace;font-size:0.85em;padding:2px 7px;border-radius:5px;border:1px solid #1f2937}
+  /* Quill HTML passthrough styles */
+  .blog-content pre{background:#0d1117;border:1px solid #1f2937;border-radius:10px;padding:1rem 1.25rem;overflow-x:auto;margin:1.5em 0}
+  .blog-content pre code{color:#e5e7eb;font-family:'Fira Code','Cascadia Code',ui-monospace,monospace;font-size:0.875rem;line-height:1.7;background:none;padding:0}
+  .blog-content code:not(pre code){background:#0d1117;color:#a78bfa;font-family:'Fira Code','Cascadia Code',ui-monospace,monospace;font-size:0.85em;padding:2px 7px;border-radius:5px;border:1px solid #1f2937}
+`;
+
 // ─── Types ─────────────────────────────────────────────────────────────
 interface Post {
   id: string; title: string; slug: string; content: string;
@@ -70,6 +102,7 @@ export default function AdminPanel() {
   return (
     <div className="flex min-h-screen bg-[#080b12] text-gray-200">
       <style>{QUILL_STYLE}</style>
+      <style>{PROSE_STYLE}</style>
 
       {/* ── Sidebar ── */}
       <aside className="hidden sm:flex w-64 flex-col bg-[#0d1117] border-r border-[#1a2035] fixed h-full z-20">
@@ -180,7 +213,7 @@ export default function AdminPanel() {
         <div className="flex-1 p-4 sm:p-8 pt-16 sm:pt-8 pb-24 sm:pb-8 max-w-6xl w-full mx-auto">
           <div className="animate-fadeIn">
             {editingPost ? (
-              <PostEditor post={editingPost} onSaved={() => setEditingPost(null)} onCancel={() => setEditingPost(null)} />
+              <PostEditor key={editingPost.id} post={editingPost} onSaved={() => setEditingPost(null)} onCancel={() => setEditingPost(null)} />
             ) : (
               <>
                 {tab === "dashboard" && <DashboardTab onNavigate={goTab} />}
@@ -302,6 +335,17 @@ function PostsTab({ onEdit }: { onEdit: (p: Post) => void }) {
   }, []);
   useEffect(() => { load(); }, [load]);
 
+  const handleEditClick = async (post: Post) => {
+    const toastId = toast.loading("İçerik yükleniyor...");
+    try {
+      const fullPost = await apiGet<Post>(`/api/posts/${post.slug}`);
+      onEdit(fullPost);
+      toast.dismiss(toastId);
+    } catch {
+      toast.error("Yazı yüklenirken hata oluştu", { id: toastId });
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Yazıyı kalıcı olarak silmek istiyor musunuz?")) return;
     try {
@@ -373,7 +417,7 @@ function PostsTab({ onEdit }: { onEdit: (p: Post) => void }) {
               </div>
               <h3
                 className="text-base text-white font-semibold truncate group-hover:text-violet-300 transition-colors cursor-pointer"
-                onClick={() => onEdit(post)}
+                onClick={() => handleEditClick(post)}
               >
                 {post.title}
               </h3>
@@ -402,7 +446,7 @@ function PostsTab({ onEdit }: { onEdit: (p: Post) => void }) {
                 {post.published ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
               <button
-                onClick={() => onEdit(post)}
+                onClick={() => handleEditClick(post)}
                 className="p-2 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-all"
                 title="Düzenle"
               >
@@ -879,7 +923,7 @@ function PreviewContent({ html, title, coverImage, tags }: { html: string; title
         )}
         <h1 className="text-2xl font-bold text-white mb-6 leading-tight">{title || "Başlıksız Yazı"}</h1>
         <div
-          className="prose prose-invert prose-violet max-w-none prose-sm prose-headings:text-white prose-p:text-gray-300 prose-a:text-violet-400 prose-code:text-violet-300 prose-code:bg-gray-800 prose-pre:bg-gray-800"
+          className="blog-content mb-16"
           dangerouslySetInnerHTML={{ __html: html || "<p class='text-gray-500'>Henüz içerik yok.</p>" }}
         />
       </div>
