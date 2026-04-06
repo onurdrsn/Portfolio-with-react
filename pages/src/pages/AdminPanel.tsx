@@ -10,8 +10,9 @@ import {
   ExternalLink, Trash2, Eye, EyeOff, Edit3, CheckCircle,
   XCircle, Clock, Home, ChevronRight, BarChart3, Users,
   BookOpen, TrendingUp, Monitor, Smartphone, Maximize2,
-  Minimize2, X as XIcon, Code2
+  Minimize2, X as XIcon, Code2, Sparkles, Check, X as XMark, Wand2
 } from "lucide-react";
+import { diffLines, joinContent, splitContent, type DiffLine } from "../lib/diff";
 
 // ─── Markdown Preview ──────────────────────────────────────────────────
 import { renderMarkdown } from "../lib/markdown";
@@ -631,12 +632,24 @@ export function PostEditor({
   const [published, setPublished] = useState(post?.published ?? false);
   const [saving, setSaving] = useState(false);
   const [editorMode, setEditorMode] = useState<"rich" | "markdown">("rich");
+  const modeRef = useRef(editorMode);
+  
+  useEffect(() => {
+    modeRef.current = editorMode;
+  }, [editorMode]);
+
   const [showPreview, setShowPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const [previewScale, setPreviewScale] = useState(1);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [previewMinimized, setPreviewMinimized] = useState(false);
   const [previewClosing, setPreviewClosing] = useState(false);
+  const [isAiReviewing, setIsAiReviewing] = useState(false);
+  const [isAiMeta, setIsAiMeta] = useState(false);
+  const [aiDiffLines, setAiDiffLines] = useState<DiffLine[]>([]);
+  const [showAiModal, setShowAiModal] = useState(false);
+  // Per-line acceptance: key = line index, value = true (accepted) | false (rejected/default)
+  const [aiAccepted, setAiAccepted] = useState<Record<number, boolean>>({});
 
   const quillModules = {
     toolbar: [
@@ -674,6 +687,103 @@ export function PostEditor({
 
   const minimizePreview = () => setPreviewMinimized((v) => !v);
 
+  const handleAiReviewClick = async () => {
+    if (!content.trim() || content === "<p><br></p>") {
+      return toast.error("İncelenecek içerik bulunamadı.");
+    }
+    const toastId = toast.loading("AI içeriği inceliyor, lütfen bekleyin...");
+    setIsAiReviewing(true);
+    try {
+      const res = await apiPost<{revised: string}>("/api/ai/review", { content });
+      const lines = diffLines(content, res.revised);
+      setAiDiffLines(lines);
+      // Default: accept all AI additions/removals (mirrors VSCode default)
+      const defaults: Record<number, boolean> = {};
+      lines.forEach((l, i) => { if (l.type !== "unchanged") defaults[i] = true; });
+      setAiAccepted(defaults);
+      setShowAiModal(true);
+      toast.success("AI incelemesi tamamlandı!", { id: toastId });
+    } catch (e) {
+      toast.error("AI incelemesi sırasında hata oluştu.", { id: toastId });
+    } finally {
+      setIsAiReviewing(false);
+    }
+  };
+
+  // Build final content from per-line decisions:
+  // - unchanged → always keep
+  // - removed   → keep ONLY if NOT accepted (accepted = use AI's version = skip old line)
+  // - added     → include ONLY if accepted
+  const applyAiChanges = () => {
+    const { isHtml } = splitContent(content);
+    const resultParts: string[] = [];
+    aiDiffLines.forEach((line, i) => {
+      if (line.type === "unchanged") {
+        resultParts.push(line.value);
+      } else if (line.type === "removed") {
+        if (!aiAccepted[i]) resultParts.push(line.value); // keep original
+      } else if (line.type === "added") {
+        if (aiAccepted[i]) resultParts.push(line.value); // apply AI suggestion
+      }
+    });
+    setContent(joinContent(resultParts, isHtml).trim());
+    setShowAiModal(false);
+    toast.success("Değişiklikler uygulandı!");
+  };
+
+  const handleAiMetaClick = async () => {
+    if (!content.trim() || content === "<p><br></p>") {
+      return toast.error("Etiket önerisi için önce içerik yazın.");
+    }
+    const toastId = toast.loading("AI etiket ve özet oluşturuyor...");
+    setIsAiMeta(true);
+    try {
+      const res = await apiPost<{ tags: string[]; excerpt: string }>("/api/ai/suggest-meta", { content, title });
+      if (res.tags?.length) setTagsRaw(res.tags.join(", "));
+      if (res.excerpt) setExcerpt(res.excerpt);
+      toast.success("Etiket ve özet oluşturuldu!", { id: toastId });
+    } catch {
+      toast.error("AI önerisi sırasında hata oluştu.", { id: toastId });
+    } finally {
+      setIsAiMeta(false);
+    }
+  };
+
+  const toggleLineAccept = (index: number) => {
+    setAiAccepted(prev => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  const acceptAllLines = () => {
+    const all: Record<number, boolean> = {};
+    aiDiffLines.forEach((l, i) => { if (l.type !== "unchanged") all[i] = true; });
+    setAiAccepted(all);
+  };
+
+  const rejectAllLines = () => {
+    const none: Record<number, boolean> = {};
+    aiDiffLines.forEach((l, i) => { if (l.type !== "unchanged") none[i] = false; });
+    setAiAccepted(none);
+  };
+
+  const changedCount = aiDiffLines.filter(l => l.type !== "unchanged").length;
+  const acceptedCount = aiDiffLines.filter((l, i) => l.type !== "unchanged" && aiAccepted[i]).length;
+
+  const handleModeSwitch = (mode: "rich" | "markdown") => {
+    if (editorMode === "rich" && mode === "markdown") {
+      const cleaned = content
+        .replace(/<p><br><\/p>/gi, "\n\n")
+        .replace(/<\/p>\s*<p>/gi, "\n\n")
+        .replace(/<\/?p[^>]*>/gi, "")
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&");
+      setContent(cleaned.trim());
+    }
+    setEditorMode(mode);
+  };
+
   const previewHtml = editorMode === "markdown" ? renderMarkdown(content) : content;
 
   return (
@@ -690,19 +800,40 @@ export function PostEditor({
           {/* Editor mode toggle */}
           <div className="flex gap-1 bg-[#0d1117] border border-[#1a2035] rounded-xl p-1">
             <button
-              onClick={() => setEditorMode("rich")}
+              onClick={() => handleModeSwitch("rich")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${editorMode === "rich" ? "bg-violet-600/20 text-violet-300 border border-violet-500/20" : "text-gray-500 hover:text-gray-300"}`}
             >
               <Edit3 size={12} /> Rich
             </button>
             <button
-              onClick={() => setEditorMode("markdown")}
+              onClick={() => handleModeSwitch("markdown")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${editorMode === "markdown" ? "bg-violet-600/20 text-violet-300 border border-violet-500/20" : "text-gray-500 hover:text-gray-300"}`}
             >
               <Code2 size={12} /> MD
             </button>
           </div>
+          
           <button
+            type="button"
+            onClick={handleAiMetaClick}
+            disabled={isAiMeta}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-blue-300 hover:from-blue-600/30 hover:to-cyan-600/30 border border-blue-500/30 transition-all flex items-center gap-1.5 shadow-lg shadow-blue-900/20 disabled:opacity-50"
+          >
+            <Wand2 size={12} className={isAiMeta ? "animate-spin" : ""} />
+            {isAiMeta ? "Üretiliyor..." : "AI Etiket/Özet"}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleAiReviewClick}
+            disabled={isAiReviewing}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-violet-600/20 to-purple-600/20 text-violet-300 hover:from-violet-600/30 hover:to-purple-600/30 border border-violet-500/30 transition-all flex items-center gap-1.5 shadow-lg shadow-violet-900/20 disabled:opacity-50"
+          >
+            <Sparkles size={12} className={isAiReviewing ? "animate-spin" : ""} /> 
+            {isAiReviewing ? "İnceleniyor" : "AI İle İncele"}
+          </button>
+          <button
+            type="button"
             onClick={() => setShowPreview(true)}
             className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 transition-all flex items-center gap-1.5"
           >
@@ -749,7 +880,14 @@ export function PostEditor({
 
         {/* Excerpt */}
         <div>
-          <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">Kısa Özet</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest">Kısa Özet</label>
+            {excerpt && (
+              <span className={`text-[10px] font-mono ${ excerpt.length > 160 ? "text-red-400" : "text-gray-600" }`}>
+                {excerpt.length}/160
+              </span>
+            )}
+          </div>
           <input
             value={excerpt} onChange={(e) => setExcerpt(e.target.value)}
             placeholder="Kart önizlemesinde gösterilecek özet..."
@@ -762,7 +900,15 @@ export function PostEditor({
           <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">İçerik *</label>
           {editorMode === "rich" ? (
             <div className="text-white">
-              <ReactQuill theme="snow" value={content} onChange={setContent} modules={quillModules} placeholder="İçeriğinizi buraya yazın..." />
+              <ReactQuill 
+                theme="snow" 
+                value={content} 
+                onChange={(val) => {
+                  if (modeRef.current === "rich") setContent(val);
+                }} 
+                modules={quillModules} 
+                placeholder="İçeriğinizi buraya yazın..." 
+              />
             </div>
           ) : (
             <textarea
@@ -897,6 +1043,229 @@ export function PostEditor({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── AI Review Modal — VSCode-style line-by-line diff ── */}
+      {showAiModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#070a10]/95 backdrop-blur-sm p-4">
+          <div className="bg-[#0d1117] border border-[#1a2035] rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
+
+            {/* ── Title bar ── */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#1a2035] bg-[#0d1117] flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-500/70" />
+                  <div className="w-3 h-3 rounded-full bg-amber-400/70" />
+                  <div className="w-3 h-3 rounded-full bg-emerald-500/70" />
+                </div>
+                <span className="text-xs text-gray-500 font-mono">ai-review — blog-content.diff</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-gray-600">
+                  <span className="text-emerald-400 font-semibold">{acceptedCount}</span>
+                  <span className="mx-1">/</span>
+                  <span>{changedCount}</span>
+                  <span className="ml-1">değişiklik seçili</span>
+                </span>
+                <div className="w-px h-4 bg-[#1a2035] mx-1" />
+                <button
+                  onClick={acceptAllLines}
+                  className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all"
+                >
+                  Tümünü Kabul Et
+                </button>
+                <button
+                  onClick={rejectAllLines}
+                  className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-all"
+                >
+                  Tümünü Reddet
+                </button>
+                <button
+                  onClick={() => setShowAiModal(false)}
+                  className="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-500 hover:text-white transition-all ml-1"
+                >
+                  <XIcon size={12} />
+                </button>
+              </div>
+            </div>
+
+            {/* ── Tab bar (file tabs) ── */}
+            <div className="flex items-center bg-[#080b12] border-b border-[#1a2035] px-4 flex-shrink-0">
+              <div className="flex items-center gap-1.5 px-3 py-2 border-b-2 border-violet-500 text-violet-300 text-[11px] font-medium">
+                <Sparkles size={11} />
+                AI Öneriler
+              </div>
+            </div>
+
+            {/* ── Diff body ── */}
+            <div className="flex-1 overflow-y-auto bg-[#080b12] font-mono text-[13px] leading-6 select-text">
+              <table className="w-full border-collapse">
+                <tbody>
+                  {aiDiffLines.map((line, idx) => {
+                    const isChanged = line.type !== "unchanged";
+                    const isAccepted = aiAccepted[idx];
+
+                    if (line.type === "unchanged") {
+                      return (
+                        <tr key={idx} className="group hover:bg-white/[0.02]">
+                          {/* Old line no */}
+                          <td className="w-10 text-right pr-3 text-gray-700 select-none text-[11px] pt-px border-r border-[#1a2035] align-top">
+                            {line.origLine}
+                          </td>
+                          {/* New line no */}
+                          <td className="w-10 text-right pr-3 text-gray-700 select-none text-[11px] pt-px border-r border-[#1a2035] align-top">
+                            {line.newLine}
+                          </td>
+                          {/* Gutter */}
+                          <td className="w-6 text-center text-gray-700 select-none" />
+                          {/* Action column (empty for unchanged) */}
+                          <td className="w-20" />
+                          {/* Content */}
+                          <td className="px-4 py-0.5 text-gray-600 whitespace-pre-wrap break-all">{line.value || " "}</td>
+                        </tr>
+                      );
+                    }
+
+                    if (line.type === "removed") {
+                      return (
+                        <tr
+                          key={idx}
+                          className={`group cursor-pointer transition-colors ${
+                            isAccepted
+                              ? "bg-red-500/10 hover:bg-red-500/15"
+                              : "bg-[#141820] hover:bg-white/[0.03] opacity-60"
+                          }`}
+                          onClick={() => toggleLineAccept(idx)}
+                        >
+                          <td className="w-10 text-right pr-3 select-none text-[11px] pt-px border-r border-[#1a2035] align-top text-red-400/60">
+                            {line.origLine}
+                          </td>
+                          <td className="w-10 border-r border-[#1a2035]" />
+                          <td className="w-6 text-center text-red-400 font-bold select-none">−</td>
+                          {/* Accept/Reject toggles */}
+                          <td className="w-20 pr-2">
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setAiAccepted(p => ({ ...p, [idx]: true })); }}
+                                title="Değişikliği kabul et (bu satırı kaldır)"
+                                className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
+                                  isAccepted
+                                    ? "bg-emerald-500 text-white"
+                                    : "bg-white/5 text-gray-500 hover:bg-emerald-500/30 hover:text-emerald-400"
+                                }`}
+                              >
+                                <Check size={10} strokeWidth={3} />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setAiAccepted(p => ({ ...p, [idx]: false })); }}
+                                title="Değişikliği reddet (eski satırı koru)"
+                                className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
+                                  !isAccepted
+                                    ? "bg-red-500 text-white"
+                                    : "bg-white/5 text-gray-500 hover:bg-red-500/30 hover:text-red-400"
+                                }`}
+                              >
+                                <XMark size={10} strokeWidth={3} />
+                              </button>
+                            </div>
+                          </td>
+                          <td className={`px-4 py-0.5 whitespace-pre-wrap break-all ${
+                            isAccepted ? "text-red-300 line-through decoration-red-500/50" : "text-gray-500"
+                          }`}>
+                            {line.value || " "}
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    // type === "added"
+                    return (
+                      <tr
+                        key={idx}
+                        className={`group cursor-pointer transition-colors ${
+                          isAccepted
+                            ? "bg-emerald-500/10 hover:bg-emerald-500/15"
+                            : "bg-[#141820] hover:bg-white/[0.03] opacity-60"
+                        }`}
+                        onClick={() => toggleLineAccept(idx)}
+                      >
+                        <td className="w-10 border-r border-[#1a2035]" />
+                        <td className="w-10 text-right pr-3 select-none text-[11px] pt-px border-r border-[#1a2035] align-top text-emerald-400/60">
+                          {line.newLine}
+                        </td>
+                        <td className="w-6 text-center text-emerald-400 font-bold select-none">+</td>
+                        <td className="w-20 pr-2">
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setAiAccepted(p => ({ ...p, [idx]: true })); }}
+                              title="Bu satırı kabul et"
+                              className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
+                                isAccepted
+                                  ? "bg-emerald-500 text-white"
+                                  : "bg-white/5 text-gray-500 hover:bg-emerald-500/30 hover:text-emerald-400"
+                              }`}
+                            >
+                              <Check size={10} strokeWidth={3} />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setAiAccepted(p => ({ ...p, [idx]: false })); }}
+                              title="Bu satırı reddet"
+                              className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
+                                !isAccepted
+                                  ? "bg-red-500 text-white"
+                                  : "bg-white/5 text-gray-500 hover:bg-red-500/30 hover:text-red-400"
+                              }`}
+                            >
+                              <XMark size={10} strokeWidth={3} />
+                            </button>
+                          </div>
+                        </td>
+                        <td className={`px-4 py-0.5 whitespace-pre-wrap break-all ${
+                          isAccepted ? "text-emerald-300" : "text-gray-500"
+                        }`}>
+                          {line.value || " "}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ── Status bar ── */}
+            <div className="px-5 py-2.5 border-t border-[#1a2035] bg-[#0d1117] flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-4 text-[11px] text-gray-600">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-sm bg-emerald-500/60" />
+                  Eklenen: {aiDiffLines.filter(l => l.type === "added").length}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-sm bg-red-500/60" />
+                  Silinen: {aiDiffLines.filter(l => l.type === "removed").length}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-sm bg-gray-600" />
+                  Değişmez: {aiDiffLines.filter(l => l.type === "unchanged").length}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowAiModal(false)}
+                  className="px-4 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-white transition-colors"
+                >
+                  Vazgeç
+                </button>
+                <button
+                  onClick={applyAiChanges}
+                  className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-all flex items-center gap-1.5 shadow-lg shadow-violet-900/40"
+                >
+                  <Check size={13} /> {acceptedCount} Değişikliği Uygula
+                </button>
+              </div>
+            </div>
+
+          </div>
         </div>
       )}
     </div>

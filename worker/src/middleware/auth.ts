@@ -5,6 +5,7 @@ export type Env = {
   DATABASE_URL: string;
   JWT_SECRET: string;
   REFRESH_TOKEN_SECRET: string;
+  AI: any;
 };
 
 export type Variables = {

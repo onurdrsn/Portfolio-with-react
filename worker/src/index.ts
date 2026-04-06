@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { authRouter } from "./routes/auth";
 import { postsRouter } from "./routes/posts";
 import { commentsRouter } from "./routes/comments";
+import { aiRouter } from "./routes/ai";
 import type { Env } from "./middleware/auth";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -29,6 +30,7 @@ app.use(
 app.route("/api/auth", authRouter);
 app.route("/api/posts", postsRouter);
 app.route("/api/comments", commentsRouter);
+app.route("/api/ai", aiRouter);
 
 // Health check
 app.get("/api/health", (c) => c.json({ ok: true, ts: Date.now() }));
