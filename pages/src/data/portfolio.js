@@ -26,6 +26,8 @@ export default function getPortfolioData(t) {
             imgUrl: '/assets/Boardra.png',
             stack: [
                 'TypeScript',
+                'React Native',
+                'Expo',
                 'Vite',
                 'Tailwind CSS',
                 'Zustand',
@@ -262,6 +264,116 @@ export default function getPortfolioData(t) {
             description: t('projects.items.pdfProcessing.description'),
             category: 'Full Stack',
             featured: false
+        },
+        {
+            title: t('projects.items.nexora.title'),
+            imgUrl: '/assets/nexora.png',
+            stack: ['Cloudflare Workers', 'Durable Objects', 'Cloudflare R2', 'libsodium', 'TypeScript', 'Vite', 'React'],
+            link: 'https://nexora.onurd.com.tr',
+            github: 'https://github.com/onurdrsn/ChatApp',
+            description: t('projects.items.nexora.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
+            title: t('projects.items.codeLingo.title'),
+            imgUrl: '/assets/codelingo.png',
+            stack: ['React 19', 'Vite', 'TypeScript', 'Tailwind CSS v4', 'Cloudflare Workers', 'AI Hints'],
+            link: 'https://codelingo.onurd.com.tr',
+            github: 'https://github.com/onurdrsn/Codelingo',
+            description: t('projects.items.codeLingo.description'),
+            category: 'Frontend',
+            featured: true
+        },
+        {
+            title: t('projects.items.devDiff.title'),
+            imgUrl: '/assets/devdiff.png',
+            stack: ['Cloudflare Workers AI', 'Llama 3.3', 'Vite', 'React', 'Tailwind CSS', 'TypeScript'],
+            link: 'https://devdiff.onurd.com.tr',
+            github: 'https://github.com/onurdrsn/DevDiff',
+            description: t('projects.items.devDiff.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
+            title: t('projects.items.listify.title'),
+            imgUrl: '/assets/listify.png',
+            stack: ['React', 'Vite', 'Tailwind CSS', 'TypeScript', 'Rest APIs', 'Web Notifications'],
+            link: 'https://listify.onurd.com.tr',
+            github: 'https://github.com/onurdrsn/Listify',
+            description: t('projects.items.listify.description'),
+            category: 'Frontend',
+            featured: true
+        },
+        {
+            title: t('projects.items.pdfusionCloud.title'),
+            imgUrl: '/assets/pdfusion-cloud.svg',
+            stack: ['Cloudflare Workers', 'Drizzle ORM', 'Stripe', 'React', 'Tailwind CSS', 'TypeScript'],
+            link: 'https://pdfusion.onurd.com.tr',
+            github: 'https://github.com/onurdrsn/PDFusion-Cloud',
+            description: t('projects.items.pdfusionCloud.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
+            title: t('projects.items.pasteBoard.title'),
+            imgUrl: '/assets/pasteboard.png',
+            stack: ['Cloudflare Workers AI', 'Vectorize', 'Drizzle ORM', 'JWT', 'React', 'TypeScript'],
+            link: 'https://pasteboard.onurd.com.tr',
+            github: 'https://github.com/onurdrsn/PasteBoard',
+            description: t('projects.items.pasteBoard.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
+            title: t('projects.items.steadPay.title'),
+            imgUrl: '/assets/steadpay.png',
+            stack: ['Next.js', 'PostgreSQL', 'Drizzle ORM', 'Shopier API', 'AES-256-GCM', 'TypeScript'],
+            link: 'https://steadpay.onurd.com.tr',
+            github: 'https://github.com/onurdrsn/PayVault',
+            description: t('projects.items.steadPay.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
+            title: t('projects.items.reconCore.title'),
+            imgUrl: '/assets/reconcore.png',
+            stack: ['Next.js', 'Cloudflare Workers AI', 'pdf-lib', 'Tailwind CSS', 'TypeScript'],
+            link: 'https://reconcore.onurd.com.tr',
+            github: 'https://github.com/onurdrsn/ReconCore',
+            description: t('projects.items.reconCore.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
+            title: t('projects.items.gitReadme.title'),
+            imgUrl: '/assets/gitreadme.svg',
+            stack: ['React 18', 'TypeScript', 'Tailwind CSS', 'Cloudflare D1', 'Vite'],
+            link: 'https://gitreadme.onurd.com.tr',
+            github: 'https://github.com/onurdrsn/YourGithub',
+            description: t('projects.items.gitReadme.description'),
+            category: 'Full Stack',
+            featured: false
+        },
+        {
+            title: t('projects.items.latexCompiler.title'),
+            imgUrl: '/assets/latex-compiler.png',
+            stack: ['Cloudflare Workers', 'Fly.io', 'Docker', 'Monaco Editor', 'React', 'TypeScript'],
+            link: 'https://latexcompile.onurd.com.tr',
+            github: 'https://github.com/onurdrsn/fly-latex-compiler',
+            description: t('projects.items.latexCompiler.description'),
+            category: 'Full Stack',
+            featured: true
+        },
+        {
+            title: t('projects.items.voidGame.title'),
+            imgUrl: '/assets/void-game.png',
+            stack: ['C++17', 'OpenGL 3.3', 'Procedural Generation', 'Custom Audio Engine', 'Win32 API'],
+            link: '#',
+            github: 'https://github.com/onurdrsn/void-game',
+            description: t('projects.items.voidGame.description'),
+            category: 'Game Dev',
+            featured: true
         }
     ];
 }

@@ -8,7 +8,7 @@
         "calculator": "42 Hesaplayıcı"
     },
     "hero": {
-        "welcome": "👋 Hoş Geldiniz",
+        "welcome": "Hoş Geldiniz",
         "name": "Onur Dursun",
         "title": "Full Stack Developer & Veri Bilimci",
         "description": "Modern web uygulamaları geliştiriyor ve yapay zeka destekli çözümler üretiyorum. En son teknolojilerle yenilikçi ürünler yaratma tutkusu.",
@@ -119,7 +119,7 @@
             },
             "boardra": {
                 "title": "Boardra",
-                "description": "Gerçek zamanlı, çok kullanıcılı işbirliğine dayalı beyaz tahta ve çalışma alanı platformu. Küresel Edge ağı canlı imleçleri, şekil çizimi, güvenli kimlik doğrulama ve ekip görev yönetimi özelliklerine sahiptir."
+                "description": "Gerçek zamanlı, çok kullanıcılı işbirliğine dayalı beyaz tahta, çalışma alanı ve mobil platformu. Küresel Edge ağı canlı imleçleri, şekil çizimi, güvenli kimlik doğrulama, ekip görev yönetimi ve React Native/Expo ile geliştirilmiş çapraz platform mobil uygulama özelliklerine sahiptir."
             },
             "githubStats": {
                 "title": "GitHubStats",
@@ -128,6 +128,50 @@
             "chronaMesh": {
                 "title": "ChronaMesh",
                 "description": "Ekiplerin stratejik kararları modellemesini, Monte Carlo simülasyonları çalıştırmasını ve ağırlıklı oylama ile gerçek zamanlı dağıtık konsensüs sağlamasını kolaylaştıran çok kiracılı SaaS platformu."
+            },
+            "nexora": {
+                "title": "Nexora",
+                "description": "Uçtan uca şifreli kurumsal mesajlaşma platformu. Cloudflare Workers, Durable Objects ve R2 üzerinde sunucusuz kenar mimarisiyle tasarlanmış ve güvenli kriptografi için libsodium kullanılmıştır."
+            },
+            "codeLingo": {
+                "title": "CodeLingo",
+                "description": "Duolingo tarzı oyunlaştırılmış kodlama öğrenme platformu. Cloudflare Workers, Vite, React ve Tailwind CSS v4 ile geliştirilmiş etkileşimli dersler, ilerleme takibi ve yapay zeka destekli ipuçları sunar."
+            },
+            "devDiff": {
+                "title": "DevDiff",
+                "description": "Paket sürüm farklılıklarını kontrol eden, önemli değişiklikleri ve kullanımdan kaldırılmaları tespit eden ve Workers AI aracılığıyla Llama 3.3 kullanarak kılavuzlar oluşturan yapay zeka destekli bir kütüphane geçiş analiz aracı."
+            },
+            "listify": {
+                "title": "Listify",
+                "description": "Filmler, diziler, kitaplar, yemekler ve alışveriş için listeleri yönetmek üzere tasarlanmış premium bir kişisel takip ve hatırlatma platformu. Akıllı motive edici bildirimlerle harici API'leri entegre eder."
+            },
+            "pdfusionCloud": {
+                "title": "PDFusion Cloud",
+                "description": "Kurumsal düzeyde, çok kiracılı PDF veri çıkarma ve Excel'e aktarma SaaS platformu. Rol tabanlı erişim kontrolü (RBAC), Stripe faturalandırma ve Edge tabanlı PDF işleme özelliklerine sahiptir."
+            },
+            "pasteBoard": {
+                "title": "PasteBoard",
+                "description": "Cloudflare Workers AI ve Vectorize destekli semantik vektör aramalı akıllı kod parçacığı yöneticisi. Güvenli kendi kendine barındırılan JWT kimlik doğrulaması ve kod paylaşımı özelliklerine sahiptir."
+            },
+            "steadPay": {
+                "title": "SteadPay",
+                "description": "AES-256-GCM kart tokenizasyonu, tekrarlayan abonelik tetikleyicileri ve shopier ödeme akışlarını içeren SaaS tabanlı modern B2B/B2C ödeme altyapısı."
+            },
+            "reconCore": {
+                "title": "ReconCore",
+                "description": "Otomatik keşif, güvenlik denetimi, güvenlik açığı taraması ve Edge üzerinde özel PDF raporu oluşturma sağlayan yapay zeka destekli bir sızma testi SaaS platformu."
+            },
+            "gitReadme": {
+                "title": "GitHub Profile Card Generator",
+                "description": "Kullanıcı profil README'lerine entegre etmek için özel GitHub Stats ve Trophy kartları oluşturan hafif bir araç. React 18, TypeScript ve Cloudflare D1 ile geliştirilmiştir."
+            },
+            "latexCompiler": {
+                "title": "LaTeX Compile Server",
+                "description": "LaTeX belgeleri için eksiksiz bir bulut derleme platformu. Cloudflare Workers üzerinde güvenli bir proxy, Fly.io backend derleyici ve Monaco Editor tabanlı frontend sunar."
+            },
+            "voidGame": {
+                "title": "VOID — Horror FPS",
+                "description": "Minimum, prosedürel olarak oluşturulmuş bir korku FPS oyunudur. C++17 ve OpenGL 3.3 Core Profile kullanılarak 100KB altı ikili dosya boyutu kısıtlamasıyla geliştirilmiş, çalışma zamanında üretilen varlıklar ve ses özelliklerine sahiptir."
             }
         }
     },

@@ -8,7 +8,7 @@
         "calculator": "42 Calculator"
     },
     "hero": {
-        "welcome": "👋 Welcome",
+        "welcome": "Welcome",
         "name": "Onur Dursun",
         "title": "Full Stack Developer & Data Scientist",
         "description": "I build modern web applications and develop AI-powered solutions. Passionate about creating innovative products with cutting-edge technologies.",
@@ -119,7 +119,7 @@
             },
             "boardra": {
                 "title": "Boardra",
-                "description": "A real-time, multi-tenant collaborative whiteboard and workspace platform. Features global Edge-network live cursors, shape drawing, secure authentication, and team task management."
+                "description": "A real-time, multi-tenant collaborative whiteboard, workspace, and mobile platform. Features global Edge-network live cursors, shape drawing, secure authentication, team task management, and a cross-platform React Native/Expo mobile application."
             },
             "githubStats": {
                 "title": "GitHubStats",
@@ -128,6 +128,50 @@
             "chronaMesh": {
                 "title": "ChronaMesh",
                 "description": "A multi-tenant SaaS platform enabling teams to model strategic decisions, run Monte Carlo simulations, and achieve distributed consensus in real-time via weighted voting."
+            },
+            "nexora": {
+                "title": "Nexora",
+                "description": "An end-to-end encrypted enterprise messaging platform. Designed with a serverless edge architecture on Cloudflare Workers, Durable Objects, and R2, utilizing libsodium for secure cryptography."
+            },
+            "codeLingo": {
+                "title": "CodeLingo",
+                "description": "A Duolingo-style gamified coding learning platform. Features interactive lessons, track progress, and AI-powered hints built with Cloudflare Workers, Vite, React, and Tailwind CSS v4."
+            },
+            "devDiff": {
+                "title": "DevDiff",
+                "description": "An AI-powered library migration analyzer that checks package version differences, detects breaking changes and deprecations, and generates guides using Llama 3.3 via Workers AI."
+            },
+            "listify": {
+                "title": "Listify",
+                "description": "A premium personal tracking and reminder platform to manage lists for movies, series, books, food, and shopping. Integrates external APIs with smart motivative notifications."
+            },
+            "pdfusionCloud": {
+                "title": "PDFusion Cloud",
+                "description": "An enterprise-grade multi-tenant SaaS platform for PDF data extraction and Excel export. Features role-based access control (RBAC), Stripe billing, and Edge-based PDF processing."
+            },
+            "pasteBoard": {
+                "title": "PasteBoard",
+                "description": "A smart code snippet manager with semantic vector search powered by Cloudflare Workers AI and Vectorize. Features secure self-hosted JWT authentication and code sharing."
+            },
+            "steadPay": {
+                "title": "SteadPay",
+                "description": "SaaS-based modern B2B/B2C payment infrastructure featuring AES-256-GCM card tokenization, recurring subscription triggers, and shopier payment checkout flows."
+            },
+            "reconCore": {
+                "title": "ReconCore",
+                "description": "An AI-powered penetration testing SaaS platform providing automated reconnaissance, security auditing, vulnerability scanning, and custom PDF report generation at the Edge."
+            },
+            "gitReadme": {
+                "title": "GitReadme",
+                "description": "A lightweight tool to generate custom GitHub Stats and Trophy cards to integrate into user profile READMEs. Built with React 18, TypeScript, and Cloudflare D1."
+            },
+            "latexCompiler": {
+                "title": "LaTeX Compile Server",
+                "description": "A complete cloud compilation platform for LaTeX documents. Features a secure proxy on Cloudflare Workers, Fly.io backend compiler, and Monaco Editor-based frontend."
+            },
+            "voidGame": {
+                "title": "VOID — Horror FPS",
+                "description": "A minimalist, procedurally generated horror FPS game built in C++17 and OpenGL 3.3 Core Profile under sub-100KB binary constraints, featuring runtime generated assets and audio."
             }
         }
     },

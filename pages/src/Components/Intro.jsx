@@ -15,7 +15,7 @@ export default function Intro() {
             <div className="relative z-10">
                 <div className="mb-4">
                     <span className="inline-block bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
-                        {t('hero.welcome')}
+                        👋 {t('hero.welcome')}
                     </span>
                 </div>
 
