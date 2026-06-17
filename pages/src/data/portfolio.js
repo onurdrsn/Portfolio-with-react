@@ -2,16 +2,6 @@
 export default function getPortfolioData(t) {
     return [
         {
-            title: t('projects.items.githubStats.title'),
-            imgUrl: '/assets/github-stats.png',
-            stack: ['Vite', 'TypeScript', 'Tailwind CSS', 'Hono', 'Cloudflare Workers', 'PostgreSQL', 'WebSockets'],
-            link: 'https://githubstats.onurd.com.tr',
-            github: 'https://github.com/onurdrsn/GitHubStats',
-            description: t('projects.items.githubStats.description'),
-            category: 'Full Stack',
-            featured: true
-        },
-        {
             title: t('projects.items.chronaMesh.title'),
             imgUrl: '/assets/chronamesh.png',
             stack: ['Vite', 'React', 'TypeScript', 'Tailwind CSS', 'Hono', 'Cloudflare Workers', 'Cloudflare D1', 'WebSockets'],
@@ -349,7 +339,7 @@ export default function getPortfolioData(t) {
             title: t('projects.items.gitReadme.title'),
             imgUrl: '/assets/gitreadme.svg',
             stack: ['React 18', 'TypeScript', 'Tailwind CSS', 'Cloudflare D1', 'Vite'],
-            link: 'https://gitreadme.onurd.com.tr',
+            link: 'https://gitstats.onurd.com.tr',
             github: 'https://github.com/onurdrsn/YourGithub',
             description: t('projects.items.gitReadme.description'),
             category: 'Full Stack',
