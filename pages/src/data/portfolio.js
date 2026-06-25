@@ -103,16 +103,6 @@ export default function getPortfolioData(t) {
             category: 'Full Stack',
             featured: true
         },
-        {
-            title: t('projects.items.chatApp.title'),
-            imgUrl: '/assets/chat-app.png',
-            stack: ['Vite', 'TypeScript', 'WebSocket', 'Node.js'],
-            link: 'https://0xchat.onurd.com.tr',
-            github: 'https://github.com/onurdrsn',
-            description: t('projects.items.chatApp.description'),
-            category: 'Full Stack',
-            featured: false
-        },
         // {
         //     title: 'Game Collection',
         //     imgUrl: '/assets/games.png',
@@ -246,16 +236,6 @@ export default function getPortfolioData(t) {
             featured: false
         },
         {
-            title: t('projects.items.pdfProcessing.title'),
-            imgUrl: '/assets/pdf-processing.png',
-            stack: ['TypeScript', 'Python', 'PDF Processing'],
-            link: 'https://flipbook.onurd.com.tr',
-            github: 'https://github.com/onurdrsn/PDFVeriIsleme',
-            description: t('projects.items.pdfProcessing.description'),
-            category: 'Full Stack',
-            featured: false
-        },
-        {
             title: t('projects.items.nexora.title'),
             imgUrl: '/assets/nexora.png',
             stack: ['Cloudflare Workers', 'Durable Objects', 'Cloudflare R2', 'libsodium', 'TypeScript', 'Vite', 'React'],
@@ -263,16 +243,6 @@ export default function getPortfolioData(t) {
             github: 'https://github.com/onurdrsn/ChatApp',
             description: t('projects.items.nexora.description'),
             category: 'Full Stack',
-            featured: true
-        },
-        {
-            title: t('projects.items.codeLingo.title'),
-            imgUrl: '/assets/codelingo.png',
-            stack: ['React 19', 'Vite', 'TypeScript', 'Tailwind CSS v4', 'Cloudflare Workers', 'AI Hints'],
-            link: 'https://codelingo.onurd.com.tr',
-            github: 'https://github.com/onurdrsn/Codelingo',
-            description: t('projects.items.codeLingo.description'),
-            category: 'Frontend',
             featured: true
         },
         {
