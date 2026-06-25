@@ -324,16 +324,6 @@ export default function getPortfolioData(t) {
             description: t('projects.items.latexCompiler.description'),
             category: 'Full Stack',
             featured: true
-        },
-        {
-            title: t('projects.items.voidGame.title'),
-            imgUrl: '/assets/void-game.png',
-            stack: ['C++17', 'OpenGL 3.3', 'Procedural Generation', 'Custom Audio Engine', 'Win32 API'],
-            link: '#',
-            github: 'https://github.com/onurdrsn/void-game',
-            description: t('projects.items.voidGame.description'),
-            category: 'Game Dev',
-            featured: true
         }
     ];
 }
