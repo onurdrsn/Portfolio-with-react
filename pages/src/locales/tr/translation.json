@@ -3,28 +3,64 @@
         "home": "Ana Sayfa",
         "projects": "Projeler",
         "experience": "Deneyim",
+        "blog": "Blog",
         "contact": "İletişim",
         "games": "Oyunlar",
+        "admin": "Admin Paneli",
         "calculator": "42 Hesaplayıcı"
     },
     "hero": {
-        "welcome": "Hoş Geldiniz",
+        "welcome": "👋 Hoş Geldiniz — Projeler için Aktif & Hazır",
         "name": "Onur Dursun",
-        "title": "Full Stack Developer & Veri Bilimci",
-        "description": "Modern web uygulamaları geliştiriyor ve yapay zeka destekli çözümler üretiyorum. En son teknolojilerle yenilikçi ürünler yaratma tutkusu.",
-        "viewWork": "Çalışmalarımı Gör",
+        "title": "Senior Full Stack & AI Systems Architect",
+        "description": "Modern web mimarileri, Cloudflare Worker sunucusuz sistemler, real-time WebSocket uygulamaları ve makine öğrenimi modelleri üreten tutkulu geliştirici.",
+        "viewWork": "Projelerimi Keşfet",
         "getInTouch": "İletişime Geç",
-        "scrollDown": "Aşağı Kaydır"
+        "copied": "E-posta Kopyalandı!",
+        "scrollDown": "Aşağı Kaydır",
+        "stats": {
+            "projects": "Tamamlanan Proje",
+            "experience": "Geliştirme Deneyimi",
+            "quality": "Canlı & Performanslı"
+        }
     },
     "projects": {
+        "badge": "Gelecek Nesil Mimari",
         "title": "Öne Çıkan",
-        "titleHighlight": "Projeler",
-        "subtitle": "Full-stack geliştirme, makine öğrenmesi ve yaratıcı problem çözme becerilerimi sergileyen son çalışmalarım.",
-        "featured": "Öne Çıkan",
+        "titleHighlight": "Projeler & Eserler",
+        "subtitle": "Sayfayı uzatmayan, filtrelenebilir ve etkileşimli modern proje vitrini.",
+        "featured": "Öne Çıkan Vitrin",
         "liveDemo": "Canlı Demo",
         "viewGithub": "GitHub",
+        "details": "Detaylar",
         "readMore": "Devamını Oku",
         "readLess": "Daha Az Göster",
+        "searchPlaceholder": "Proje veya teknoloji ara...",
+        "noProjectsFound": "Proje Bulunamadı",
+        "noProjectsDesc": "Arama kriterlerinize uyan proje bulunamadı.",
+        "categories": {
+            "all": "Tümü",
+            "fullStack": "Full Stack",
+            "frontend": "Frontend",
+            "machineLearning": "Makine Öğrenmesi",
+            "ai": "Yapay Zeka",
+            "gameDev": "Oyun Geliştirme",
+            "dataScience": "Veri Bilimi"
+        },
+        "viewMode": {
+            "deck": "Spotlight Vitrin",
+            "grid": "Bento Izgarası"
+        },
+        "pagination": {
+            "prev": "Önceki",
+            "next": "Sonraki",
+            "page": "Sayfa"
+        },
+        "modal": {
+            "usedTech": "Kullanılan Teknolojiler",
+            "openLiveApp": "Canlı Uygulamayı Aç",
+            "viewCode": "GitHub Kodları"
+        },
         "ai": {
             "title": "Yapay Zeka ve Makine Öğrenmesi",
             "titleHighlight": "Projeleri",
@@ -34,11 +70,6 @@
             "title": "Web Geliştirme",
             "titleHighlight": "Projeleri",
             "subtitle": "Full-stack uygulamalar ve interaktif web deneyimleri"
-        },
-        "categories": {
-            "fullStack": "Full Stack",
-            "frontend": "Frontend",
-            "machineLearning": "Makine Öğrenmesi"
         },
         "items": {
             "tenant": {
@@ -111,7 +142,7 @@
             },
             "orbitEdge": {
                 "title": "OrbitEdge",
-                "description": "Uluslararası Uzay İstasyonu (ISS) ve diğer uyduları Cloudflare\\'in küresel ağı sayesinde milisaniyelik gecikmelerle canlı izlemenizi sağlayan gerçek zamanlı yörünge telemetri platformu."
+                "description": "Uluslararası Uzay İstasyonu (ISS) ve diğer uyduları Cloudflare'in küresel ağı sayesinde milisaniyelik gecikmelerle canlı izlemenizi sağlayan gerçek zamanlı yörünge telemetri platformu."
             },
             "nexusERP": {
                 "title": "Nexus ERP System",
@@ -198,33 +229,38 @@
         }
     },
     "experience": {
-        "title": "İş",
-        "titleHighlight": "Deneyimi",
-        "subtitle": "Yazılım geliştirme ve veri analizindeki profesyonel yolculuğum ve önemli başarılarım."
+        "badge": "Profesyonel Yolculuk",
+        "title": "Kariyer &",
+        "titleHighlight": "Zaman Çizelgesi",
+        "subtitle": "Geliştirdiğim sistemler, yazılım mimarileri ve araştırmalar."
     },
     "contact": {
-        "title": "İletişime",
-        "titleHighlight": "Geçin",
-        "subtitle": "Bir sorunuz mu var veya birlikte çalışmak mı istiyorsunuz? Benimle iletişime geçmekten çekinmeyin!",
+        "badge": "İletişim Kurun",
+        "title": "Birlikte",
+        "titleHighlight": "Harika İşler Yapalım",
+        "subtitle": "Projeniz, sorularınız veya iş birliği fırsatları için mesaj bırakabilirsiniz.",
         "form": {
-            "nameLabel": "Adınız",
-            "namePlaceholder": "Ahmet Yılmaz",
-            "emailLabel": "E-posta Adresiniz",
-            "emailPlaceholder": "ahmet@example.com",
+            "nameLabel": "Adınız Soyadınız",
+            "namePlaceholder": "John Doe",
+            "emailLabel": "E-Posta Adresiniz",
+            "emailPlaceholder": "john@example.com",
             "messageLabel": "Mesajınız",
-            "messagePlaceholder": "Projeniz hakkında bana bilgi verin...",
-            "sendButton": "Mesaj Gönder",
+            "messagePlaceholder": "Projeniz hakkında detay yazabilirsiniz...",
+            "sendButton": "Mesajı Gönder",
             "sending": "Gönderiliyor..."
         },
         "info": {
-            "email": "E-posta",
+            "email": "E-Posta",
             "github": "GitHub",
             "linkedin": "LinkedIn"
         },
         "toast": {
             "success": "Mesajınız başarıyla gönderildi!",
-            "error": "Bir hata oluştu. Lütfen tekrar deneyin."
+            "error": "Mesaj gönderilirken bir hata oluştu."
         }
+    },
+    "footer": {
+        "rights": "Onur Dursun. Tüm hakları saklıdır."
     },
     "games": {
         "title": "Oyun",

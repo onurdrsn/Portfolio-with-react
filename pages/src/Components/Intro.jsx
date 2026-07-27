@@ -1,103 +1,105 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 
 export default function Intro() {
     const { t } = useTranslation();
+    const [copied, setCopied] = useState(false);
+
+    const handleCopyEmail = () => {
+        navigator.clipboard.writeText('onurdrsn@gmail.com');
+        setCopied(true);
+        toast.success('E-posta adresi kopyalandı!');
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     return (
-        <div className="relative flex items-center justify-center flex-col text-center pt-20 pb-16 px-6">
-            {/* Animated Background Gradient */}
+        <div className="relative flex items-center justify-center flex-col text-center pt-24 pb-20 px-4 sm:px-6 overflow-hidden">
+            {/* Ambient Animated Cyber Glow Orbs */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+                <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-violet-600/25 via-purple-600/20 to-pink-500/10 rounded-full blur-[120px] animate-pulse"></div>
+                <div className="absolute -bottom-10 left-1/3 w-[450px] h-[300px] bg-indigo-600/15 rounded-full blur-[100px]"></div>
             </div>
 
-            {/* Content */}
-            <div className="relative z-10">
-                <div className="mb-4">
-                    <span className="inline-block bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
-                        👋 {t('hero.welcome')}
+            {/* Z-Index Wrapper */}
+            <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
+                {/* Status Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-violet-950/80 to-purple-950/80 border border-violet-500/30 text-violet-300 text-xs sm:text-sm font-medium mb-6 shadow-xl shadow-violet-950/50 backdrop-blur-md hover:border-violet-400/50 transition-all cursor-default">
+                    <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                     </span>
+                    <span>{t('hero.welcome') || "👋 Hoş Geldiniz — Projeler için Aktif & Hazır"}</span>
                 </div>
 
-                {/* Name with Gradient */}
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-4 md:mb-6">
-                    <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
+                {/* Name Heading with Futuristic Cyber Gradient */}
+                <h1 className="text-5xl sm:text-7xl md:text-8xl font-extrabold tracking-tight mb-4 text-white">
+                    <span className="bg-gradient-to-r from-white via-violet-200 to-purple-400 bg-clip-text text-transparent drop-shadow-sm">
                         Onur Dursun
                     </span>
                 </h1>
 
-                {/* Title */}
-                <p className="text-xl md:text-2xl lg:text-3xl mb-6 font-semibold text-gray-300">
-                    {t('hero.title')}
-                </p>
+                {/* Subtitle & Role */}
+                <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+                    <span className="text-xl sm:text-2xl md:text-3xl font-semibold bg-gradient-to-r from-violet-400 via-purple-300 to-indigo-300 bg-clip-text text-transparent">
+                        {t('hero.title') || "Senior Full Stack & AI Systems Architect"}
+                    </span>
+                </div>
 
                 {/* Description */}
-                <p className="text-base md:text-lg text-gray-400 max-w-3xl mx-auto mb-8 leading-relaxed">
-                    {t('hero.description')}
+                <p className="text-base sm:text-lg text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+                    {t('hero.description') || "Modern web mimarileri, Cloudflare Worker sunucusuz sistemler, real-time WebSocket uygulamaları ve makine öğrenimi modelleri üreten tutkulu geliştirici."}
                 </p>
 
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                {/* CTAs */}
+                <div className="flex flex-wrap gap-4 justify-center items-center mb-12">
                     <a
                         href="#projects"
-                        className="group relative px-8 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-violet-500/50 hover:scale-105"
+                        className="group relative px-8 py-3.5 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-bold text-sm sm:text-base rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-violet-600/40 hover:scale-[1.03] active:scale-95 border border-violet-400/30"
                     >
                         <span className="relative z-10 flex items-center gap-2">
-                            {t('hero.viewWork')}
+                            {t('hero.viewWork') || "Projelerimi Keşfet"}
                             <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                             </svg>
                         </span>
                     </a>
-                    <a
-                        href="#contact"
-                        className="px-8 py-3 bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-gray-200 font-semibold rounded-lg hover:bg-gray-700/50 hover:border-violet-500/50 transition-all duration-300 hover:shadow-lg"
+
+                    <button
+                        onClick={handleCopyEmail}
+                        className="px-6 py-3.5 bg-gray-900/60 hover:bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 hover:border-violet-500/50 text-gray-200 font-semibold text-sm sm:text-base rounded-2xl transition-all duration-300 flex items-center gap-2 hover:shadow-lg active:scale-95"
                     >
-                        {t('hero.getInTouch')}
-                    </a>
+                        <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        {copied ? 'Kopyalandı!' : (t('hero.getInTouch') || 'İletişime Geç')}
+                    </button>
                 </div>
 
-                {/* Social Links */}
-                <div className="flex gap-6 justify-center items-center">
-                    <a
-                        href="https://github.com/onurdrsn"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="group p-3 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg hover:border-violet-500/50 hover:bg-gray-700/50 transition-all duration-300 hover:scale-110"
-                        aria-label="GitHub"
-                    >
-                        <svg className="w-6 h-6 text-gray-400 group-hover:text-violet-400 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                            <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-                        </svg>
-                    </a>
-                    <a
-                        href="https://linkedin.com/in/odursun"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="group p-3 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg hover:border-violet-500/50 hover:bg-gray-700/50 transition-all duration-300 hover:scale-110"
-                        aria-label="LinkedIn"
-                    >
-                        <svg className="w-6 h-6 text-gray-400 group-hover:text-violet-400 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                        </svg>
-                    </a>
-                    <a
-                        href="mailto:onur@example.com"
-                        className="group p-3 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg hover:border-violet-500/50 hover:bg-gray-700/50 transition-all duration-300 hover:scale-110"
-                        aria-label="Email"
-                    >
-                        <svg className="w-6 h-6 text-gray-400 group-hover:text-violet-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                    </a>
+                {/* Tech Chips Matrix */}
+                <div className="flex flex-wrap items-center justify-center gap-2 mb-12 max-w-xl">
+                    {['React 19', 'TypeScript', 'Cloudflare Workers', 'Hono', 'Neon PostgreSQL', 'Python ML', 'Docker'].map((tech) => (
+                        <span key={tech} className="px-3 py-1 text-xs font-semibold bg-violet-950/40 text-violet-300 border border-violet-500/20 rounded-full hover:bg-violet-900/60 hover:border-violet-400/40 transition-all cursor-default shadow-sm">
+                            ⚡ {tech}
+                        </span>
+                    ))}
                 </div>
-            </div>
 
-            {/* Scroll Indicator */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-                <svg className="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
+                {/* Quick Stat Counters */}
+                <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-2xl w-full p-4 sm:p-6 bg-gradient-to-br from-gray-900/60 to-gray-950/80 backdrop-blur-xl border border-gray-800/80 rounded-2xl shadow-2xl">
+                    <div className="text-center">
+                        <div className="text-2xl sm:text-4xl font-extrabold text-white bg-gradient-to-r from-violet-400 to-purple-300 bg-clip-text text-transparent">35+</div>
+                        <div className="text-[11px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">Tamamlanan Proje</div>
+                    </div>
+                    <div className="text-center border-x border-gray-800/80 px-2">
+                        <div className="text-2xl sm:text-4xl font-extrabold text-white bg-gradient-to-r from-purple-400 to-pink-300 bg-clip-text text-transparent">3+ Yıl</div>
+                        <div className="text-[11px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">Geliştirme Deneyimi</div>
+                    </div>
+                    <div className="text-center">
+                        <div className="text-2xl sm:text-4xl font-extrabold text-white bg-gradient-to-r from-indigo-400 to-violet-300 bg-clip-text text-transparent">100%</div>
+                        <div className="text-[11px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">Canlı & Performanslı</div>
+                    </div>
+                </div>
             </div>
         </div>
     );

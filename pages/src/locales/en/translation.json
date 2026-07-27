@@ -3,28 +3,64 @@
         "home": "Home",
         "projects": "Projects",
         "experience": "Experience",
+        "blog": "Blog",
         "contact": "Contact",
         "games": "Games",
+        "admin": "Admin Panel",
         "calculator": "42 Calculator"
     },
     "hero": {
-        "welcome": "Welcome",
+        "welcome": "👋 Welcome — Active & Available for Projects",
         "name": "Onur Dursun",
-        "title": "Full Stack Developer & Data Scientist",
-        "description": "I build modern web applications and develop AI-powered solutions. Passionate about creating innovative products with cutting-edge technologies.",
-        "viewWork": "View My Work",
+        "title": "Senior Full Stack & AI Systems Architect",
+        "description": "Passionate developer building modern web architectures, Cloudflare Worker serverless systems, real-time WebSocket applications, and machine learning models.",
+        "viewWork": "Explore My Work",
         "getInTouch": "Get In Touch",
-        "scrollDown": "Scroll Down"
+        "copied": "Email Copied!",
+        "scrollDown": "Scroll Down",
+        "stats": {
+            "projects": "Completed Projects",
+            "experience": "Development Experience",
+            "quality": "Live & Performant"
+        }
     },
     "projects": {
+        "badge": "Next-Gen Architecture",
         "title": "Featured",
-        "titleHighlight": "Projects",
-        "subtitle": "A collection of my recent work showcasing full-stack development, machine learning, and creative problem-solving.",
-        "featured": "Featured",
+        "titleHighlight": "Projects & Works",
+        "subtitle": "A non-bloating, filterable, and interactive modern project showcase.",
+        "featured": "Featured Spotlight",
         "liveDemo": "Live Demo",
         "viewGithub": "GitHub",
+        "details": "Details",
         "readMore": "Read More",
         "readLess": "Read Less",
+        "searchPlaceholder": "Search project or technology...",
+        "noProjectsFound": "No Projects Found",
+        "noProjectsDesc": "No projects match your search criteria.",
+        "categories": {
+            "all": "All",
+            "fullStack": "Full Stack",
+            "frontend": "Frontend",
+            "machineLearning": "Machine Learning",
+            "ai": "Artificial Intelligence",
+            "gameDev": "Game Development",
+            "dataScience": "Data Science"
+        },
+        "viewMode": {
+            "deck": "Spotlight Showcase",
+            "grid": "Bento Grid"
+        },
+        "pagination": {
+            "prev": "Previous",
+            "next": "Next",
+            "page": "Page"
+        },
+        "modal": {
+            "usedTech": "Technologies Used",
+            "openLiveApp": "Open Live Application",
+            "viewCode": "GitHub Repository"
+        },
         "ai": {
             "title": "AI & Machine Learning",
             "titleHighlight": "Projects",
@@ -34,11 +70,6 @@
             "title": "Web Development",
             "titleHighlight": "Projects",
             "subtitle": "Full-stack applications and interactive web experiences"
-        },
-        "categories": {
-            "fullStack": "Full Stack",
-            "frontend": "Frontend",
-            "machineLearning": "Machine Learning"
         },
         "items": {
             "tenant": {
@@ -198,18 +229,20 @@
         }
     },
     "experience": {
-        "title": "Work",
-        "titleHighlight": "Experience",
-        "subtitle": "My professional journey and key accomplishments in software development and data analysis."
+        "badge": "Professional Journey",
+        "title": "Career &",
+        "titleHighlight": "Timeline",
+        "subtitle": "Systems, software architectures, and research I have developed."
     },
     "contact": {
-        "title": "Get In",
-        "titleHighlight": "Touch",
-        "subtitle": "Have a question or want to work together? Feel free to reach out!",
+        "badge": "Get In Touch",
+        "title": "Let's Build",
+        "titleHighlight": "Great Things Together",
+        "subtitle": "Feel free to leave a message for your project, questions, or collaboration opportunities.",
         "form": {
             "nameLabel": "Your Name",
             "namePlaceholder": "John Doe",
-            "emailLabel": "Your Email",
+            "emailLabel": "Your Email Address",
             "emailPlaceholder": "john@example.com",
             "messageLabel": "Your Message",
             "messagePlaceholder": "Tell me about your project...",
@@ -223,8 +256,11 @@
         },
         "toast": {
             "success": "Your message has been sent successfully!",
-            "error": "An error occurred. Please try again."
+            "error": "An error occurred while sending your message."
         }
+    },
+    "footer": {
+        "rights": "Onur Dursun. All rights reserved."
     },
     "games": {
         "title": "Game",
