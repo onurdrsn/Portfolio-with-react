@@ -46,6 +46,42 @@ export const comments = pgTable("comments", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// ─── Portfolio Items ──────────────────────────────────────────────────
+export const portfolioItems = pgTable("portfolio_items", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  imgUrl: text("img_url").notNull(),
+  stack: text("stack").array().notNull().default([]),
+  link: text("link"),
+  github: text("github"),
+  description: text("description").notNull(),
+  category: text("category").notNull().default("Full Stack"),
+  featured: boolean("featured").notNull().default(false),
+  displayOrder: integer("display_order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// ─── Timeline Items ───────────────────────────────────────────────────
+export const timelineItems = pgTable("timeline_items", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  year: text("year").notNull(),
+  company: text("company").notNull(),
+  title: text("title").notNull(),
+  duration: text("duration").notNull(),
+  details: text("details").array().notNull().default([]),
+  displayOrder: integer("display_order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// ─── Site Settings ───────────────────────────────────────────────────
+export const siteSettings = pgTable("site_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // ─── Types ────────────────────────────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -53,3 +89,9 @@ export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
+export type PortfolioItem = typeof portfolioItems.$inferSelect;
+export type NewPortfolioItem = typeof portfolioItems.$inferInsert;
+export type TimelineItem = typeof timelineItems.$inferSelect;
+export type NewTimelineItem = typeof timelineItems.$inferInsert;
+export type SiteSetting = typeof siteSettings.$inferSelect;
+

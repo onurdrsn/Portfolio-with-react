@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { apiGet, apiPost, apiPatch, apiDelete, apiPut } from "../lib/api";
+import { apiGet, apiPost, apiPatch, apiDelete, apiPut, confirmToast } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
 import { renderMarkdown, readingTime } from "../lib/markdown";
 import toast from "react-hot-toast";
@@ -391,11 +391,12 @@ function CommentSection({ postId, topLevel, replies, setComments, user, postSlug
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bu yorumu silmek istediğinizden emin misiniz?")) return;
-    await apiDelete(`/api/comments/${id}`);
-    setComments((prev) => prev.filter((c) => c.id !== id && c.parentId !== id));
-    toast.success("Yorum silindi.");
+  const handleDelete = (id: string) => {
+    confirmToast("Bu yorumu silmek istediğinizden emin misiniz?", async () => {
+      await apiDelete(`/api/comments/${id}`);
+      setComments((prev) => prev.filter((c) => c.id !== id && c.parentId !== id));
+      toast.success("Yorum silindi.");
+    });
   };
 
   const totalCount = topLevel.length + topLevel.reduce((acc, c) => acc + replies(c.id).length, 0);

@@ -2,12 +2,21 @@ import { Hono } from "hono";
 // @ts-ignore
 import { eq } from "drizzle-orm";
 import { hash, compare } from "bcryptjs";
+import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 import { getDb } from "../db";
 import { users } from "../db/schema";
-import { signToken, signRefreshToken } from "../middleware/auth";
+import { signToken, signRefreshToken, verifyToken } from "../middleware/auth";
 import type { Env } from "../middleware/auth";
 
 export const authRouter = new Hono<{ Bindings: Env }>();
+
+const COOKIE_OPTIONS = {
+  path: "/",
+  secure: true,
+  httpOnly: true,
+  sameSite: "None" as const,
+  maxAge: 60 * 60 * 24 * 7, // 7 days
+};
 
 // POST /api/auth/register
 authRouter.post("/register", async (c) => {
@@ -21,7 +30,6 @@ authRouter.post("/register", async (c) => {
     return c.json({ error: "Password must be at least 6 characters" }, 400);
   }
 
-  // Check existing
   const existing = await db
     .select()
     .from(users)
@@ -46,19 +54,14 @@ authRouter.post("/register", async (c) => {
     .values({ username, email, passwordHash, isAdmin: false })
     .returning();
 
-  const token = await signToken(
-    { sub: user.id, isAdmin: user.isAdmin },
-    c.env.JWT_SECRET || "default_local_dev_secret_xyz123"
-  );
-  
-  const refreshToken = await signRefreshToken(
-    { sub: user.id, isAdmin: user.isAdmin },
-    c.env.REFRESH_TOKEN_SECRET || "default_local_dev_secret_xyz123"
-  );
+  const jwtExpiry = c.env.JWT_EXPIRATION_TIME || "7d";
+  const token = await signToken({ sub: user.id, isAdmin: user.isAdmin }, c.env.JWT_SECRET, jwtExpiry);
+
+  // Set HttpOnly Cookie
+  setCookie(c, "token", token, COOKIE_OPTIONS);
 
   return c.json({
     token,
-    refreshToken,
     user: {
       id: user.id,
       username: user.username,
@@ -92,19 +95,14 @@ authRouter.post("/login", async (c) => {
     return c.json({ error: "Invalid credentials" }, 401);
   }
 
-  const token = await signToken(
-    { sub: user.id, isAdmin: user.isAdmin },
-    c.env.JWT_SECRET || "default_local_dev_secret_xyz123"
-  );
+  const jwtExpiry = c.env.JWT_EXPIRATION_TIME || "7d";
+  const token = await signToken({ sub: user.id, isAdmin: user.isAdmin }, c.env.JWT_SECRET, jwtExpiry);
 
-  const refreshToken = await signRefreshToken(
-    { sub: user.id, isAdmin: user.isAdmin },
-    c.env.REFRESH_TOKEN_SECRET || "default_local_dev_secret_xyz123"
-  );
+  // Set HttpOnly Cookie
+  setCookie(c, "token", token, COOKIE_OPTIONS);
 
   return c.json({
     token,
-    refreshToken,
     user: {
       id: user.id,
       username: user.username,
@@ -114,17 +112,27 @@ authRouter.post("/login", async (c) => {
   });
 });
 
-// GET /api/auth/me  (requires auth)
+// POST /api/auth/logout
+authRouter.post("/logout", async (c) => {
+  deleteCookie(c, "token", { path: "/", secure: true, sameSite: "None" });
+  return c.json({ success: true });
+});
+
+// GET /api/auth/me  (requires auth via HttpOnly cookie or Authorization header)
 authRouter.get("/me", async (c) => {
-  const authHeader = c.req.header("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
+  let token = getCookie(c, "token");
+  if (!token) {
+    const authHeader = c.req.header("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      token = authHeader.slice(7);
+    }
+  }
+
+  if (!token) {
     return c.json({ error: "Unauthorized" }, 401);
   }
-  const { verifyToken } = await import("../middleware/auth");
-  const payload = await verifyToken(
-    authHeader.slice(7),
-    c.env.JWT_SECRET || "default_local_dev_secret_xyz123"
-  );
+
+  const payload = await verifyToken(token, c.env.JWT_SECRET);
   if (!payload) {
     return c.json({ error: "Invalid token" }, 401);
   }

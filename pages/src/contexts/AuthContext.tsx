@@ -22,16 +22,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session on mount
+  // Restore session automatically via HttpOnly Cookie / Token
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    apiGet<User>("/api/auth/me")
+    apiGet<User>("/api/auth/me", { silent: true })
       .then((u) => setUser(u))
-      .catch(() => localStorage.removeItem("token"))
+      .catch(() => {
+        setUser(null);
+        localStorage.removeItem("token");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -40,7 +38,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       "/api/auth/login",
       { email, password }
     );
-    localStorage.setItem("token", res.token);
+    if (res.token) {
+      localStorage.setItem("token", res.token);
+    }
     setUser(res.user);
   }, []);
 
@@ -50,13 +50,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         "/api/auth/register",
         { username, email, password }
       );
-      localStorage.setItem("token", res.token);
+      if (res.token) {
+        localStorage.setItem("token", res.token);
+      }
       setUser(res.user);
     },
     []
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await apiPost("/api/auth/logout", {}, { silent: true });
+    } catch {}
     localStorage.removeItem("token");
     setUser(null);
   }, []);

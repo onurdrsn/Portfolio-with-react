@@ -4,21 +4,24 @@ import { authRouter } from "./routes/auth";
 import { postsRouter } from "./routes/posts";
 import { commentsRouter } from "./routes/comments";
 import { aiRouter } from "./routes/ai";
-import type { Env } from "./middleware/auth";
+import { registerPortfolioRoutes } from "./routes/portfolio";
+import { registerTimelineRoutes } from "./routes/timeline";
+import { registerSettingsRoutes } from "./routes/settings";
+import type { Env, Variables } from "./middleware/auth";
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // CORS — allow frontend origin
 app.use(
-  "/api/*",
+  "*",
   cors({
     origin: (origin, c) => {
       const allowed = [
-        c.env.FRONTEND_URL,
+        c.env?.FRONTEND_URL,
         "http://localhost:5173",
         "http://localhost:4173",
-      ];
-      return allowed.includes(origin) ? origin : allowed[0];
+      ].filter(Boolean);
+      return allowed.includes(origin) ? origin : (allowed[0] || "*");
     },
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
@@ -31,6 +34,11 @@ app.route("/api/auth", authRouter);
 app.route("/api/posts", postsRouter);
 app.route("/api/comments", commentsRouter);
 app.route("/api/ai", aiRouter);
+
+// Directly register portfolio, timeline & settings routes on main app
+registerPortfolioRoutes(app);
+registerTimelineRoutes(app);
+registerSettingsRoutes(app);
 
 // Health check
 app.get("/api/health", (c) => c.json({ ok: true, ts: Date.now() }));

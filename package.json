@@ -16,5 +16,9 @@
   "devDependencies": {
     "@types/node": "^25.5.0",
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2"
   }
 }

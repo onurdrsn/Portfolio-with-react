@@ -1,10 +1,13 @@
 import { createMiddleware } from "hono/factory";
 import { SignJWT, jwtVerify } from "jose";
+import { getCookie } from "hono/cookie";
 
 export type Env = {
   DATABASE_URL: string;
   JWT_SECRET: string;
   REFRESH_TOKEN_SECRET: string;
+  JWT_EXPIRATION_TIME?: string;
+  REFRESH_TOKEN_EXPIRATION_TIME?: string;
   AI: any;
 };
 
@@ -19,23 +22,25 @@ export function getJwtSecret(secret: string): Uint8Array {
 
 export async function signToken(
   payload: { sub: string; isAdmin: boolean },
-  secret: string
+  secret: string,
+  expiresIn: string = "7d"
 ): Promise<string> {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d") // jwt 7 days expiry
+    .setExpirationTime(expiresIn)
     .sign(getJwtSecret(secret));
 }
 
 export async function signRefreshToken(
   payload: { sub: string; isAdmin: boolean },
-  secret: string
+  secret: string,
+  expiresIn: string = "30d"
 ): Promise<string> {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("30d") // refresh token expiry
+    .setExpirationTime(expiresIn)
     .sign(getJwtSecret(secret));
 }
 
@@ -51,16 +56,25 @@ export async function verifyToken(
   }
 }
 
+function getTokenFromContext(c: any): string | null {
+  let token = getCookie(c, "token");
+  if (token) return token;
+  const authHeader = c.req.header("Authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.slice(7);
+  }
+  return null;
+}
+
 // Middleware: Require authenticated user
 export const requireAuth = createMiddleware<{
   Bindings: Env;
   Variables: Variables;
 }>(async (c, next) => {
-  const authHeader = c.req.header("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
+  const token = getTokenFromContext(c);
+  if (!token) {
     return c.json({ error: "Unauthorized" }, 401);
   }
-  const token = authHeader.slice(7);
   const payload = await verifyToken(token, c.env.JWT_SECRET);
   if (!payload) {
     return c.json({ error: "Invalid token" }, 401);
@@ -75,11 +89,10 @@ export const requireAdmin = createMiddleware<{
   Bindings: Env;
   Variables: Variables;
 }>(async (c, next) => {
-  const authHeader = c.req.header("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
+  const token = getTokenFromContext(c);
+  if (!token) {
     return c.json({ error: "Unauthorized" }, 401);
   }
-  const token = authHeader.slice(7);
   const payload = await verifyToken(token, c.env.JWT_SECRET);
   if (!payload) {
     return c.json({ error: "Invalid token" }, 401);
@@ -97,9 +110,8 @@ export const optionalAuth = createMiddleware<{
   Bindings: Env;
   Variables: Partial<Variables>;
 }>(async (c, next) => {
-  const authHeader = c.req.header("Authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7);
+  const token = getTokenFromContext(c);
+  if (token) {
     const payload = await verifyToken(token, c.env.JWT_SECRET);
     if (payload) {
       c.set("userId", payload.sub);

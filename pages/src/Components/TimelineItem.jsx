@@ -1,47 +1,48 @@
 import React from "react";
+import { CheckCircle2, Briefcase, Calendar } from "lucide-react";
 
-export default function TimelineItem({ year, company, title, duration, details }) {
+export default function TimelineItem({ year, company, title, duration, details = [] }) {
+    const detailsList = Array.isArray(details) ? details : [details].filter(Boolean);
+
     return (
-        <div className="relative pl-8 pb-12 group">
-            {/* Vertical Line */}
-            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-500 via-purple-500 to-transparent group-last:to-transparent"></div>
+        <div className="relative pl-8 sm:pl-10 pb-12 group">
+            {/* Holographic Glowing Line */}
+            <div className="absolute left-3 sm:left-4 top-4 bottom-0 w-0.5 bg-gradient-to-b from-violet-500 via-purple-600 to-indigo-900 group-last:to-transparent"></div>
 
-            {/* Timeline Dot */}
-            <div className="absolute left-0 top-2 w-4 h-4 -ml-[7px]">
-                <div className="w-full h-full bg-violet-500 rounded-full border-4 border-gray-900 group-hover:scale-125 group-hover:bg-purple-400 transition-all duration-300 shadow-lg shadow-violet-500/50"></div>
+            {/* Glowing Pulsing Node Indicator */}
+            <div className="absolute left-3 sm:left-4 top-3 -translate-x-1/2 w-6 h-6 flex items-center justify-center">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-40"></span>
+                <div className="w-3.5 h-3.5 bg-violet-500 rounded-full border-2 border-gray-950 group-hover:scale-125 group-hover:bg-purple-400 transition-all duration-300 shadow-lg shadow-violet-500/80"></div>
             </div>
 
-            {/* Content Card */}
-            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-violet-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
+            {/* Futuristic Glassmorphic Card */}
+            <div className="bg-gradient-to-br from-gray-900/80 via-gray-900/40 to-gray-950/80 backdrop-blur-xl border border-gray-800/80 rounded-2xl p-6 hover:border-violet-500/40 transition-all duration-300 hover:shadow-2xl hover:shadow-violet-500/10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
-                        <h3 className="text-xl font-bold text-white mb-1 group-hover:text-violet-400 transition-colors duration-300">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="px-3 py-1 bg-violet-500/10 text-violet-300 text-xs font-extrabold rounded-full border border-violet-500/20 shadow-sm flex items-center gap-1">
+                                <Calendar size={11} /> {year}
+                            </span>
+                            <span className="text-xs font-semibold text-gray-400">· {duration}</span>
+                        </div>
+                        <h3 className="text-xl sm:text-2xl font-bold text-white group-hover:text-violet-300 transition-colors">
                             {title}
                         </h3>
-                        <p className="text-violet-400 font-semibold text-lg">
-                            {company}
-                        </p>
                     </div>
-                    <div className="flex flex-col items-start md:items-end gap-1">
-                        <span className="inline-block bg-violet-500/10 text-violet-300 text-sm font-semibold px-3 py-1 rounded-full border border-violet-500/30">
-                            {year}
-                        </span>
-                        <span className="text-gray-400 text-sm">
-                            {duration}
+
+                    <div className="flex items-center gap-2">
+                        <span className="px-3.5 py-1.5 bg-gray-950/80 text-violet-300 text-xs font-bold rounded-xl border border-violet-500/30 flex items-center gap-1.5 shadow-inner">
+                            <Briefcase size={13} className="text-violet-400" />
+                            {company}
                         </span>
                     </div>
                 </div>
 
-                {/* Details */}
-                <ul className="space-y-2">
-                    {details.map((detail, index) => (
-                        <li key={index} className="flex items-start gap-3 text-gray-300 text-sm leading-relaxed">
-                            <span className="text-violet-400 mt-1.5 flex-shrink-0">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                            </span>
+                {/* Bullet Points */}
+                <ul className="space-y-2.5">
+                    {detailsList.map((detail, index) => (
+                        <li key={index} className="flex items-start gap-2.5 text-gray-300 text-xs sm:text-sm leading-relaxed">
+                            <CheckCircle2 size={15} className="text-violet-400 mt-0.5 flex-shrink-0" />
                             <span>{detail}</span>
                         </li>
                     ))}
