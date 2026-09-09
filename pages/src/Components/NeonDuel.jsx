@@ -518,30 +518,29 @@ export default function NeonDuel() {
         }
       }
 
-      if (moveX !== 0 || moveY !== 0) {
-        const len = Math.sqrt(moveX * moveX + moveY * moveY);
-        const nx = myObj.x + (moveX / len) * speed;
-        const ny = myObj.y + (moveY / len) * speed;
+      // Helper to move any actor (player or bot) with strict wall collision and canvas clamping
+      const moveActorWithCollision = (actor, dirX, dirY, actorSpeed) => {
+        if (dirX === 0 && dirY === 0) return;
+        const len = Math.hypot(dirX, dirY);
+        const nx = actor.x + (dirX / len) * actorSpeed;
+        const ny = actor.y + (dirY / len) * actorSpeed;
         const radius = 18;
 
-        // Wall Collision Check (Player vs Obstacles)
         let canMoveX = true;
         let canMoveY = true;
 
         for (const obs of state.obstacles) {
-          // Test X movement
           if (
             nx + radius > obs.x &&
             nx - radius < obs.x + obs.w &&
-            myObj.y + radius > obs.y &&
-            myObj.y - radius < obs.y + obs.h
+            actor.y + radius > obs.y &&
+            actor.y - radius < obs.y + obs.h
           ) {
             canMoveX = false;
           }
-          // Test Y movement
           if (
-            myObj.x + radius > obs.x &&
-            myObj.x - radius < obs.x + obs.w &&
+            actor.x + radius > obs.x &&
+            actor.x - radius < obs.x + obs.w &&
             ny + radius > obs.y &&
             ny - radius < obs.y + obs.h
           ) {
@@ -549,19 +548,22 @@ export default function NeonDuel() {
           }
         }
 
-        if (canMoveX && nx > 25 && nx < 775) myObj.x = nx;
-        if (canMoveY && ny > 25 && ny < 575) myObj.y = ny;
+        if (canMoveX && nx >= 30 && nx <= 770) actor.x = nx;
+        if (canMoveY && ny >= 30 && ny <= 570) actor.y = ny;
+        actor.angle = Math.atan2(dirY, dirX);
+      };
 
-        myObj.angle = Math.atan2(moveY, moveX);
+      if (moveX !== 0 || moveY !== 0) {
+        moveActorWithCollision(myObj, moveX, moveY, speed);
       }
 
-      // Tactical AI Bot Logic (PvE) with Line-Of-Sight & Flanking
+      // Tactical AI Bot Logic (PvE) with Line-Of-Sight & Strict Bounds Clamping
       if (gameMode === 'bot') {
         const bot = state.p2;
         const target = state.p1;
         const dx = target.x - bot.x;
         const dy = target.y - bot.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dist = Math.hypot(dx, dy);
 
         // Raycast line of sight check
         let hasLOS = true;
@@ -580,14 +582,19 @@ export default function NeonDuel() {
 
         bot.angle = Math.atan2(dy, dx);
 
+        let botDx = 0;
+        let botDy = 0;
+
         if (!hasLOS) {
-          // Flank around obstacle horizontally or vertically
-          bot.y += (bot.y < 300 ? -2 : 2);
-          bot.x += (bot.x > 400 ? -1.5 : 1.5);
+          // Flank safely around obstacle within canvas bounds
+          botDy = bot.y < 300 ? -1 : 1;
+          botDx = bot.x > 400 ? -0.8 : 0.8;
         } else if (dist > 160) {
-          bot.x += Math.cos(bot.angle) * (speed * 0.75);
-          bot.y += Math.sin(bot.angle) * (speed * 0.75);
+          botDx = Math.cos(bot.angle);
+          botDy = Math.sin(bot.angle);
         }
+
+        moveActorWithCollision(bot, botDx, botDy, speed * 0.75);
 
         if (hasLOS && Math.random() < 0.04) {
           triggerFire('p2');
@@ -717,46 +724,92 @@ export default function NeonDuel() {
         ctx.stroke();
       }
 
-      // Render Tactical Bulletproof Obstacles with Pro Cyber Styling
+      // Render Ultra-Visible Bulletproof Obstacle Walls
       for (const obs of state.obstacles) {
         ctx.save();
         if (obs.type === 'steel') {
-          // Metallic Steel Bunker Wall
-          ctx.fillStyle = '#1e293b';
+          // High-Contrast Metallic Bunker Wall
+          ctx.fillStyle = '#0f172a';
           ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+          
+          // Outer Glowing Border
           ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = 2.5;
+          ctx.lineWidth = 3.5;
           ctx.shadowColor = '#f59e0b';
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = 16;
           ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+          ctx.shadowBlur = 0;
 
-          // Hazard diagonal stripe details
-          ctx.strokeStyle = 'rgba(245, 158, 11, 0.25)';
-          ctx.lineWidth = 1.5;
-          for (let p = 0; p < obs.w + obs.h; p += 12) {
+          // Diagonal Hazard Stripes
+          ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+          ctx.lineWidth = 2;
+          for (let p = -obs.h; p < obs.w; p += 14) {
             ctx.beginPath();
-            ctx.moveTo(Math.max(obs.x, obs.x + p - obs.h), Math.min(obs.y + obs.h, obs.y + p));
-            ctx.lineTo(Math.min(obs.x + obs.w, obs.x + p), Math.max(obs.y, obs.y + p - obs.w));
+            ctx.moveTo(Math.max(obs.x, obs.x + p), Math.min(obs.y + obs.h, obs.y + p));
+            ctx.lineTo(Math.min(obs.x + obs.w, obs.x + p + obs.h), Math.max(obs.y, obs.y + p));
             ctx.stroke();
           }
+
+          // Centered Visible Text Badge
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = 'bold 10px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🛡️ SİPER', obs.x + obs.w / 2, obs.y + obs.h / 2);
+
         } else if (obs.type === 'energy') {
-          // Purple Energy Barrier Wall
-          ctx.fillStyle = '#2e1065';
+          // High-Glow Purple Energy Barrier Wall
+          ctx.fillStyle = '#1e1b4b';
           ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-          ctx.strokeStyle = '#a855f7';
-          ctx.lineWidth = 2.5;
+
+          ctx.strokeStyle = '#c084fc';
+          ctx.lineWidth = 3.5;
           ctx.shadowColor = '#a855f7';
-          ctx.shadowBlur = 12;
+          ctx.shadowBlur = 20;
           ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+          ctx.shadowBlur = 0;
+
+          // Grid energy lines
+          ctx.strokeStyle = 'rgba(192, 132, 252, 0.35)';
+          ctx.lineWidth = 1.5;
+          for (let py = obs.y + 10; py < obs.y + obs.h; py += 14) {
+            ctx.beginPath();
+            ctx.moveTo(obs.x, py);
+            ctx.lineTo(obs.x + obs.w, py);
+            ctx.stroke();
+          }
+
+          // Centered Text Badge
+          ctx.fillStyle = '#e9d5ff';
+          ctx.font = 'bold 10px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('⚡ BARİYER', obs.x + obs.w / 2, obs.y + obs.h / 2);
+
         } else if (obs.type === 'core') {
-          // Cyan Reactor Core Pillar
-          ctx.fillStyle = '#082f49';
+          // High-Glow Cyan Reactor Core
+          ctx.fillStyle = '#0369a1';
           ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+
           ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 4;
           ctx.shadowColor = '#38bdf8';
-          ctx.shadowBlur = 15;
+          ctx.shadowBlur = 22;
           ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+          ctx.shadowBlur = 0;
+
+          // Inner Core Glow
+          ctx.fillStyle = '#0284c7';
+          ctx.beginPath();
+          ctx.arc(obs.x + obs.w / 2, obs.y + obs.h / 2, 12, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Centered Text Badge
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 9px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('⚛️ ÇEKİRDEK', obs.x + obs.w / 2, obs.y + obs.h / 2);
         }
         ctx.restore();
       }
