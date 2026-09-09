@@ -13,7 +13,6 @@ import {
   Zap, 
   Award, 
   Bot,
-  Users,
   Radio,
   Loader2,
   Sparkles,
@@ -183,6 +182,8 @@ export default function SpaceAce3D() {
   const [roomCode, setRoomCode] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [myRole, setMyRole] = useState('p1');
+  // eslint-disable-next-line no-unused-vars
+  const [myPlayerId, setMyPlayerId] = useState('');
   
   // Custom Nickname & Hangar Jet Class State
   const [customUsername, setCustomUsername] = useState('AcePilot-1');
@@ -469,7 +470,7 @@ export default function SpaceAce3D() {
         }
         setMyPlayerId(res.data.playerId);
         setGameState('playing');
-        triggerRadioComm(`Oda ${res.data.code} alanına bağlanıldı! İt dalaşı başlıyor!`);
+        triggerRadioComm(`Oda ${res.data.code} alanına bağlanıldı! uçuş simülatörü başlıyor!`);
         startOnlineSync(res.data.code, 'p2');
       }
     } catch (err) {
@@ -542,7 +543,7 @@ export default function SpaceAce3D() {
     engine.particles = [];
 
     setGameState('playing');
-    triggerRadioComm('AceBot-AI ile simüle it dalaşı başladı. Tüm silahlar serbest!');
+    triggerRadioComm('AceBot-AI ile simüle uzay simülatörü başladı. Tüm silahlar serbest!');
   };
 
   // Poll waiting room until P2 joins
@@ -557,7 +558,7 @@ export default function SpaceAce3D() {
             flightEngineRef.current.p2.name = res.data.room.p2.name;
           }
           setGameState('playing');
-          triggerRadioComm('Rakip pilot uzay sektörüne giriş yaptı! İt dalaşı başladı!');
+          triggerRadioComm('Rakip pilot uzay sektörüne giriş yaptı! Uçuş simülatörü başladı!');
           startOnlineSync(code, 'p1');
         }
       } catch (e) {
@@ -1584,7 +1585,7 @@ export default function SpaceAce3D() {
                   <p className="text-[11px] text-gray-400 leading-relaxed">
                     {isTr 
                       ? '4 haneli uzay oda kodu üretin. Arkadaşınızı 3D uzay arenasında it dalaşına davet edin.' 
-                      : 'Generate a 4-letter 3D space room code for a 3D orbital dogfight.'}
+                      : 'Generate a 4-letter 3D space room code for a 3D orbital simulation.'}
                   </p>
                 </div>
 
@@ -1892,7 +1893,7 @@ export default function SpaceAce3D() {
                 {winnerRole === myRole ? (isTr ? '🎉 3D UZAY ZAFERİ!' : '🎉 3D ORBITAL VICTORY!') : (isTr ? '💥 MAĞLUP OLDUNUZ' : '💥 DEFEAT')}
               </h2>
               <p className="text-sm font-bold text-amber-300">
-                🏆 {getWinnerName()} {isTr ? 'uzay it dalaşını kazandı!' : 'won the 3D space dogfight!'}
+                🏆 {getWinnerName()} {isTr ? 'uzay simülatörünü kazandı!' : 'won the 3D space simulation!'}
               </p>
             </div>
 
