@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import confetti from 'canvas-confetti';
@@ -10,11 +10,8 @@ import {
   Copy, 
   Check, 
   Play, 
-  RotateCcw, 
-  Shield, 
   Zap, 
   Award, 
-  Smartphone, 
   Bot,
   Users,
   Radio,
@@ -28,16 +25,9 @@ import {
   Minimize,
   Flame,
   Crosshair,
-  Compass,
   AlertTriangle,
   OctagonX,
-  Trophy,
-  Star,
-  Eye,
-  Activity,
-  Radar,
   RadioTower,
-  ZapOff,
   Gauge
 } from 'lucide-react';
 
@@ -193,7 +183,6 @@ export default function SpaceAce3D() {
   const [roomCode, setRoomCode] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [myRole, setMyRole] = useState('p1');
-  const [myPlayerId, setMyPlayerId] = useState('');
   
   // Custom Nickname & Hangar Jet Class State
   const [customUsername, setCustomUsername] = useState('AcePilot-1');
@@ -629,7 +618,7 @@ export default function SpaceAce3D() {
   };
 
   // ─── ACTION: Twin Vulcan Plasma Cannon ─────────────────────────────────────
-  const triggerVulcan = (role) => {
+  const triggerVulcan = useCallback((role) => {
     const p = role === 'p1' ? flightEngineRef.current.p1 : flightEngineRef.current.p2;
     if (p.hp <= 0) return;
 
@@ -655,10 +644,10 @@ export default function SpaceAce3D() {
     });
 
     if (soundEnabled) playFlightAudioEffect('vulcan');
-  };
+  }, [soundEnabled]);
 
   // ─── ACTION: Lock-On 3D Homing Missile ─────────────────────────────────────
-  const triggerMissile = (role) => {
+  const triggerMissile = useCallback((role) => {
     const p = role === 'p1' ? flightEngineRef.current.p1 : flightEngineRef.current.p2;
     if (p.hp <= 0 || p.missiles <= 0 || (p.missileCooldown && p.missileCooldown > 0)) return;
 
@@ -682,10 +671,10 @@ export default function SpaceAce3D() {
     flightEngineRef.current.missiles.push(missile);
     if (soundEnabled) playFlightAudioEffect('missile');
     triggerRadioComm('FOX TWO! ISIL GÜDÜMLÜ FÜZE ATEŞLENDİ!');
-  };
+  }, [soundEnabled]);
 
   // ─── ACTION: Thermal Countermeasure Flares ───────────────────────────────
-  const triggerFlares = (role) => {
+  const triggerFlares = useCallback((role) => {
     const p = role === 'p1' ? flightEngineRef.current.p1 : flightEngineRef.current.p2;
     if (p.hp <= 0 || p.flares <= 0 || (p.flareCooldown && p.flareCooldown > 0)) return;
 
@@ -715,10 +704,10 @@ export default function SpaceAce3D() {
 
     if (soundEnabled) playFlightAudioEffect('flare');
     triggerRadioComm('FLARE DEPLOYED! TERMAL SAVUNMA FİŞEKLERİ SAÇILDI!');
-  };
+  }, [soundEnabled]);
 
   // ─── ACTION: Hyper Warp Speed Boost + Sonic Boom Ring FX ───────────────────
-  const triggerWarp = (role) => {
+  const triggerWarp = useCallback((role) => {
     const p = role === 'p1' ? flightEngineRef.current.p1 : flightEngineRef.current.p2;
     if (p.hp <= 0 || (p.warpCooldown && p.warpCooldown > 0)) return;
 
@@ -740,7 +729,8 @@ export default function SpaceAce3D() {
 
     if (soundEnabled) playFlightAudioEffect('warp');
     triggerRadioComm('SONIC BOOM WARP ENGAGED! HYPER UZAY SIÇRAMASI!');
-  };
+  }, [soundEnabled]);
+
 
   // Mobile Touch Control Handlers
   const handleTouchStartLeft = (e) => {
@@ -1418,11 +1408,13 @@ export default function SpaceAce3D() {
 
     animationFrameRef.current = requestAnimationFrame(update3DFlight);
 
+    const containerNode = mountRef.current;
+
     // Resize Handler
     const handleResize = () => {
-      if (!mountRef.current) return;
-      const w = mountRef.current.clientWidth;
-      const h = mountRef.current.clientHeight;
+      if (!containerNode) return;
+      const w = containerNode.clientWidth;
+      const h = containerNode.clientHeight;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
@@ -1432,11 +1424,12 @@ export default function SpaceAce3D() {
     return () => {
       window.removeEventListener('resize', handleResize);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (containerNode && renderer.domElement) {
+        containerNode.removeChild(renderer.domElement);
       }
     };
-  }, [gameState, myRole, gameMode, soundEnabled]);
+  }, [gameState, myRole, gameMode, soundEnabled, triggerFlares, triggerMissile, triggerVulcan, triggerWarp]);
+
 
   const getWinnerName = () => {
     if (winnerRole === 'p1') return flightEngineRef.current.p1.name || p1Name;
@@ -1460,7 +1453,7 @@ export default function SpaceAce3D() {
             </div>
             <div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                {isTr ? 'Space-Ace 3D: AAA İt Dalaşı Simülatörü' : 'Space-Ace 3D: AAA Flight Simulator'}
+                {isTr ? 'Space-Ace 3D: Uçuş Simülatörü' : 'Space-Ace 3D: Flight Simulator'}
               </h1>
               <p className="text-[11px] text-gray-400">Hangarlar • 3D Radar • Hedef Öngörü Nişangahı • Taktik Telsiz</p>
             </div>
