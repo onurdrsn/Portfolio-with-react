@@ -1481,65 +1481,84 @@ export default function SpaceAce3D() {
 
         {/* ─── LOBBY STATE: HANGAR JET CLASS SELECTION & NICKNAME ─────────────── */}
         {gameState === 'menu' && (
-          <div className="space-y-6 animate-fadeIn">
+          <div className="space-y-4 animate-fadeIn max-h-[82vh] overflow-y-auto pr-1">
             
-            {/* Call Sign Banner */}
-            <div className="bg-gray-900/80 p-4 rounded-2xl border border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            {/* Top Bar: Call Sign Banner & Fast Play Buttons */}
+            <div className="bg-gray-900/90 backdrop-blur-xl p-4 rounded-2xl border border-gray-800 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2.5 w-full lg:w-auto">
                 <User className="w-5 h-5 text-purple-400" />
-                <span className="text-xs font-bold text-gray-300">
-                  {isTr ? '3D Pilot Çağrı Adınız:' : 'Pilot Call Sign:'}
+                <span className="text-xs font-bold text-gray-300 whitespace-nowrap">
+                  {isTr ? '3D Pilot Çağrı Adı:' : 'Pilot Call Sign:'}
                 </span>
+                <input
+                  type="text"
+                  value={customUsername}
+                  onChange={(e) => setCustomUsername(e.target.value)}
+                  placeholder="Örn: AcePilot-1"
+                  className="flex-1 lg:w-48 bg-gray-950 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-1.5 text-xs text-purple-300 font-bold outline-none"
+                />
               </div>
 
-              <input
-                type="text"
-                value={customUsername}
-                onChange={(e) => setCustomUsername(e.target.value)}
-                placeholder="Örn: AcePilot-1"
-                className="w-full sm:w-64 bg-gray-950 border border-gray-700 focus:border-purple-500 rounded-xl px-4 py-2 text-sm text-purple-300 font-bold outline-none"
-              />
+              {/* Instant Play Action Buttons (AI Bot & Quick Match) */}
+              <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-end">
+                <button
+                  onClick={handleStartBotGame}
+                  className="flex-1 sm:flex-none px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-950/40 ring-1 ring-cyan-400/30"
+                >
+                  <Bot className="w-4 h-4 text-cyan-200 animate-pulse" />
+                  <span>{isTr ? '🤖 3D Ace Pilot AI Antrenmanı' : '🤖 3D Ace Pilot AI Match'}</span>
+                </button>
+
+                <button
+                  onClick={handleQuickMatch}
+                  disabled={loading}
+                  className="flex-1 sm:flex-none px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-950/40 ring-1 ring-purple-400/30"
+                >
+                  <Sparkles className="w-4 h-4 text-purple-200" />
+                  <span>{isTr ? '⚡ 3D Hızlı Eşleşme' : '⚡ 3D Quick Space Match'}</span>
+                </button>
+              </div>
             </div>
 
             {/* HANGAR JET CLASS SELECTION GRID */}
-            <div className="bg-gray-900/90 backdrop-blur-xl p-6 rounded-3xl border border-gray-800 shadow-2xl space-y-4">
+            <div className="bg-gray-900/90 backdrop-blur-xl p-4 rounded-2xl border border-gray-800 shadow-2xl space-y-3">
               <div className="flex items-center gap-2">
-                <Gauge className="w-5 h-5 text-cyan-400" />
-                <h2 className="text-base font-bold text-white">
+                <Gauge className="w-4 h-4 text-cyan-400" />
+                <h2 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
                   {isTr ? 'HANGAR: Savaş Uçağı Sınıfınızı Seçin' : 'HANGAR: Select Your Fighter Jet Class'}
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {JET_CLASSES.map((jClass) => {
                   const isSelected = selectedJetClass === jClass.id;
                   return (
                     <div
                       key={jClass.id}
                       onClick={() => setSelectedJetClass(jClass.id)}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between space-y-3 relative overflow-hidden ${
+                      className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col justify-between space-y-2 relative overflow-hidden ${
                         isSelected 
-                          ? 'bg-purple-600/20 border-purple-500 shadow-lg shadow-purple-900/40 ring-2 ring-purple-500/50' 
+                          ? 'bg-purple-600/20 border-purple-500 shadow-md shadow-purple-900/40 ring-2 ring-purple-500/50' 
                           : 'bg-gray-950/60 border-gray-800 hover:border-gray-700 hover:bg-gray-900/80'
                       }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">
+                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-gray-800 text-gray-300">
                           {jClass.badge}
                         </span>
-                        {isSelected && <Check className="w-4 h-4 text-purple-400" />}
+                        {isSelected && <Check className="w-3.5 h-3.5 text-purple-400" />}
                       </div>
 
                       <div>
-                        <h3 className="text-sm font-bold text-white">{jClass.name}</h3>
-                        <p className="text-[11px] text-cyan-400 font-semibold">{jClass.role}</p>
-                        <p className="text-[11px] text-gray-400 mt-1 leading-snug">{jClass.desc}</p>
+                        <h3 className="text-xs font-bold text-white">{jClass.name}</h3>
+                        <p className="text-[10px] text-cyan-400 font-semibold">{jClass.role}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5 leading-snug line-clamp-2">{jClass.desc}</p>
                       </div>
 
-                      <div className="space-y-1 text-[10px] font-mono text-gray-300 pt-2 border-t border-gray-800/80">
+                      <div className="space-y-0.5 text-[9px] font-mono text-gray-300 pt-1.5 border-t border-gray-800/80">
                         <div className="flex justify-between"><span>Gövde HP:</span> <strong>{jClass.hp}</strong></div>
                         <div className="flex justify-between"><span>Max Hız:</span> <strong>{Math.round(jClass.speed * 400)} km/h</strong></div>
-                        <div className="flex justify-between"><span>Füze Kapasitesi:</span> <strong>{jClass.missiles} Adet</strong></div>
+                        <div className="flex justify-between"><span>Füze:</span> <strong>{jClass.missiles} Adet</strong></div>
                       </div>
                     </div>
                   );
@@ -1547,27 +1566,30 @@ export default function SpaceAce3D() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Multiplayer Room Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Create Room Card */}
-              <div className="bg-gray-900/90 backdrop-blur-xl p-6 rounded-3xl border border-gray-800 shadow-2xl flex flex-col justify-between space-y-6 relative overflow-hidden group">
-                <div className="absolute right-0 top-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
+              <div className="bg-gray-900/90 backdrop-blur-xl p-4 rounded-2xl border border-gray-800 shadow-2xl flex flex-col justify-between space-y-4 relative overflow-hidden group">
+                <div className="absolute right-0 top-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
                 
-                <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                    <Globe className="w-6 h-6" />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-400">
+                      <Globe className="w-4 h-4" />
+                    </div>
+                    <h2 className="text-sm font-bold text-white">
+                      {isTr ? 'Yeni 3D Uzay Odası Kur' : 'Create 3D Orbit Room'}
+                    </h2>
                   </div>
-                  <h2 className="text-xl font-bold text-white">
-                    {isTr ? 'Yeni 3D Uzay Odası Kur' : 'Create 3D Orbit Room'}
-                  </h2>
-                  <p className="text-xs text-gray-400 leading-relaxed">
+                  <p className="text-[11px] text-gray-400 leading-relaxed">
                     {isTr 
-                      ? '4 haneli uzay oda kodu üretin. Bilgisayar veya mobilden arkadaşınızı 3D uzay arenasında it dalaşına davet edin.' 
-                      : 'Generate a 4-letter 3D space room code. Invite your friend into a 3D orbital dogfight.'}
+                      ? '4 haneli uzay oda kodu üretin. Arkadaşınızı 3D uzay arenasında it dalaşına davet edin.' 
+                      : 'Generate a 4-letter 3D space room code for a 3D orbital dogfight.'}
                   </p>
                 </div>
 
                 {errorMessage && (
-                  <p className="text-xs text-red-400 bg-red-500/10 p-3 rounded-xl border border-red-500/20">
+                  <p className="text-[11px] text-red-400 bg-red-500/10 p-2 rounded-xl border border-red-500/20">
                     {errorMessage}
                   </p>
                 )}
@@ -1575,28 +1597,30 @@ export default function SpaceAce3D() {
                 <button
                   onClick={handleCreateRoom}
                   disabled={loading}
-                  className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-purple-900/30 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
-                  <span>{isTr ? '3D Uzay Oda Kodu Üret' : 'Generate 3D Orbit Code'}</span>
+                  {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Globe className="w-3.5 h-3.5" />}
+                  <span>{isTr ? '3D Oda Kodu Üret' : 'Generate 3D Code'}</span>
                 </button>
               </div>
 
               {/* Join Room Code Card */}
-              <div className="bg-gray-900/90 backdrop-blur-xl p-6 rounded-3xl border border-gray-800 shadow-2xl flex flex-col justify-between space-y-6 relative overflow-hidden group">
-                <div className="absolute right-0 top-0 w-32 h-32 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-all"></div>
+              <div className="bg-gray-900/90 backdrop-blur-xl p-4 rounded-2xl border border-gray-800 shadow-2xl flex flex-col justify-between space-y-4 relative overflow-hidden group">
+                <div className="absolute right-0 top-0 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-all"></div>
                 
-                <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400">
-                    <Radio className="w-6 h-6" />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-xl bg-pink-500/20 border border-pink-500/30 text-pink-400">
+                      <Radio className="w-4 h-4" />
+                    </div>
+                    <h2 className="text-sm font-bold text-white">
+                      {isTr ? 'Uzay Odasına Katıl' : 'Join 3D Orbit Room'}
+                    </h2>
                   </div>
-                  <h2 className="text-xl font-bold text-white">
-                    {isTr ? 'Uzay Odasına Katıl' : 'Join 3D Orbit Room'}
-                  </h2>
-                  <p className="text-xs text-gray-400 leading-relaxed">
+                  <p className="text-[11px] text-gray-400 leading-relaxed">
                     {isTr 
-                      ? 'Arkadaşınızın oluşturduğu 4 haneli oda kodunu girerek uzay savaşına hemen bağlanın.' 
-                      : 'Enter the 4-letter room code shared by your friend to join the space dogfight.'}
+                      ? '4 haneli oda kodunu girerek uzay savaşına bağlanın.' 
+                      : 'Enter 4-letter room code to join.'}
                   </p>
 
                   <input
@@ -1605,46 +1629,17 @@ export default function SpaceAce3D() {
                     value={inputCode}
                     onChange={(e) => setInputCode(e.target.value.toUpperCase())}
                     placeholder="ÖRN: S9A1"
-                    className="w-full bg-gray-950 border border-gray-700 focus:border-pink-500 rounded-xl px-4 py-3 text-center text-lg font-mono font-bold tracking-widest text-pink-300 placeholder-gray-600 outline-none uppercase"
+                    className="w-full bg-gray-950 border border-gray-700 focus:border-pink-500 rounded-xl px-3 py-1.5 text-center text-sm font-mono font-bold tracking-widest text-pink-300 placeholder-gray-600 outline-none uppercase"
                   />
                 </div>
 
                 <button
                   onClick={handleJoinRoom}
                   disabled={!inputCode.trim() || loading}
-                  className="w-full py-3.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 disabled:opacity-40 text-white font-bold text-sm rounded-xl shadow-lg shadow-pink-900/30 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 disabled:opacity-40 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-white" />}
-                  <span>{isTr ? 'Uzay Odasına Bağlan & Oyna' : 'Join 3D Space Dogfight'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Quick Match & Ace Bot Mode Bar */}
-            <div className="bg-gray-900/60 p-4 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-purple-400" />
-                <span className="text-xs text-gray-300 font-semibold">
-                  {isTr ? 'Uzay İt Dalaşı Seçenekleri:' : '3D Space Modes:'}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                <button
-                  onClick={handleQuickMatch}
-                  disabled={loading}
-                  className="flex-1 sm:flex-none px-4 py-2 bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/40 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-purple-300" />
-                  <span>{isTr ? '3D Rastgele Hızlı Eşleşme' : '3D Quick Space Match'}</span>
-                </button>
-
-                <button
-                  onClick={handleStartBotGame}
-                  className="flex-1 sm:flex-none px-4 py-2 bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300 border border-cyan-500/40 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-                >
-                  <Bot className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>{isTr ? '3D Ace Pilot AI ile Pratik Yap' : '3D Ace Pilot AI Match'}</span>
+                  {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-white" />}
+                  <span>{isTr ? 'Odaya Katıl & Oyna' : 'Join 3D Room'}</span>
                 </button>
               </div>
             </div>
