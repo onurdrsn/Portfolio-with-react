@@ -155,7 +155,42 @@ export default function NeonDuel() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Keyboard Listeners (Prevent Default Page Scroll on Arrow Keys)
+  // Complete Page Scroll Disabler (Wheel, Touchmove, Scroll, Arrow Keys)
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const disableScrollEvent = (e) => {
+      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+      }
+    };
+
+    const disableScrollKeys = (e) => {
+      const scrollKeyCodes = [
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 
+        'Space', 'PageUp', 'PageDown', 'Home', 'End'
+      ];
+      if (scrollKeyCodes.includes(e.code) || scrollKeyCodes.includes(e.key)) {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+        }
+      }
+    };
+
+    window.addEventListener('wheel', disableScrollEvent, { passive: false });
+    window.addEventListener('touchmove', disableScrollEvent, { passive: false });
+    window.addEventListener('keydown', disableScrollKeys, { passive: false });
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('wheel', disableScrollEvent);
+      window.removeEventListener('touchmove', disableScrollEvent);
+      window.removeEventListener('keydown', disableScrollKeys);
+    };
+  }, []);
+
+  // Keyboard Listeners (Game Controls)
   useEffect(() => {
     const handleKeyDown = (e) => {
       const gameKeys = [
@@ -172,7 +207,7 @@ export default function NeonDuel() {
     const handleKeyUp = (e) => {
       keysRef.current[e.code] = false;
     };
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, { passive: false });
     window.addEventListener('keyup', handleKeyUp);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
