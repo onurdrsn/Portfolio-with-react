@@ -1,10 +1,17 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { Castle, Router, Keyboard, Target } from 'lucide-react';
+import { Castle, Router, Keyboard, Target, BrainCircuit } from 'lucide-react';
 
 function Games() {
   const { t } = useTranslation();
   const games = [
+    {
+      path: "/games/storypuzzle",
+      iconComponent: <BrainCircuit size={64} className="text-emerald-400" />,
+      titleKey: "games.gameNames.storyPuzzle",
+      color: "from-emerald-500/20 to-teal-500/20",
+      hoverColor: "hover:border-emerald-500/50"
+    },
     {
       path: "/games/minesweeper",
       icon: "🧨",

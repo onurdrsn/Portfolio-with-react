@@ -277,7 +277,8 @@
             "towerDefense": "Kaleyi Savunma",
             "typingSpeed": "Hız Yazma Oyunu",
             "flappyBird": "Flappy Bird",
-            "breakout": "Tuğla Kırma Oyunu"
+            "breakout": "Tuğla Kırma Oyunu",
+            "storyPuzzle": "Olay Örgüsü Bulmacası"
         }
     }
 }

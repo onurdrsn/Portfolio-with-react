@@ -134,3 +134,90 @@ ${content.slice(0, 4000)}`;
     return c.json({ error: error.message || "Something went wrong." }, 500);
   }
 });
+
+// ─── /story-generate — Generate a new dynamic Lateral Thinking Puzzle using Workers AI ──────────
+aiRouter.post("/story-generate", async (c) => {
+  try {
+    const systemPrompt = `You are a lateral thinking puzzle generator.
+Generate a dark, intriguing lateral thinking puzzle (Olay Örgüsü Bulmacası / Black Story).
+The prompt should describe an unusual mystery outcome.
+The fullStory should explain the secret backstory.
+Return a JSON object in this EXACT format:
+{
+  "titleTr": "<Short Title in Turkish>",
+  "titleEn": "<Short Title in English>",
+  "promptTr": "<Mystery outcome prompt in Turkish>",
+  "promptEn": "<Mystery outcome prompt in English>",
+  "fullStoryTr": "<Full secret backstory in Turkish>",
+  "fullStoryEn": "<Full secret backstory in English>",
+  "difficulty": "Orta / Medium",
+  "hintsTr": ["<Hint 1>", "<Hint 2>", "<Hint 3>"],
+  "hintsEn": ["<Hint 1>", "<Hint 2>", "<Hint 3>"],
+  "keyFacts": ["<fact1>", "<fact2>", "<fact3>"]
+}
+Output ONLY valid JSON. No explanations, no markdown fences.`;
+
+    const response = await c.env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+      messages: [{ role: "system", content: systemPrompt }],
+      max_tokens: 1500
+    }) as any;
+
+    const raw = response?.response ?? response?.text ?? "";
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI did not return valid JSON.");
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return c.json({ story: parsed });
+  } catch (error: any) {
+    console.error("AI story-generate Error:", error);
+    return c.json({ error: error.message || "Failed to generate story with Workers AI" }, 500);
+  }
+});
+
+// ─── /story-evaluate — Evaluate player question against story using Workers AI ──────────
+aiRouter.post("/story-evaluate", async (c) => {
+  try {
+    const { story, question } = await c.req.json<{ story: any; question: string }>();
+    if (!story || !question) {
+      return c.json({ error: "Story and question are required" }, 400);
+    }
+
+    const systemPrompt = `You are the AI judge in a Lateral Thinking Puzzle game (Olay Örgüsü Bulmacası).
+The secret story is:
+${story.fullStoryTr || story.fullStoryEn}
+
+The player's question is: "${question}"
+
+Rules:
+1. If the question is OPEN-ENDED (e.g. asking "Neden", "Nasıl", "Kim", "Ne zaman", "Nerede" or requiring explanations instead of Yes/No):
+   Set "status": "warning", "answer": "⚠️ UYARI: Soru Şekli Geçersiz", "explanation": "Lütfen sadece 'Evet' veya 'Hayır' cevabı verilebilecek sorular sorun!"
+2. If the question asks about a detail or location that is IRRELEVANT to the mystery:
+   Set "status": "irrelevant", "answer": "Önemsiz / Alakasız", "explanation": "Bu detay hikayenin çözümü için önemsizdir."
+3. If the question can be answered with Yes or No:
+   Set "status": "valid", "answer": "EVET" or "HAYIR", "explanation": "<Short 1-sentence Turkish explanation if helpful>"
+
+Return a JSON object in this EXACT format:
+{
+  "status": "valid",
+  "answer": "EVET",
+  "explanation": "..."
+}
+Output ONLY valid JSON.`;
+
+    const response = await c.env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+      messages: [{ role: "system", content: systemPrompt }],
+      max_tokens: 500
+    }) as any;
+
+    const raw = response?.response ?? response?.text ?? "";
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI did not return valid JSON.");
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return c.json(parsed);
+  } catch (error: any) {
+    console.error("AI story-evaluate Error:", error);
+    return c.json({ error: error.message || "Failed to evaluate question with Workers AI" }, 500);
+  }
+});
+

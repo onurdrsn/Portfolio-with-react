@@ -277,7 +277,8 @@
             "towerDefense": "Tower Defense",
             "typingSpeed": "Typing Speed",
             "flappyBird": "Flappy Bird",
-            "breakout": "Breakout"
+            "breakout": "Breakout",
+            "storyPuzzle": "Story Puzzle"
         }
     }
 }
