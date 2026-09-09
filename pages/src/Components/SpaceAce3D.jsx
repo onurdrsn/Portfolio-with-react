@@ -29,7 +29,8 @@ import {
   Flame,
   Crosshair,
   Compass,
-  AlertTriangle
+  AlertTriangle,
+  OctagonX
 } from 'lucide-react';
 
 const WORKER_URL = 'https://portfolio-worker.onurd.com.tr';
@@ -91,6 +92,14 @@ const playFlightAudioEffect = (type) => {
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
       osc.start();
       osc.stop(ctx.currentTime + 0.15);
+    } else if (type === 'warning') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(950, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(450, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
     }
   } catch (e) {
     // Audio Context fail-safe
@@ -129,21 +138,25 @@ export default function SpaceAce3D() {
   const [isMobile, setIsMobile] = useState(false);
   const touchJoystickLeftRef = useRef({ active: false, startX: 0, startY: 0, dx: 0, dy: 0 });
   const [joystickLeftPos, setJoystickLeftPos] = useState({ x: 0, y: 0 });
+  const touchBrakeRef = useRef(false);
 
   // 3D Canvas Mount Ref & Engine Data
   const mountRef = useRef(null);
   const animationFrameRef = useRef(null);
   const syncIntervalRef = useRef(null);
+  const audioTickRef = useRef(0);
 
   // Flight Stats HUD State
   const [hudStats, setHudStats] = useState({
     targetDist: 0,
     lockOn: false,
     speed: 0,
+    isBraking: false,
     missilesLeft: 6,
     flaresLeft: 4,
     warpCooldown: 0,
-    outOfBounds: false
+    outOfBounds: false,
+    incomingMissileDist: null
   });
 
   // Three.js Scene References
@@ -160,12 +173,15 @@ export default function SpaceAce3D() {
     particles: []
   });
 
-  // 3D Space Flight Logical Engine State (6-DOF Full Quaternion Orientation)
+  // 3D Space Flight Logical Engine State (Slower, Controlled 6-DOF Quaternion Flight)
   const flightEngineRef = useRef({
     p1: {
       position: new THREE.Vector3(-30, 0, 40),
       quaternion: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0)),
-      speed: 0.55,
+      speed: 0.28,
+      baseSpeed: 0.28,
+      brakeSpeed: 0.08,
+      isBraking: false,
       hp: 100,
       missiles: 6,
       flares: 4,
@@ -177,7 +193,10 @@ export default function SpaceAce3D() {
     p2: {
       position: new THREE.Vector3(30, 0, -40),
       quaternion: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI, 0)),
-      speed: 0.55,
+      speed: 0.28,
+      baseSpeed: 0.28,
+      brakeSpeed: 0.08,
+      isBraking: false,
       hp: 100,
       missiles: 6,
       flares: 4,
@@ -275,7 +294,7 @@ export default function SpaceAce3D() {
     const handleKeyDown = (e) => {
       const flightKeys = [
         'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space',
-        'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyQ', 'KeyE', 'KeyF', 'KeyG', 'KeyK', 'KeyL', 'ShiftLeft', 'ShiftRight', 'Enter'
+        'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyQ', 'KeyE', 'KeyC', 'ControlLeft', 'KeyF', 'KeyG', 'KeyK', 'KeyL', 'ShiftLeft', 'ShiftRight', 'Enter'
       ];
       if (flightKeys.includes(e.code) || flightKeys.includes(e.key)) {
         if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
@@ -405,6 +424,7 @@ export default function SpaceAce3D() {
     engine.p1.missiles = 6;
     engine.p1.flares = 4;
     engine.p1.warpCooldown = 0;
+    engine.p1.speed = 0.28;
 
     engine.p2.name = 'AceBot-AI 3000';
     engine.p2.hp = 100;
@@ -413,6 +433,7 @@ export default function SpaceAce3D() {
     engine.p2.missiles = 6;
     engine.p2.flares = 4;
     engine.p2.warpCooldown = 0;
+    engine.p2.speed = 0.28;
 
     engine.bullets = [];
     engine.missiles = [];
@@ -493,13 +514,12 @@ export default function SpaceAce3D() {
     }, 100);
   };
 
-  // ─── ACTION: Twin Vulcan Plasma Cannon (Aligned strict to Jet Nose +Z) ─────
+  // ─── ACTION: Twin Vulcan Plasma Cannon ─────────────────────────────────────
   const triggerVulcan = (role) => {
     const p = role === 'p1' ? flightEngineRef.current.p1 : flightEngineRef.current.p2;
     if (p.hp <= 0) return;
 
-    const bulletSpeed = 1.8;
-    // Jet nose direction vector is +Z transformed by jet quaternion
+    const bulletSpeed = 1.6;
     const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(p.quaternion).normalize();
     const spawnPos = p.position.clone().add(forward.clone().multiplyScalar(2.8));
 
@@ -540,9 +560,9 @@ export default function SpaceAce3D() {
       targetRole: role === 'p1' ? 'p2' : 'p1',
       pos: spawnPos,
       quaternion: p.quaternion.clone(),
-      speed: 1.1,
-      turnRate: 0.08,
-      life: 300
+      speed: 0.75, // Tactical missile speed matching slower plane pace
+      turnRate: 0.075,
+      life: 350
     };
 
     flightEngineRef.current.missiles.push(missile);
@@ -590,7 +610,6 @@ export default function SpaceAce3D() {
     const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(p.quaternion).normalize();
     p.position.add(forward.multiplyScalar(15.0));
 
-    // Spawn warp streak particles
     for (let i = 0; i < 20; i++) {
       flightEngineRef.current.particles.push({
         pos: p.position.clone().add(new THREE.Vector3((Math.random()-0.5)*4, (Math.random()-0.5)*4, (Math.random()-0.5)*4)),
@@ -723,7 +742,6 @@ export default function SpaceAce3D() {
     const create3DFighterJet = (colorHex, accentHex) => {
       const group = new THREE.Group();
 
-      // Fuselage Nose (Cone pointing along +Z)
       const noseGeo = new THREE.ConeGeometry(0.7, 3.8, 12);
       noseGeo.rotateX(Math.PI / 2);
       const noseMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.85, roughness: 0.2 });
@@ -731,7 +749,6 @@ export default function SpaceAce3D() {
       nose.position.set(0, 0, 1.0);
       group.add(nose);
 
-      // Glass Cockpit Canopy
       const glassGeo = new THREE.SphereGeometry(0.5, 16, 16);
       glassGeo.scale(0.8, 0.7, 1.6);
       const glassMat = new THREE.MeshPhysicalMaterial({ 
@@ -746,14 +763,12 @@ export default function SpaceAce3D() {
       glass.position.set(0, 0.45, 0.3);
       group.add(glass);
 
-      // Swept Delta Wings
       const wingGeo = new THREE.BoxGeometry(4.8, 0.12, 2.0);
       const wingMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, roughness: 0.2 });
       const wings = new THREE.Mesh(wingGeo, wingMat);
       wings.position.set(0, 0, -0.4);
       group.add(wings);
 
-      // Vertical Tail Fins
       const finGeo = new THREE.BoxGeometry(0.12, 1.2, 1.2);
       const finMat = new THREE.MeshStandardMaterial({ color: accentHex, metalness: 0.8 });
       const fin1 = new THREE.Mesh(finGeo, finMat);
@@ -764,7 +779,6 @@ export default function SpaceAce3D() {
       fin2.rotation.z = 0.25;
       group.add(fin1, fin2);
 
-      // Twin Engine Exhaust Nozzles with Glowing Afterburner Flame Light
       const engineGeo = new THREE.CylinderGeometry(0.32, 0.38, 1.0, 12);
       engineGeo.rotateX(Math.PI / 2);
       const engineMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.9 });
@@ -774,7 +788,6 @@ export default function SpaceAce3D() {
       engine2.position.set(0.45, 0, -1.6);
       group.add(engine1, engine2);
 
-      // Exhaust Afterburner Flame Glow
       const flameGeo = new THREE.ConeGeometry(0.3, 1.6, 8);
       flameGeo.rotateX(-Math.PI / 2);
       const flameMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.95 });
@@ -791,14 +804,12 @@ export default function SpaceAce3D() {
     const create3DMissileMesh = () => {
       const group = new THREE.Group();
 
-      // Missile Cylinder Body
       const bodyGeo = new THREE.CylinderGeometry(0.14, 0.14, 2.0, 10);
       bodyGeo.rotateX(Math.PI / 2);
       const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.8, roughness: 0.2 });
       const body = new THREE.Mesh(bodyGeo, bodyMat);
       group.add(body);
 
-      // Warhead Nose Cone
       const tipGeo = new THREE.ConeGeometry(0.14, 0.6, 10);
       tipGeo.rotateX(Math.PI / 2);
       const tipMat = new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.9 });
@@ -806,14 +817,12 @@ export default function SpaceAce3D() {
       tip.position.set(0, 0, 1.25);
       group.add(tip);
 
-      // Tail Stabilizer Fins
       const finGeo = new THREE.BoxGeometry(0.7, 0.04, 0.45);
       const finMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
       const fins = new THREE.Mesh(finGeo, finMat);
       fins.position.set(0, 0, -0.7);
       group.add(fins);
 
-      // Rocket Thruster Engine Light
       const glowGeo = new THREE.SphereGeometry(0.22, 8, 8);
       const glowMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
       const glow = new THREE.Mesh(glowGeo, glowMat);
@@ -841,7 +850,7 @@ export default function SpaceAce3D() {
       particles: []
     };
 
-    // ─── 60 FPS 3D UNCONSTRAINED FLIGHT SIMULATION LOOP ───────────────────────
+    // ─── 60 FPS 3D FLIGHT SIMULATION LOOP ────────────────────────────────────
     const update3DFlight = () => {
       const state = flightEngineRef.current;
       const myObj = myRole === 'p1' ? state.p1 : state.p2;
@@ -852,29 +861,44 @@ export default function SpaceAce3D() {
       if (myObj.missileCooldown > 0) myObj.missileCooldown--;
       if (myObj.flareCooldown > 0) myObj.flareCooldown--;
 
-      // 6-DOF Unconstrained Flight Input Processing
+      // Airbrake (Yavaşlama) Input Detection
+      let isBraking = false;
+      if (myRole === 'p1') {
+        if (keysRef.current['KeyC'] || keysRef.current['ControlLeft'] || touchBrakeRef.current) {
+          isBraking = true;
+        }
+      } else {
+        if (keysRef.current['KeyC'] || touchBrakeRef.current) {
+          isBraking = true;
+        }
+      }
+
+      myObj.isBraking = isBraking;
+      myObj.speed = isBraking ? myObj.brakeSpeed : myObj.baseSpeed;
+
+      // 6-DOF Flight Input Processing
       let steerPitch = 0;
       let steerYaw = 0;
       let steerRoll = 0;
 
       if (touchJoystickLeftRef.current.active) {
-        steerYaw = -touchJoystickLeftRef.current.dx * 0.048;
-        steerPitch = -touchJoystickLeftRef.current.dy * 0.048;
-        steerRoll = -touchJoystickLeftRef.current.dx * 0.03; // Auto-bank roll
+        steerYaw = -touchJoystickLeftRef.current.dx * 0.042;
+        steerPitch = -touchJoystickLeftRef.current.dy * 0.042;
+        steerRoll = -touchJoystickLeftRef.current.dx * 0.025;
       } else {
         if (myRole === 'p1') {
-          if (keysRef.current['KeyW'] || keysRef.current['ArrowUp']) steerPitch -= 0.045; // Nose Down
-          if (keysRef.current['KeyS'] || keysRef.current['ArrowDown']) steerPitch += 0.045; // Nose Up (360° Loop)
+          if (keysRef.current['KeyW'] || keysRef.current['ArrowUp']) steerPitch -= 0.038;
+          if (keysRef.current['KeyS'] || keysRef.current['ArrowDown']) steerPitch += 0.038;
           if (keysRef.current['KeyA'] || keysRef.current['ArrowLeft']) {
-            steerYaw += 0.045;
-            steerRoll -= 0.035; // Bank Left
+            steerYaw += 0.038;
+            steerRoll -= 0.03;
           }
           if (keysRef.current['KeyD'] || keysRef.current['ArrowRight']) {
-            steerYaw -= 0.045;
-            steerRoll += 0.035; // Bank Right
+            steerYaw -= 0.038;
+            steerRoll += 0.03;
           }
-          if (keysRef.current['KeyQ']) steerRoll -= 0.05;
-          if (keysRef.current['KeyE']) steerRoll += 0.05;
+          if (keysRef.current['KeyQ']) steerRoll -= 0.04;
+          if (keysRef.current['KeyE']) steerRoll += 0.04;
 
           if (keysRef.current['Space']) {
             triggerVulcan('p1');
@@ -894,15 +918,15 @@ export default function SpaceAce3D() {
             keysRef.current['ShiftRight'] = false;
           }
         } else {
-          if (keysRef.current['ArrowUp']) steerPitch -= 0.045;
-          if (keysRef.current['ArrowDown']) steerPitch += 0.045;
+          if (keysRef.current['ArrowUp']) steerPitch -= 0.038;
+          if (keysRef.current['ArrowDown']) steerPitch += 0.038;
           if (keysRef.current['ArrowLeft']) {
-            steerYaw += 0.045;
-            steerRoll -= 0.035;
+            steerYaw += 0.038;
+            steerRoll -= 0.03;
           }
           if (keysRef.current['ArrowRight']) {
-            steerYaw -= 0.045;
-            steerRoll += 0.035;
+            steerYaw -= 0.038;
+            steerRoll += 0.03;
           }
 
           if (keysRef.current['KeyL'] || keysRef.current['Enter']) {
@@ -917,7 +941,7 @@ export default function SpaceAce3D() {
         }
       }
 
-      // Apply Local Pitch, Yaw & Roll Quaternions (UNCONSTRAINED 360 DEGREE ROTATION)
+      // Apply Local Quaternions
       const qPitch = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), steerPitch);
       const qYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), steerYaw);
       const qRoll = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), steerRoll);
@@ -938,7 +962,7 @@ export default function SpaceAce3D() {
         myObj.position.add(pushback);
       }
 
-      // Ace Pilot AI Bot (3D Flight Target Tracking Physics)
+      // Ace Pilot AI Bot (PvE 3D Flight Physics)
       if (gameMode === 'bot') {
         const bot = state.p2;
         const target = state.p1;
@@ -949,21 +973,21 @@ export default function SpaceAce3D() {
         if (bDist > 0.001) {
           const targetDir = toTarget.clone().normalize();
           const targetQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), targetDir);
-          bot.quaternion.slerp(targetQuat, 0.04);
+          bot.quaternion.slerp(targetQuat, 0.035);
         }
 
         const botForward = new THREE.Vector3(0, 0, 1).applyQuaternion(bot.quaternion).normalize();
         bot.position.add(botForward.multiplyScalar(bot.speed * 0.85));
 
-        if (bDist < 100 && Math.random() < 0.06) {
+        if (bDist < 100 && Math.random() < 0.05) {
           triggerVulcan('p2');
         }
-        if (bDist < 80 && Math.random() < 0.015) {
+        if (bDist < 80 && Math.random() < 0.012) {
           triggerMissile('p2');
         }
       }
 
-      // Rotate Orbital Station & Asteroid Field
+      // Rotate Station & Asteroids
       stationGroup.rotation.y += 0.002;
       for (let i = 0; i < state.asteroids.length; i++) {
         const astData = state.asteroids[i];
@@ -984,13 +1008,11 @@ export default function SpaceAce3D() {
           continue;
         }
 
-        // P1 Hit Detection
         if (b.owner !== 'p1') {
           if (b.pos.distanceTo(state.p1.position) < 3.5) {
             state.p1.hp = Math.max(0, state.p1.hp - 12);
             if (soundEnabled) playFlightAudioEffect('hit');
 
-            // Explosion impact particles
             for (let p = 0; p < 8; p++) {
               state.particles.push({
                 pos: b.pos.clone(),
@@ -1007,7 +1029,6 @@ export default function SpaceAce3D() {
           }
         }
 
-        // P2 Hit Detection
         if (b.owner !== 'p2') {
           if (b.pos.distanceTo(state.p2.position) < 3.5) {
             state.p2.hp = Math.max(0, state.p2.hp - 12);
@@ -1030,12 +1051,21 @@ export default function SpaceAce3D() {
         }
       }
 
-      // Update Visible 3D Lock-On Homing Missiles + Trailing Rocket Smoke
+      // Update Visible 3D Lock-On Homing Missiles & Track Incoming Alert
+      let closestIncomingMissileDist = null;
+
       for (let i = state.missiles.length - 1; i >= 0; i--) {
         const m = state.missiles[i];
         const targetObj = m.targetRole === 'p1' ? state.p1 : state.p2;
 
-        // Check if thermal flares distract missile
+        // Incoming Missile Detection for Player
+        if (m.targetRole === myRole) {
+          const distToMe = Math.round(m.pos.distanceTo(myObj.position) * 10);
+          if (closestIncomingMissileDist === null || distToMe < closestIncomingMissileDist) {
+            closestIncomingMissileDist = distToMe;
+          }
+        }
+
         let trackedPos = targetObj.position.clone();
         for (const flare of state.flares) {
           if (m.pos.distanceTo(flare.pos) < 18) {
@@ -1051,7 +1081,6 @@ export default function SpaceAce3D() {
           targetObj.hp = Math.max(0, targetObj.hp - 35);
           if (soundEnabled) playFlightAudioEffect('explosion');
 
-          // Huge explosion particle blast
           for (let p = 0; p < 30; p++) {
             state.particles.push({
               pos: m.pos.clone(),
@@ -1077,7 +1106,6 @@ export default function SpaceAce3D() {
         m.pos.add(mForward.multiplyScalar(m.speed));
         m.life--;
 
-        // Spawn trailing 3D rocket fire & smoke particles
         state.particles.push({
           pos: m.pos.clone().add(mForward.clone().multiplyScalar(-1.2)),
           vel: mForward.clone().multiplyScalar(-0.1).add(new THREE.Vector3((Math.random()-0.5)*0.08, (Math.random()-0.5)*0.08, (Math.random()-0.5)*0.08)),
@@ -1092,13 +1120,20 @@ export default function SpaceAce3D() {
         }
       }
 
+      // Play audio beep for incoming missile warning
+      audioTickRef.current++;
+      if (closestIncomingMissileDist !== null && closestIncomingMissileDist < 1200) {
+        if (soundEnabled && audioTickRef.current % 18 === 0) {
+          playFlightAudioEffect('warning');
+        }
+      }
+
       // Update Thermal Flares
       for (let i = state.flares.length - 1; i >= 0; i--) {
         const fl = state.flares[i];
         fl.pos.add(fl.vel);
         fl.life--;
 
-        // Flare spark particles
         state.particles.push({
           pos: fl.pos.clone(),
           vel: new THREE.Vector3((Math.random()-0.5)*0.1, (Math.random()-0.5)*0.1, (Math.random()-0.5)*0.1),
@@ -1145,7 +1180,7 @@ export default function SpaceAce3D() {
       p2Group.position.copy(state.p2.position);
       p2Group.quaternion.copy(state.p2.quaternion);
 
-      // Hollywood 3rd Person Chase Camera Following Jet 6-DOF Orientation
+      // Hollywood 3rd Person Chase Camera
       const camOffset = new THREE.Vector3(0, 3.8, -13).applyQuaternion(myObj.quaternion);
       const camPos = myObj.position.clone().add(camOffset);
       const camUp = new THREE.Vector3(0, 1, 0).applyQuaternion(myObj.quaternion);
@@ -1162,13 +1197,15 @@ export default function SpaceAce3D() {
         targetDist: Math.round(distToOpp * 10),
         lockOn: distToOpp < 90,
         speed: Math.round(myObj.speed * 400),
+        isBraking: myObj.isBraking,
         missilesLeft: myObj.missiles,
         flaresLeft: myObj.flares,
         warpCooldown: myObj.warpCooldown,
-        outOfBounds
+        outOfBounds,
+        incomingMissileDist: closestIncomingMissileDist
       });
 
-      // Synchronize 3D Vulcan Plasma Bullet Meshes in Scene
+      // Synchronize 3D Vulcan Plasma Bullet Meshes
       while (threeRef.current.bullets.length < state.bullets.length) {
         const bGeo = new THREE.CylinderGeometry(0.12, 0.12, 1.8, 8);
         bGeo.rotateX(Math.PI / 2);
@@ -1189,7 +1226,7 @@ export default function SpaceAce3D() {
         bMesh.material.color.setHex(bData.owner === 'p1' ? 0x38bdf8 : 0xf43f5e);
       }
 
-      // Synchronize Visible 3D Homing Missile Meshes in Scene
+      // Synchronize Visible 3D Homing Missile Meshes
       while (threeRef.current.missiles.length < state.missiles.length) {
         const mMesh = create3DMissileMesh();
         scene.add(mMesh);
@@ -1206,7 +1243,7 @@ export default function SpaceAce3D() {
         mMesh.quaternion.copy(mData.quaternion);
       }
 
-      // Synchronize Dynamic Particle Trail Meshes in Scene
+      // Synchronize Dynamic Particle Trail Meshes
       while (threeRef.current.particles.length < state.particles.length) {
         const pGeo = new THREE.SphereGeometry(0.3, 6, 6);
         const pMat = new THREE.MeshBasicMaterial({ transparent: true });
@@ -1277,7 +1314,7 @@ export default function SpaceAce3D() {
               <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
                 {isTr ? 'Space-Ace 3D: Gerçekçi 360° Uçuş Simülatörü' : 'Space-Ace 3D: Realistic 360° Flight'}
               </h1>
-              <p className="text-[11px] text-gray-400">Tam 360° 3D Uçuş • Ön Taraf Ateş • Görünür Güdümlü Füzeler & Duman</p>
+              <p className="text-[11px] text-gray-400">360° Uçuş • Ön Taraf Ateş • Füze İkaz Uyarısı & Hava Freni (C)</p>
             </div>
           </div>
 
@@ -1485,6 +1522,7 @@ export default function SpaceAce3D() {
                   </span>
                   <div className="flex items-center gap-2 text-[11px] font-mono text-gray-300">
                     <span>HP: {flightEngineRef.current.p1.hp}%</span>
+                    <span>Hız: {hudStats.speed} km/h {hudStats.isBraking && <strong className="text-amber-400">[FREN]</strong>}</span>
                     <span>Füze: {hudStats.missilesLeft}</span>
                     <span>Flare: {hudStats.flaresLeft}</span>
                   </div>
@@ -1525,6 +1563,21 @@ export default function SpaceAce3D() {
             <div className="relative bg-gray-950 rounded-3xl border-2 border-gray-800 overflow-hidden shadow-2xl flex items-center justify-center min-h-[500px]">
               <div ref={mountRef} className="w-full h-[500px] block" />
 
+              {/* ⚠️ INCOMING MISSILE ALERT WARNING BANNER */}
+              {hudStats.incomingMissileDist !== null && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-950/90 border-2 border-red-500 text-red-100 px-5 py-2.5 rounded-2xl shadow-2xl shadow-red-900/60 backdrop-blur-xl flex items-center gap-3 animate-pulse z-20">
+                  <AlertTriangle className="w-6 h-6 text-red-400 animate-bounce flex-shrink-0" />
+                  <div>
+                    <span className="text-xs font-black tracking-wider block text-red-400 uppercase">
+                      {isTr ? '⚠️ TEHLİKE: ARKANDAN GÜDÜMLÜ FÜZE YAKLAŞIYOR!' : '⚠️ INCOMING MISSILE APPROACHING!'}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-white block">
+                      {isTr ? `Füze Mesafesi: ${hudStats.incomingMissileDist}m • Flare (G) Atın!` : `Missile Distance: ${hudStats.incomingMissileDist}m • Deploy Flare!`}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Flight HUD Overlay Reticle */}
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                 <div className={`w-20 h-20 rounded-full border-2 border-dashed ${hudStats.lockOn ? 'border-red-500 animate-spin' : 'border-purple-500/40'} flex items-center justify-center`}>
@@ -1535,11 +1588,12 @@ export default function SpaceAce3D() {
               {!isMobile && (
                 <div className="absolute top-3 left-3 bg-gray-900/85 backdrop-blur-md px-3.5 py-2 rounded-xl border border-gray-800 text-[11px] text-gray-300 flex flex-wrap items-center gap-2.5">
                   <span>🚀 <strong className="text-white">WASD / Yön Tuşları</strong> (360° Pitch/Yaw)</span>
-                  <span>🔄 <strong className="text-amber-400">Q / E</strong> (Roll Bank)</span>
-                  <span>🔥 <strong className="text-cyan-400">Space</strong> (Vulcan Ön Lazer)</span>
-                  <span>🎯 <strong className="text-pink-400">F</strong> (3D Güdümlü Füze)</span>
-                  <span>✨ <strong className="text-yellow-400">G</strong> (Flare İkazı)</span>
-                  <span>⚡ <strong className="text-purple-400">Shift</strong> (Warp Boost)</span>
+                  <span>🔄 <strong className="text-amber-400">Q / E</strong> (Roll)</span>
+                  <span>🛑 <strong className="text-rose-400">C / Ctrl</strong> (Hava Freni / Yavaşlama)</span>
+                  <span>🔥 <strong className="text-cyan-400">Space</strong> (Vulcan Lazer)</span>
+                  <span>🎯 <strong className="text-pink-400">F</strong> (3D Füze)</span>
+                  <span>✨ <strong className="text-yellow-400">G</strong> (Flare)</span>
+                  <span>⚡ <strong className="text-purple-400">Shift</strong> (Warp)</span>
                 </div>
               )}
             </div>
@@ -1548,7 +1602,7 @@ export default function SpaceAce3D() {
             {isMobile && (
               <div className="grid grid-cols-2 gap-4 bg-gray-900/80 p-4 rounded-2xl border border-gray-800">
                 <div 
-                  className="h-32 bg-gray-950/80 rounded-2xl border border-gray-800 relative flex items-center justify-center touch-none"
+                  className="h-36 bg-gray-950/80 rounded-2xl border border-gray-800 relative flex items-center justify-center touch-none"
                   onTouchStart={handleTouchStartLeft}
                   onTouchMove={handleTouchMoveLeft}
                   onTouchEnd={handleTouchEndLeft}
@@ -1562,37 +1616,46 @@ export default function SpaceAce3D() {
                   <span className="absolute bottom-1 text-[9px] text-gray-500 font-bold">360° UÇUŞ JOYSTICK</span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     onTouchStart={() => triggerVulcan(myRole)}
-                    className="bg-cyan-600/30 hover:bg-cyan-600/50 active:scale-95 text-cyan-300 border border-cyan-500/40 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg"
+                    className="bg-cyan-600/30 hover:bg-cyan-600/50 active:scale-95 text-cyan-300 border border-cyan-500/40 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg py-2"
                   >
-                    <Flame className="w-5 h-5 text-cyan-400" />
+                    <Flame className="w-4 h-4 text-cyan-400" />
                     <span>VULCAN</span>
                   </button>
 
                   <button
                     onTouchStart={() => triggerMissile(myRole)}
-                    className="bg-pink-600/30 hover:bg-pink-600/50 active:scale-95 text-pink-300 border border-pink-500/40 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg"
+                    className="bg-pink-600/30 hover:bg-pink-600/50 active:scale-95 text-pink-300 border border-pink-500/40 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg py-2"
                   >
-                    <Target className="w-5 h-5 text-pink-400" />
+                    <Target className="w-4 h-4 text-pink-400" />
                     <span>FÜZE</span>
                   </button>
 
                   <button
-                    onTouchStart={() => triggerFlares(myRole)}
-                    className="bg-yellow-600/30 hover:bg-yellow-600/50 active:scale-95 text-yellow-300 border border-yellow-500/40 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg"
+                    onTouchStart={() => { touchBrakeRef.current = true; }}
+                    onTouchEnd={() => { touchBrakeRef.current = false; }}
+                    className="bg-rose-600/30 hover:bg-rose-600/50 active:scale-95 text-rose-300 border border-rose-500/40 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg py-2"
                   >
-                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                    <OctagonX className="w-4 h-4 text-rose-400" />
+                    <span>FREN</span>
+                  </button>
+
+                  <button
+                    onTouchStart={() => triggerFlares(myRole)}
+                    className="bg-yellow-600/30 hover:bg-yellow-600/50 active:scale-95 text-yellow-300 border border-yellow-500/40 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg py-2 col-span-1"
+                  >
+                    <Sparkles className="w-4 h-4 text-yellow-400" />
                     <span>FLARE</span>
                   </button>
 
                   <button
                     onTouchStart={() => triggerWarp(myRole)}
-                    className="bg-purple-600/30 hover:bg-purple-600/50 active:scale-95 text-purple-300 border border-purple-500/40 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg"
+                    className="bg-purple-600/30 hover:bg-purple-600/50 active:scale-95 text-purple-300 border border-purple-500/40 rounded-2xl font-black text-xs flex flex-col items-center justify-center gap-1 shadow-lg py-2 col-span-2"
                   >
-                    <Zap className="w-5 h-5 text-purple-400" />
-                    <span>WARP</span>
+                    <Zap className="w-4 h-4 text-purple-400" />
+                    <span>WARP BOOST</span>
                   </button>
                 </div>
               </div>
