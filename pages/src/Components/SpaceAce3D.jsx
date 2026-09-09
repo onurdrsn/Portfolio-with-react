@@ -45,47 +45,55 @@ const playFlightAudioEffect = (type) => {
 
     if (type === 'vulcan') {
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.12);
-      gain.gain.setValueAtTime(0.25, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+      osc.frequency.setValueAtTime(850, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
       osc.start();
-      osc.stop(ctx.currentTime + 0.12);
+      osc.stop(ctx.currentTime + 0.1);
     } else if (type === 'missile') {
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(150, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.4);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+      osc.frequency.setValueAtTime(120, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.45);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
       osc.start();
-      osc.stop(ctx.currentTime + 0.45);
+      osc.stop(ctx.currentTime + 0.5);
     } else if (type === 'flare') {
       osc.type = 'square';
-      osc.frequency.setValueAtTime(1200, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+      osc.frequency.setValueAtTime(1400, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
       osc.start();
-      osc.stop(ctx.currentTime + 0.25);
+      osc.stop(ctx.currentTime + 0.2);
     } else if (type === 'warp') {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(300, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.35);
-      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      osc.frequency.setValueAtTime(250, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
       osc.start();
       osc.stop(ctx.currentTime + 0.4);
     } else if (type === 'explosion') {
       osc.type = 'square';
-      osc.frequency.setValueAtTime(120, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.6);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.65);
+      osc.frequency.setValueAtTime(140, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(15, ctx.currentTime + 0.7);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.75);
       osc.start();
-      osc.stop(ctx.currentTime + 0.65);
+      osc.stop(ctx.currentTime + 0.75);
+    } else if (type === 'hit') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
     }
   } catch (e) {
-    // Audio context initialization
+    // Audio Context fail-safe
   }
 };
 
@@ -134,7 +142,8 @@ export default function SpaceAce3D() {
     speed: 0,
     missilesLeft: 6,
     flaresLeft: 4,
-    warpCooldown: 0
+    warpCooldown: 0,
+    outOfBounds: false
   });
 
   // Three.js Scene References
@@ -142,8 +151,8 @@ export default function SpaceAce3D() {
     scene: null,
     camera: null,
     renderer: null,
-    p1Jet: null,
-    p2Jet: null,
+    p1Group: null,
+    p2Group: null,
     asteroids: [],
     bullets: [],
     missiles: [],
@@ -151,34 +160,43 @@ export default function SpaceAce3D() {
     particles: []
   });
 
-  // 3D Space Flight Logical Engine State (6-DOF)
+  // 3D Space Flight Logical Engine State (6-DOF Full Quaternion Orientation)
   const flightEngineRef = useRef({
     p1: {
-      x: -30, y: 0, z: 40,
-      pitch: 0, yaw: 0, roll: 0,
-      speed: 0.4, hp: 100,
-      missiles: 6, flares: 4,
-      warpCooldown: 0, missileCooldown: 0, flareCooldown: 0,
+      position: new THREE.Vector3(-30, 0, 40),
+      quaternion: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0)),
+      speed: 0.55,
+      hp: 100,
+      missiles: 6,
+      flares: 4,
+      warpCooldown: 0,
+      missileCooldown: 0,
+      flareCooldown: 0,
       name: 'AcePilot-1'
     },
     p2: {
-      x: 30, y: 0, z: -40,
-      pitch: 0, yaw: Math.PI, roll: 0,
-      speed: 0.4, hp: 100,
-      missiles: 6, flares: 4,
-      warpCooldown: 0, missileCooldown: 0, flareCooldown: 0,
+      position: new THREE.Vector3(30, 0, -40),
+      quaternion: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI, 0)),
+      speed: 0.55,
+      hp: 100,
+      missiles: 6,
+      flares: 4,
+      warpCooldown: 0,
+      missileCooldown: 0,
+      flareCooldown: 0,
       name: 'StarRival'
     },
     bullets: [],
     missiles: [],
     flares: [],
+    particles: [],
     asteroids: [
-      { x: -10, y: 5, z: 10, radius: 4.5, rotX: 0.01, rotY: 0.015 },
-      { x: 15, y: -8, z: -15, radius: 5.5, rotX: 0.008, rotY: 0.012 },
-      { x: -20, y: -10, z: -25, radius: 6.0, rotX: 0.015, rotY: 0.005 },
-      { x: 25, y: 12, z: 20, radius: 5.0, rotX: 0.005, rotY: 0.018 },
-      { x: 0, y: -15, z: 0, radius: 7.0, rotX: 0.01, rotY: 0.01 },
-      { x: 5, y: 18, z: -30, radius: 4.0, rotX: 0.02, rotY: 0.008 }
+      { pos: new THREE.Vector3(-15, 8, 12), radius: 5.5, rotAxis: new THREE.Vector3(0.5, 0.8, 0.2), rotSpeed: 0.012 },
+      { pos: new THREE.Vector3(20, -12, -18), radius: 6.5, rotAxis: new THREE.Vector3(0.2, 0.9, 0.4), rotSpeed: 0.009 },
+      { pos: new THREE.Vector3(-25, -15, -30), radius: 7.0, rotAxis: new THREE.Vector3(0.7, 0.3, 0.6), rotSpeed: 0.014 },
+      { pos: new THREE.Vector3(30, 16, 25), radius: 6.0, rotAxis: new THREE.Vector3(0.4, 0.6, 0.5), rotSpeed: 0.011 },
+      { pos: new THREE.Vector3(0, -22, 5), radius: 8.5, rotAxis: new THREE.Vector3(0.8, 0.1, 0.3), rotSpeed: 0.008 },
+      { pos: new THREE.Vector3(8, 24, -35), radius: 5.0, rotAxis: new THREE.Vector3(0.3, 0.7, 0.9), rotSpeed: 0.016 }
     ]
   });
 
@@ -257,7 +275,7 @@ export default function SpaceAce3D() {
     const handleKeyDown = (e) => {
       const flightKeys = [
         'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space',
-        'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyF', 'KeyG', 'KeyE', 'ShiftLeft', 'ShiftRight', 'Enter'
+        'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyQ', 'KeyE', 'KeyF', 'KeyG', 'KeyK', 'KeyL', 'ShiftLeft', 'ShiftRight', 'Enter'
       ];
       if (flightKeys.includes(e.code) || flightKeys.includes(e.key)) {
         if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
@@ -276,6 +294,12 @@ export default function SpaceAce3D() {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
+
+  const copyRoomCode = () => {
+    navigator.clipboard.writeText(roomCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // ─── 1. Create Online Room ────────────────────────────────────────────────
   const handleCreateRoom = async () => {
@@ -372,27 +396,30 @@ export default function SpaceAce3D() {
     setMyRole('p1');
     setP1Name(myName);
     setP2Name('AceBot-AI 3000');
-    flightEngineRef.current.p1.name = myName;
-    flightEngineRef.current.p2.name = 'AceBot-AI 3000';
+    
+    const engine = flightEngineRef.current;
+    engine.p1.name = myName;
+    engine.p1.hp = 100;
+    engine.p1.position.set(-30, 0, 40);
+    engine.p1.quaternion.setFromEuler(new THREE.Euler(0, 0, 0));
+    engine.p1.missiles = 6;
+    engine.p1.flares = 4;
+    engine.p1.warpCooldown = 0;
+
+    engine.p2.name = 'AceBot-AI 3000';
+    engine.p2.hp = 100;
+    engine.p2.position.set(30, 0, -40);
+    engine.p2.quaternion.setFromEuler(new THREE.Euler(0, Math.PI, 0));
+    engine.p2.missiles = 6;
+    engine.p2.flares = 4;
+    engine.p2.warpCooldown = 0;
+
+    engine.bullets = [];
+    engine.missiles = [];
+    engine.flares = [];
+    engine.particles = [];
+
     setGameState('playing');
-
-    flightEngineRef.current.p1.hp = 100;
-    flightEngineRef.current.p1.x = -30;
-    flightEngineRef.current.p1.y = 0;
-    flightEngineRef.current.p1.z = 40;
-    flightEngineRef.current.p1.missiles = 6;
-    flightEngineRef.current.p1.flares = 4;
-
-    flightEngineRef.current.p2.hp = 100;
-    flightEngineRef.current.p2.x = 30;
-    flightEngineRef.current.p2.y = 0;
-    flightEngineRef.current.p2.z = -40;
-    flightEngineRef.current.p2.missiles = 6;
-    flightEngineRef.current.p2.flares = 4;
-
-    flightEngineRef.current.bullets = [];
-    flightEngineRef.current.missiles = [];
-    flightEngineRef.current.flares = [];
   };
 
   // Poll waiting room until P2 joins
@@ -428,9 +455,9 @@ export default function SpaceAce3D() {
         const res = await axios.post(`${WORKER_URL}/api/game/sync-state`, {
           code,
           role,
-          x: myObj.x,
-          y: myObj.z, // Map Z to y for payload compatibility
-          angle: myObj.yaw,
+          x: myObj.position.x,
+          y: myObj.position.z, // Map Z to y for worker payload compatibility
+          angle: myObj.quaternion.y,
           hp: myObj.hp,
           score: 0,
           shield: false,
@@ -443,9 +470,8 @@ export default function SpaceAce3D() {
           const opp = res.data.opponent;
           if (opp) {
             const oppObj = role === 'p1' ? flightEngineRef.current.p2 : flightEngineRef.current.p1;
-            oppObj.x = opp.x;
-            oppObj.z = opp.y;
-            oppObj.yaw = opp.angle;
+            oppObj.position.x = opp.x;
+            oppObj.position.z = opp.y;
             oppObj.hp = opp.hp;
             if (opp.name) {
               oppObj.name = opp.name;
@@ -467,37 +493,37 @@ export default function SpaceAce3D() {
     }, 100);
   };
 
-  // Action: Twin Vulcan Plasma Cannon
+  // ─── ACTION: Twin Vulcan Plasma Cannon (Aligned strict to Jet Nose +Z) ─────
   const triggerVulcan = (role) => {
     const p = role === 'p1' ? flightEngineRef.current.p1 : flightEngineRef.current.p2;
     if (p.hp <= 0) return;
 
-    const speed = 1.4;
-    const dir = new THREE.Vector3(
-      Math.sin(p.yaw) * Math.cos(p.pitch),
-      Math.sin(p.pitch),
-      -Math.cos(p.yaw) * Math.cos(p.pitch)
-    ).normalize();
+    const bulletSpeed = 1.8;
+    // Jet nose direction vector is +Z transformed by jet quaternion
+    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(p.quaternion).normalize();
+    const spawnPos = p.position.clone().add(forward.clone().multiplyScalar(2.8));
 
     const bullet = {
       id: `vulcan-${Date.now()}-${Math.random()}`,
       owner: role,
-      x: p.x + dir.x * 3,
-      y: p.y + dir.y * 3,
-      z: p.z + dir.z * 3,
-      vx: dir.x * speed,
-      vy: dir.y * speed,
-      vz: dir.z * speed
+      pos: spawnPos,
+      vel: forward.clone().multiplyScalar(bulletSpeed),
+      life: 120
     };
 
     flightEngineRef.current.bullets.push(bullet);
     if (!p.pendingBullets) p.pendingBullets = [];
-    p.pendingBullets.push(bullet);
+    p.pendingBullets.push({
+      x: spawnPos.x,
+      y: spawnPos.z,
+      vx: bullet.vel.x,
+      vy: bullet.vel.z
+    });
 
     if (soundEnabled) playFlightAudioEffect('vulcan');
   };
 
-  // Action: Lock-On Homing Missile
+  // ─── ACTION: Lock-On 3D Homing Missile ─────────────────────────────────────
   const triggerMissile = (role) => {
     const p = role === 'p1' ? flightEngineRef.current.p1 : flightEngineRef.current.p2;
     if (p.hp <= 0 || p.missiles <= 0 || (p.missileCooldown && p.missileCooldown > 0)) return;
@@ -505,14 +531,17 @@ export default function SpaceAce3D() {
     p.missiles--;
     p.missileCooldown = 120; // 2s cooldown
 
+    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(p.quaternion).normalize();
+    const spawnPos = p.position.clone().add(forward.clone().multiplyScalar(2.0));
+
     const missile = {
       id: `msl-${Date.now()}-${Math.random()}`,
       owner: role,
       targetRole: role === 'p1' ? 'p2' : 'p1',
-      x: p.x,
-      y: p.y,
-      z: p.z,
-      speed: 0.85,
+      pos: spawnPos,
+      quaternion: p.quaternion.clone(),
+      speed: 1.1,
+      turnRate: 0.08,
       life: 300
     };
 
@@ -520,7 +549,7 @@ export default function SpaceAce3D() {
     if (soundEnabled) playFlightAudioEffect('missile');
   };
 
-  // Action: Thermal Countermeasure Flares
+  // ─── ACTION: Thermal Countermeasure Flares ───────────────────────────────
   const triggerFlares = (role) => {
     const p = role === 'p1' ? flightEngineRef.current.p1 : flightEngineRef.current.p2;
     if (p.hp <= 0 || p.flares <= 0 || (p.flareCooldown && p.flareCooldown > 0)) return;
@@ -528,33 +557,50 @@ export default function SpaceAce3D() {
     p.flares--;
     p.flareCooldown = 150;
 
-    for (let f = 0; f < 6; f++) {
+    const backDir = new THREE.Vector3(0, 0, -1).applyQuaternion(p.quaternion).normalize();
+    for (let f = 0; f < 8; f++) {
       flightEngineRef.current.flares.push({
-        x: p.x + (Math.random() - 0.5) * 4,
-        y: p.y + (Math.random() - 0.5) * 4,
-        z: p.z + (Math.random() - 0.5) * 4,
-        life: 90
+        pos: p.position.clone().add(backDir.clone().multiplyScalar(2.0)).add(
+          new THREE.Vector3(
+            (Math.random() - 0.5) * 3,
+            (Math.random() - 0.5) * 3,
+            (Math.random() - 0.5) * 3
+          )
+        ),
+        vel: backDir.clone().multiplyScalar(0.4).add(
+          new THREE.Vector3(
+            (Math.random() - 0.5) * 0.3,
+            (Math.random() - 0.5) * 0.3,
+            (Math.random() - 0.5) * 0.3
+          )
+        ),
+        life: 100
       });
     }
 
     if (soundEnabled) playFlightAudioEffect('flare');
   };
 
-  // Action: Hyper Warp Speed Boost
+  // ─── ACTION: Hyper Warp Speed Boost ─────────────────────────────────────
   const triggerWarp = (role) => {
     const p = role === 'p1' ? flightEngineRef.current.p1 : flightEngineRef.current.p2;
     if (p.hp <= 0 || (p.warpCooldown && p.warpCooldown > 0)) return;
 
     p.warpCooldown = 240; // 4s cooldown
-    const boostSpeed = 12.0;
+    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(p.quaternion).normalize();
+    p.position.add(forward.multiplyScalar(15.0));
 
-    const dirX = Math.sin(p.yaw) * Math.cos(p.pitch);
-    const dirY = Math.sin(p.pitch);
-    const dirZ = -Math.cos(p.yaw) * Math.cos(p.pitch);
-
-    p.x += dirX * boostSpeed;
-    p.y += dirY * boostSpeed;
-    p.z += dirZ * boostSpeed;
+    // Spawn warp streak particles
+    for (let i = 0; i < 20; i++) {
+      flightEngineRef.current.particles.push({
+        pos: p.position.clone().add(new THREE.Vector3((Math.random()-0.5)*4, (Math.random()-0.5)*4, (Math.random()-0.5)*4)),
+        vel: forward.clone().multiplyScalar(-0.5),
+        size: 0.8,
+        life: 30,
+        maxLife: 30,
+        color: 0xa855f7
+      });
+    }
 
     if (soundEnabled) playFlightAudioEffect('warp');
   };
@@ -605,10 +651,10 @@ export default function SpaceAce3D() {
 
     // Create 3D Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x02030a);
+    scene.background = new THREE.Color(0x020309);
 
     // Create Camera
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 2000);
+    const camera = new THREE.PerspectiveCamera(65, width / height, 0.1, 2500);
 
     // Create WebGL Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
@@ -617,115 +663,185 @@ export default function SpaceAce3D() {
 
     mountRef.current.appendChild(renderer.domElement);
 
-    // Dynamic Space Lights
-    const ambientLight = new THREE.AmbientLight(0x60a5fa, 0.7);
+    // Cosmic Lighting System
+    const ambientLight = new THREE.AmbientLight(0x94a3b8, 0.8);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff7ed, 2.5);
-    sunLight.position.set(200, 150, 300);
+    const sunLight = new THREE.DirectionalLight(0xffedd5, 2.8);
+    sunLight.position.set(300, 200, 400);
     scene.add(sunLight);
 
-    // Procedural Starfield (3,000 Glowing 3D Stars)
+    const rimLight = new THREE.PointLight(0x38bdf8, 3.5, 600);
+    rimLight.position.set(-200, -100, -300);
+    scene.add(rimLight);
+
+    // Procedural Starfield (3,500 High-Depth Glowing Stars)
     const starGeo = new THREE.BufferGeometry();
-    const starCount = 3000;
+    const starCount = 3500;
     const starPositions = new Float32Array(starCount * 3);
     for (let i = 0; i < starCount * 3; i += 3) {
-      starPositions[i] = (Math.random() - 0.5) * 1200;
-      starPositions[i + 1] = (Math.random() - 0.5) * 1200;
-      starPositions[i + 2] = (Math.random() - 0.5) * 1200;
+      starPositions[i] = (Math.random() - 0.5) * 1600;
+      starPositions[i + 1] = (Math.random() - 0.5) * 1600;
+      starPositions[i + 2] = (Math.random() - 0.5) * 1600;
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.2, transparent: true, opacity: 0.85 });
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.3, transparent: true, opacity: 0.9 });
     const starfield = new THREE.Points(starGeo, starMat);
     scene.add(starfield);
 
-    // Backdrop Planet & Ring
-    const planetGeo = new THREE.SphereGeometry(60, 32, 32);
-    const planetMat = new THREE.MeshStandardMaterial({ color: 0x1e1b4b, roughness: 0.8, metalness: 0.3 });
+    // Backdrop Gas Giant Planet & Orbital Ring
+    const planetGeo = new THREE.SphereGeometry(75, 32, 32);
+    const planetMat = new THREE.MeshStandardMaterial({ color: 0x312e81, roughness: 0.7, metalness: 0.2 });
     const planetMesh = new THREE.Mesh(planetGeo, planetMat);
-    planetMesh.position.set(-250, -80, -400);
+    planetMesh.position.set(-350, -120, -500);
     scene.add(planetMesh);
 
-    // Central Orbital Space Station Structure
+    // Central Space Station Base
     const stationGroup = new THREE.Group();
-    const ringGeo = new THREE.TorusGeometry(35, 3, 16, 48);
-    const ringMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.9, roughness: 0.2 });
+    const ringGeo = new THREE.TorusGeometry(40, 3.5, 16, 48);
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.9, roughness: 0.2 });
     const stationRing = new THREE.Mesh(ringGeo, ringMat);
-    const coreGeo = new THREE.CylinderGeometry(8, 8, 30, 16);
+    const coreGeo = new THREE.CylinderGeometry(9, 9, 36, 16);
     const coreMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.8 });
     const stationCore = new THREE.Mesh(coreGeo, coreMat);
     stationGroup.add(stationRing, stationCore);
     stationGroup.position.set(0, 0, 0);
     scene.add(stationGroup);
 
-    // Build 3D Asteroid Field
+    // Build 3D Asteroid Meshes
     const asteroidMeshes = [];
     for (const ast of flightEngineRef.current.asteroids) {
       const astGeo = new THREE.DodecahedronGeometry(ast.radius, 1);
-      const astMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.9, metalness: 0.1 });
+      const astMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.85, metalness: 0.15 });
       const astMesh = new THREE.Mesh(astGeo, astMat);
-      astMesh.position.set(ast.x, ast.y, ast.z);
+      astMesh.position.copy(ast.pos);
       scene.add(astMesh);
       asteroidMeshes.push(astMesh);
     }
 
-    // Builder function for High-Detail 3D Space Fighter Jet
-    const create3DFighterJet = (colorHex) => {
+    // Builder function for High-Detail Supersonic 3D Fighter Jet (Nose along +Z)
+    const create3DFighterJet = (colorHex, accentHex) => {
       const group = new THREE.Group();
 
-      // Fuselage Nose & Body
-      const bodyGeo = new THREE.ConeGeometry(0.8, 4.5, 8);
-      const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.8, roughness: 0.2 });
-      const body = new THREE.Mesh(bodyGeo, bodyMat);
-      body.rotation.x = Math.PI / 2;
-      group.add(body);
+      // Fuselage Nose (Cone pointing along +Z)
+      const noseGeo = new THREE.ConeGeometry(0.7, 3.8, 12);
+      noseGeo.rotateX(Math.PI / 2);
+      const noseMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.85, roughness: 0.2 });
+      const nose = new THREE.Mesh(noseGeo, noseMat);
+      nose.position.set(0, 0, 1.0);
+      group.add(nose);
 
       // Glass Cockpit Canopy
-      const glassGeo = new THREE.SphereGeometry(0.5, 12, 12);
-      const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, transmission: 0.9, opacity: 0.9, transparent: true, roughness: 0.1 });
+      const glassGeo = new THREE.SphereGeometry(0.5, 16, 16);
+      glassGeo.scale(0.8, 0.7, 1.6);
+      const glassMat = new THREE.MeshPhysicalMaterial({ 
+        color: 0x38bdf8, 
+        transmission: 0.85, 
+        opacity: 0.9, 
+        transparent: true, 
+        roughness: 0.1,
+        clearcoat: 1.0
+      });
       const glass = new THREE.Mesh(glassGeo, glassMat);
-      glass.position.set(0, 0.4, 0.4);
+      glass.position.set(0, 0.45, 0.3);
       group.add(glass);
 
       // Swept Delta Wings
-      const wingGeo = new THREE.BoxGeometry(4.8, 0.1, 1.8);
-      const wingMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9 });
+      const wingGeo = new THREE.BoxGeometry(4.8, 0.12, 2.0);
+      const wingMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, roughness: 0.2 });
       const wings = new THREE.Mesh(wingGeo, wingMat);
       wings.position.set(0, 0, -0.4);
       group.add(wings);
 
-      // Twin Engine Exhaust Glows
-      const engineGeo = new THREE.CylinderGeometry(0.3, 0.35, 0.8, 12);
-      const engineMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+      // Vertical Tail Fins
+      const finGeo = new THREE.BoxGeometry(0.12, 1.2, 1.2);
+      const finMat = new THREE.MeshStandardMaterial({ color: accentHex, metalness: 0.8 });
+      const fin1 = new THREE.Mesh(finGeo, finMat);
+      fin1.position.set(-0.7, 0.65, -1.2);
+      fin1.rotation.z = -0.25;
+      const fin2 = new THREE.Mesh(finGeo, finMat);
+      fin2.position.set(0.7, 0.65, -1.2);
+      fin2.rotation.z = 0.25;
+      group.add(fin1, fin2);
+
+      // Twin Engine Exhaust Nozzles with Glowing Afterburner Flame Light
+      const engineGeo = new THREE.CylinderGeometry(0.32, 0.38, 1.0, 12);
+      engineGeo.rotateX(Math.PI / 2);
+      const engineMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.9 });
       const engine1 = new THREE.Mesh(engineGeo, engineMat);
-      engine1.position.set(-0.5, 0, -2.0);
-      engine1.rotation.x = Math.PI / 2;
+      engine1.position.set(-0.45, 0, -1.6);
       const engine2 = new THREE.Mesh(engineGeo, engineMat);
-      engine2.position.set(0.5, 0, -2.0);
-      engine2.rotation.x = Math.PI / 2;
+      engine2.position.set(0.45, 0, -1.6);
       group.add(engine1, engine2);
+
+      // Exhaust Afterburner Flame Glow
+      const flameGeo = new THREE.ConeGeometry(0.3, 1.6, 8);
+      flameGeo.rotateX(-Math.PI / 2);
+      const flameMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.95 });
+      const flame1 = new THREE.Mesh(flameGeo, flameMat);
+      flame1.position.set(-0.45, 0, -2.4);
+      const flame2 = new THREE.Mesh(flameGeo, flameMat);
+      flame2.position.set(0.45, 0, -2.4);
+      group.add(flame1, flame2);
 
       return group;
     };
 
-    const p1Jet = create3DFighterJet(0x38bdf8);
-    const p2Jet = create3DFighterJet(0xf43f5e);
-    scene.add(p1Jet);
-    scene.add(p2Jet);
+    // Builder function for Visible 3D Rocket Missile Mesh
+    const create3DMissileMesh = () => {
+      const group = new THREE.Group();
+
+      // Missile Cylinder Body
+      const bodyGeo = new THREE.CylinderGeometry(0.14, 0.14, 2.0, 10);
+      bodyGeo.rotateX(Math.PI / 2);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.8, roughness: 0.2 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      group.add(body);
+
+      // Warhead Nose Cone
+      const tipGeo = new THREE.ConeGeometry(0.14, 0.6, 10);
+      tipGeo.rotateX(Math.PI / 2);
+      const tipMat = new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.9 });
+      const tip = new THREE.Mesh(tipGeo, tipMat);
+      tip.position.set(0, 0, 1.25);
+      group.add(tip);
+
+      // Tail Stabilizer Fins
+      const finGeo = new THREE.BoxGeometry(0.7, 0.04, 0.45);
+      const finMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
+      const fins = new THREE.Mesh(finGeo, finMat);
+      fins.position.set(0, 0, -0.7);
+      group.add(fins);
+
+      // Rocket Thruster Engine Light
+      const glowGeo = new THREE.SphereGeometry(0.22, 8, 8);
+      const glowMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      glow.position.set(0, 0, -1.05);
+      group.add(glow);
+
+      return group;
+    };
+
+    const p1Group = create3DFighterJet(0x38bdf8, 0x0284c7);
+    const p2Group = create3DFighterJet(0xf43f5e, 0xbe123c);
+    scene.add(p1Group);
+    scene.add(p2Group);
 
     threeRef.current = {
       scene,
       camera,
       renderer,
-      p1Jet,
-      p2Jet,
+      p1Group,
+      p2Group,
       asteroids: asteroidMeshes,
       bullets: [],
       missiles: [],
-      flares: []
+      flares: [],
+      particles: []
     };
 
-    // ─── 60 FPS 3D Flight Simulation Engine Loop ─────────────────────────────
+    // ─── 60 FPS 3D UNCONSTRAINED FLIGHT SIMULATION LOOP ───────────────────────
     const update3DFlight = () => {
       const state = flightEngineRef.current;
       const myObj = myRole === 'p1' ? state.p1 : state.p2;
@@ -736,19 +852,29 @@ export default function SpaceAce3D() {
       if (myObj.missileCooldown > 0) myObj.missileCooldown--;
       if (myObj.flareCooldown > 0) myObj.flareCooldown--;
 
-      // Steering Input Processing
+      // 6-DOF Unconstrained Flight Input Processing
       let steerPitch = 0;
       let steerYaw = 0;
+      let steerRoll = 0;
 
       if (touchJoystickLeftRef.current.active) {
-        steerYaw = touchJoystickLeftRef.current.dx * 0.045;
-        steerPitch = -touchJoystickLeftRef.current.dy * 0.045;
+        steerYaw = -touchJoystickLeftRef.current.dx * 0.048;
+        steerPitch = -touchJoystickLeftRef.current.dy * 0.048;
+        steerRoll = -touchJoystickLeftRef.current.dx * 0.03; // Auto-bank roll
       } else {
         if (myRole === 'p1') {
-          if (keysRef.current['KeyW'] || keysRef.current['ArrowUp']) steerPitch += 0.04;
-          if (keysRef.current['KeyS'] || keysRef.current['ArrowDown']) steerPitch -= 0.04;
-          if (keysRef.current['KeyA'] || keysRef.current['ArrowLeft']) steerYaw -= 0.04;
-          if (keysRef.current['KeyD'] || keysRef.current['ArrowRight']) steerYaw += 0.04;
+          if (keysRef.current['KeyW'] || keysRef.current['ArrowUp']) steerPitch -= 0.045; // Nose Down
+          if (keysRef.current['KeyS'] || keysRef.current['ArrowDown']) steerPitch += 0.045; // Nose Up (360° Loop)
+          if (keysRef.current['KeyA'] || keysRef.current['ArrowLeft']) {
+            steerYaw += 0.045;
+            steerRoll -= 0.035; // Bank Left
+          }
+          if (keysRef.current['KeyD'] || keysRef.current['ArrowRight']) {
+            steerYaw -= 0.045;
+            steerRoll += 0.035; // Bank Right
+          }
+          if (keysRef.current['KeyQ']) steerRoll -= 0.05;
+          if (keysRef.current['KeyE']) steerRoll += 0.05;
 
           if (keysRef.current['Space']) {
             triggerVulcan('p1');
@@ -768,10 +894,16 @@ export default function SpaceAce3D() {
             keysRef.current['ShiftRight'] = false;
           }
         } else {
-          if (keysRef.current['ArrowUp']) steerPitch += 0.04;
-          if (keysRef.current['ArrowDown']) steerPitch -= 0.04;
-          if (keysRef.current['ArrowLeft']) steerYaw -= 0.04;
-          if (keysRef.current['ArrowRight']) steerYaw += 0.04;
+          if (keysRef.current['ArrowUp']) steerPitch -= 0.045;
+          if (keysRef.current['ArrowDown']) steerPitch += 0.045;
+          if (keysRef.current['ArrowLeft']) {
+            steerYaw += 0.045;
+            steerRoll -= 0.035;
+          }
+          if (keysRef.current['ArrowRight']) {
+            steerYaw -= 0.045;
+            steerRoll += 0.035;
+          }
 
           if (keysRef.current['KeyL'] || keysRef.current['Enter']) {
             triggerVulcan('p2');
@@ -785,127 +917,213 @@ export default function SpaceAce3D() {
         }
       }
 
-      myObj.pitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, myObj.pitch + steerPitch));
-      myObj.yaw += steerYaw;
+      // Apply Local Pitch, Yaw & Roll Quaternions (UNCONSTRAINED 360 DEGREE ROTATION)
+      const qPitch = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), steerPitch);
+      const qYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), steerYaw);
+      const qRoll = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), steerRoll);
 
-      // Calculate 3D Flight Direction Vector
-      const dirX = Math.sin(myObj.yaw) * Math.cos(myObj.pitch);
-      const dirY = Math.sin(myObj.pitch);
-      const dirZ = -Math.cos(myObj.yaw) * Math.cos(myObj.pitch);
+      myObj.quaternion.multiply(qYaw).multiply(qPitch).multiply(qRoll);
 
-      myObj.x += dirX * myObj.speed;
-      myObj.y += dirY * myObj.speed;
-      myObj.z += dirZ * myObj.speed;
+      // Advance Jet Forward in 3D Space
+      const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(myObj.quaternion).normalize();
+      myObj.position.add(forwardDir.clone().multiplyScalar(myObj.speed));
 
-      // Boundaries clamping
-      myObj.x = Math.max(-140, Math.min(140, myObj.x));
-      myObj.y = Math.max(-100, Math.min(100, myObj.y));
-      myObj.z = Math.max(-140, Math.min(140, myObj.z));
+      // Arena Soft Boundary Pushback Force
+      const arenaRadius = 180;
+      const distFromCenter = myObj.position.length();
+      const outOfBounds = distFromCenter > arenaRadius;
 
-      // Ace Pilot AI Bot (PvE 3D Flight Physics)
+      if (outOfBounds) {
+        const pushback = myObj.position.clone().negate().normalize().multiplyScalar(0.2);
+        myObj.position.add(pushback);
+      }
+
+      // Ace Pilot AI Bot (3D Flight Target Tracking Physics)
       if (gameMode === 'bot') {
         const bot = state.p2;
         const target = state.p1;
-        const bdx = target.x - bot.x;
-        const bdy = target.y - bot.y;
-        const bdz = target.z - bot.z;
-        const bdist = Math.hypot(bdx, bdy, bdz);
 
-        const targetYaw = Math.atan2(bdx, -bdz);
-        const targetPitch = Math.atan2(bdy, Math.hypot(bdx, bdz));
+        const toTarget = target.position.clone().sub(bot.position);
+        const bDist = toTarget.length();
 
-        bot.yaw += (targetYaw - bot.yaw) * 0.05;
-        bot.pitch += (targetPitch - bot.pitch) * 0.05;
+        if (bDist > 0.001) {
+          const targetDir = toTarget.clone().normalize();
+          const targetQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), targetDir);
+          bot.quaternion.slerp(targetQuat, 0.04);
+        }
 
-        const bDirX = Math.sin(bot.yaw) * Math.cos(bot.pitch);
-        const bDirY = Math.sin(bot.pitch);
-        const bDirZ = -Math.cos(bot.yaw) * Math.cos(bot.pitch);
+        const botForward = new THREE.Vector3(0, 0, 1).applyQuaternion(bot.quaternion).normalize();
+        bot.position.add(botForward.multiplyScalar(bot.speed * 0.85));
 
-        bot.x += bDirX * (bot.speed * 0.85);
-        bot.y += bDirY * (bot.speed * 0.85);
-        bot.z += bDirZ * (bot.speed * 0.85);
-
-        if (bdist < 90 && Math.random() < 0.05) {
+        if (bDist < 100 && Math.random() < 0.06) {
           triggerVulcan('p2');
         }
-        if (bdist < 70 && Math.random() < 0.01) {
+        if (bDist < 80 && Math.random() < 0.015) {
           triggerMissile('p2');
         }
       }
 
-      // Rotate 3D Space Station & Asteroids
-      stationGroup.rotation.y += 0.003;
+      // Rotate Orbital Station & Asteroid Field
+      stationGroup.rotation.y += 0.002;
       for (let i = 0; i < state.asteroids.length; i++) {
         const astData = state.asteroids[i];
         const astMesh = threeRef.current.asteroids[i];
         if (astMesh) {
-          astMesh.rotation.x += astData.rotX;
-          astMesh.rotation.y += astData.rotY;
+          astMesh.rotateOnAxis(astData.rotAxis, astData.rotSpeed);
         }
       }
 
-      // Update 3D Bullets
+      // Update 3D Plasma Cannons (Vulcan Bullets)
       for (let i = state.bullets.length - 1; i >= 0; i--) {
         const b = state.bullets[i];
-        b.x += b.vx;
-        b.y += b.vy;
-        b.z += b.vz;
+        b.pos.add(b.vel);
+        b.life--;
 
-        if (Math.abs(b.x) > 150 || Math.abs(b.y) > 120 || Math.abs(b.z) > 150) {
+        if (b.life <= 0 || b.pos.length() > 250) {
           state.bullets.splice(i, 1);
           continue;
         }
 
-        // P1 Hit
+        // P1 Hit Detection
         if (b.owner !== 'p1') {
-          const dist1 = Math.hypot(b.x - state.p1.x, b.y - state.p1.y, b.z - state.p1.z);
-          if (dist1 < 3.2) {
+          if (b.pos.distanceTo(state.p1.position) < 3.5) {
             state.p1.hp = Math.max(0, state.p1.hp - 12);
             if (soundEnabled) playFlightAudioEffect('hit');
+
+            // Explosion impact particles
+            for (let p = 0; p < 8; p++) {
+              state.particles.push({
+                pos: b.pos.clone(),
+                vel: new THREE.Vector3((Math.random()-0.5)*0.8, (Math.random()-0.5)*0.8, (Math.random()-0.5)*0.8),
+                size: 0.6,
+                life: 20,
+                maxLife: 20,
+                color: 0x38bdf8
+              });
+            }
+
             state.bullets.splice(i, 1);
             continue;
           }
         }
 
-        // P2 Hit
+        // P2 Hit Detection
         if (b.owner !== 'p2') {
-          const dist2 = Math.hypot(b.x - state.p2.x, b.y - state.p2.y, b.z - state.p2.z);
-          if (dist2 < 3.2) {
+          if (b.pos.distanceTo(state.p2.position) < 3.5) {
             state.p2.hp = Math.max(0, state.p2.hp - 12);
             if (soundEnabled) playFlightAudioEffect('hit');
+
+            for (let p = 0; p < 8; p++) {
+              state.particles.push({
+                pos: b.pos.clone(),
+                vel: new THREE.Vector3((Math.random()-0.5)*0.8, (Math.random()-0.5)*0.8, (Math.random()-0.5)*0.8),
+                size: 0.6,
+                life: 20,
+                maxLife: 20,
+                color: 0xf43f5e
+              });
+            }
+
             state.bullets.splice(i, 1);
             continue;
           }
         }
       }
 
-      // Update 3D Homing Missiles
+      // Update Visible 3D Lock-On Homing Missiles + Trailing Rocket Smoke
       for (let i = state.missiles.length - 1; i >= 0; i--) {
         const m = state.missiles[i];
         const targetObj = m.targetRole === 'p1' ? state.p1 : state.p2;
-        
-        const mdx = targetObj.x - m.x;
-        const mdy = targetObj.y - m.y;
-        const mdz = targetObj.z - m.z;
-        const mdist = Math.hypot(mdx, mdy, mdz);
 
-        if (mdist < 3.5) {
+        // Check if thermal flares distract missile
+        let trackedPos = targetObj.position.clone();
+        for (const flare of state.flares) {
+          if (m.pos.distanceTo(flare.pos) < 18) {
+            trackedPos = flare.pos.clone();
+            break;
+          }
+        }
+
+        const toTarget = trackedPos.sub(m.pos);
+        const mDist = toTarget.length();
+
+        if (mDist < 3.8) {
           targetObj.hp = Math.max(0, targetObj.hp - 35);
           if (soundEnabled) playFlightAudioEffect('explosion');
+
+          // Huge explosion particle blast
+          for (let p = 0; p < 30; p++) {
+            state.particles.push({
+              pos: m.pos.clone(),
+              vel: new THREE.Vector3((Math.random()-0.5)*1.5, (Math.random()-0.5)*1.5, (Math.random()-0.5)*1.5),
+              size: 1.2,
+              life: 35,
+              maxLife: 35,
+              color: 0xf97316
+            });
+          }
+
           state.missiles.splice(i, 1);
           continue;
         }
 
-        m.x += (mdx / mdist) * m.speed;
-        m.y += (mdy / mdist) * m.speed;
-        m.z += (mdz / mdist) * m.speed;
+        if (mDist > 0.001) {
+          const desiredDir = toTarget.normalize();
+          const targetQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), desiredDir);
+          m.quaternion.slerp(targetQuat, m.turnRate);
+        }
+
+        const mForward = new THREE.Vector3(0, 0, 1).applyQuaternion(m.quaternion).normalize();
+        m.pos.add(mForward.multiplyScalar(m.speed));
         m.life--;
+
+        // Spawn trailing 3D rocket fire & smoke particles
+        state.particles.push({
+          pos: m.pos.clone().add(mForward.clone().multiplyScalar(-1.2)),
+          vel: mForward.clone().multiplyScalar(-0.1).add(new THREE.Vector3((Math.random()-0.5)*0.08, (Math.random()-0.5)*0.08, (Math.random()-0.5)*0.08)),
+          size: 0.6,
+          life: 25,
+          maxLife: 25,
+          color: Math.random() > 0.5 ? 0xf97316 : 0x64748b
+        });
 
         if (m.life <= 0) {
           state.missiles.splice(i, 1);
         }
       }
 
+      // Update Thermal Flares
+      for (let i = state.flares.length - 1; i >= 0; i--) {
+        const fl = state.flares[i];
+        fl.pos.add(fl.vel);
+        fl.life--;
+
+        // Flare spark particles
+        state.particles.push({
+          pos: fl.pos.clone(),
+          vel: new THREE.Vector3((Math.random()-0.5)*0.1, (Math.random()-0.5)*0.1, (Math.random()-0.5)*0.1),
+          size: 0.5,
+          life: 15,
+          maxLife: 15,
+          color: 0xfacc15
+        });
+
+        if (fl.life <= 0) {
+          state.flares.splice(i, 1);
+        }
+      }
+
+      // Update Particle Pool physics
+      for (let i = state.particles.length - 1; i >= 0; i--) {
+        const pt = state.particles[i];
+        pt.pos.add(pt.vel);
+        pt.life--;
+        if (pt.life <= 0) {
+          state.particles.splice(i, 1);
+        }
+      }
+
+      // Gameover Check in Bot Mode
       if (gameMode === 'bot') {
         if (state.p1.hp <= 0) {
           setWinnerRole('p2');
@@ -920,37 +1138,40 @@ export default function SpaceAce3D() {
         }
       }
 
-      // Update 3D Jet Mesh Transforms
-      p1Jet.position.set(state.p1.x, state.p1.y, state.p1.z);
-      p1Jet.rotation.set(state.p1.pitch, state.p1.yaw, 0);
+      // Sync Jet Mesh Positions & Quaternions in 3D Scene
+      p1Group.position.copy(state.p1.position);
+      p1Group.quaternion.copy(state.p1.quaternion);
 
-      p2Jet.position.set(state.p2.x, state.p2.y, state.p2.z);
-      p2Jet.rotation.set(state.p2.pitch, state.p2.yaw, 0);
+      p2Group.position.copy(state.p2.position);
+      p2Group.quaternion.copy(state.p2.quaternion);
 
-      // Third-Person Chase Camera Target Following
-      const camDist = 14;
-      const camHeight = 4.5;
-      camera.position.set(
-        myObj.x - Math.sin(myObj.yaw) * camDist,
-        myObj.y + camHeight + Math.sin(myObj.pitch) * camDist,
-        myObj.z + Math.cos(myObj.yaw) * camDist
-      );
-      camera.lookAt(myObj.x, myObj.y, myObj.z);
+      // Hollywood 3rd Person Chase Camera Following Jet 6-DOF Orientation
+      const camOffset = new THREE.Vector3(0, 3.8, -13).applyQuaternion(myObj.quaternion);
+      const camPos = myObj.position.clone().add(camOffset);
+      const camUp = new THREE.Vector3(0, 1, 0).applyQuaternion(myObj.quaternion);
 
-      // Update HUD Radar Distance Calculation
-      const distToOpp = Math.hypot(oppObj.x - myObj.x, oppObj.y - myObj.y, oppObj.z - myObj.z);
+      camera.position.lerp(camPos, 0.25);
+      camera.up.lerp(camUp, 0.25);
+
+      const lookAhead = new THREE.Vector3(0, 0, 1).applyQuaternion(myObj.quaternion).multiplyScalar(15);
+      camera.lookAt(myObj.position.clone().add(lookAhead));
+
+      // Update Flight HUD Radar Metrics
+      const distToOpp = myObj.position.distanceTo(oppObj.position);
       setHudStats({
         targetDist: Math.round(distToOpp * 10),
-        lockOn: distToOpp < 80,
+        lockOn: distToOpp < 90,
         speed: Math.round(myObj.speed * 400),
         missilesLeft: myObj.missiles,
         flaresLeft: myObj.flares,
-        warpCooldown: myObj.warpCooldown
+        warpCooldown: myObj.warpCooldown,
+        outOfBounds
       });
 
-      // Update 3D Bullet Meshes in Scene
+      // Synchronize 3D Vulcan Plasma Bullet Meshes in Scene
       while (threeRef.current.bullets.length < state.bullets.length) {
-        const bGeo = new THREE.CylinderGeometry(0.12, 0.12, 1.8);
+        const bGeo = new THREE.CylinderGeometry(0.12, 0.12, 1.8, 8);
+        bGeo.rotateX(Math.PI / 2);
         const bMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
         const bMesh = new THREE.Mesh(bGeo, bMat);
         scene.add(bMesh);
@@ -960,12 +1181,50 @@ export default function SpaceAce3D() {
         const oldB = threeRef.current.bullets.pop();
         scene.remove(oldB);
       }
-
       for (let i = 0; i < state.bullets.length; i++) {
         const bData = state.bullets[i];
         const bMesh = threeRef.current.bullets[i];
-        bMesh.position.set(bData.x, bData.y, bData.z);
+        bMesh.position.copy(bData.pos);
+        bMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), bData.vel.clone().normalize());
         bMesh.material.color.setHex(bData.owner === 'p1' ? 0x38bdf8 : 0xf43f5e);
+      }
+
+      // Synchronize Visible 3D Homing Missile Meshes in Scene
+      while (threeRef.current.missiles.length < state.missiles.length) {
+        const mMesh = create3DMissileMesh();
+        scene.add(mMesh);
+        threeRef.current.missiles.push(mMesh);
+      }
+      while (threeRef.current.missiles.length > state.missiles.length) {
+        const oldM = threeRef.current.missiles.pop();
+        scene.remove(oldM);
+      }
+      for (let i = 0; i < state.missiles.length; i++) {
+        const mData = state.missiles[i];
+        const mMesh = threeRef.current.missiles[i];
+        mMesh.position.copy(mData.pos);
+        mMesh.quaternion.copy(mData.quaternion);
+      }
+
+      // Synchronize Dynamic Particle Trail Meshes in Scene
+      while (threeRef.current.particles.length < state.particles.length) {
+        const pGeo = new THREE.SphereGeometry(0.3, 6, 6);
+        const pMat = new THREE.MeshBasicMaterial({ transparent: true });
+        const pMesh = new THREE.Mesh(pGeo, pMat);
+        scene.add(pMesh);
+        threeRef.current.particles.push(pMesh);
+      }
+      while (threeRef.current.particles.length > state.particles.length) {
+        const oldP = threeRef.current.particles.pop();
+        scene.remove(oldP);
+      }
+      for (let i = 0; i < state.particles.length; i++) {
+        const ptData = state.particles[i];
+        const ptMesh = threeRef.current.particles[i];
+        ptMesh.position.copy(ptData.pos);
+        ptMesh.scale.setScalar(ptData.size * (ptData.life / ptData.maxLife));
+        ptMesh.material.color.setHex(ptData.color);
+        ptMesh.material.opacity = ptData.life / ptData.maxLife;
       }
 
       renderer.render(scene, camera);
@@ -1016,9 +1275,9 @@ export default function SpaceAce3D() {
             </div>
             <div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                {isTr ? 'Space-Ace 3D: Uzay İt Dalaşı Simülatörü' : 'Space-Ace 3D: Interstellar Dogfight'}
+                {isTr ? 'Space-Ace 3D: Gerçekçi 360° Uçuş Simülatörü' : 'Space-Ace 3D: Realistic 360° Flight'}
               </h1>
-              <p className="text-[11px] text-gray-400">360° 3D Uçuş Simülatörü • Güdümlü Füzeler & Flare • 3D Radar HUD</p>
+              <p className="text-[11px] text-gray-400">Tam 360° 3D Uçuş • Ön Taraf Ateş • Görünür Güdümlü Füzeler & Duman</p>
             </div>
           </div>
 
@@ -1240,6 +1499,12 @@ export default function SpaceAce3D() {
                     {hudStats.lockOn ? `🎯 KİLİTLENDİ (${hudStats.targetDist}m)` : `Mesafe: ${hudStats.targetDist}m`}
                   </span>
                 </div>
+                {hudStats.outOfBounds && (
+                  <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-amber-400 font-bold animate-bounce">
+                    <AlertTriangle className="w-3 h-3 text-amber-400" />
+                    <span>{isTr ? 'SAVAŞ BÖLGESİ DIŞINA ÇIKTINIZ!' : 'LEAVING COMBAT ZONE!'}</span>
+                  </div>
+                )}
               </div>
 
               {/* P2 Status */}
@@ -1269,9 +1534,10 @@ export default function SpaceAce3D() {
 
               {!isMobile && (
                 <div className="absolute top-3 left-3 bg-gray-900/85 backdrop-blur-md px-3.5 py-2 rounded-xl border border-gray-800 text-[11px] text-gray-300 flex flex-wrap items-center gap-2.5">
-                  <span>🚀 <strong className="text-white">WASD / Yön Tuşları</strong> (Pitch/Yaw Uçuş)</span>
-                  <span>🔥 <strong className="text-cyan-400">Space</strong> (Vulcan Lazer)</span>
-                  <span>🎯 <strong className="text-pink-400">F</strong> (Güdümlü Füze)</span>
+                  <span>🚀 <strong className="text-white">WASD / Yön Tuşları</strong> (360° Pitch/Yaw)</span>
+                  <span>🔄 <strong className="text-amber-400">Q / E</strong> (Roll Bank)</span>
+                  <span>🔥 <strong className="text-cyan-400">Space</strong> (Vulcan Ön Lazer)</span>
+                  <span>🎯 <strong className="text-pink-400">F</strong> (3D Güdümlü Füze)</span>
                   <span>✨ <strong className="text-yellow-400">G</strong> (Flare İkazı)</span>
                   <span>⚡ <strong className="text-purple-400">Shift</strong> (Warp Boost)</span>
                 </div>
@@ -1293,7 +1559,7 @@ export default function SpaceAce3D() {
                       style={{ transform: `translate(${joystickLeftPos.x}px, ${joystickLeftPos.y}px)` }}
                     ></div>
                   </div>
-                  <span className="absolute bottom-1 text-[9px] text-gray-500 font-bold">UÇUŞ JOYSTICK</span>
+                  <span className="absolute bottom-1 text-[9px] text-gray-500 font-bold">360° UÇUŞ JOYSTICK</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
