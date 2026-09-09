@@ -22,7 +22,9 @@ import {
   Volume2,
   VolumeX,
   Target,
-  User
+  User,
+  Maximize,
+  Minimize
 } from 'lucide-react';
 
 const WORKER_URL = 'https://portfolio-worker.onurd.com.tr';
@@ -89,8 +91,32 @@ export default function NeonDuel() {
   const [errorMessage, setErrorMessage] = useState('');
   const [winnerRole, setWinnerRole] = useState(null);
 
-  // Sound Toggle
+  // Sound & Fullscreen Toggle
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleFSChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFSChange);
+    return () => document.removeEventListener('fullscreenchange', handleFSChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      if (containerRef.current?.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      } else if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
 
   // Mobile Detection & Touch Controls
   const [isMobile, setIsMobile] = useState(false);
@@ -127,9 +153,18 @@ export default function NeonDuel() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Keyboard Listeners
+  // Keyboard Listeners (Prevent Default Page Scroll on Arrow Keys)
   useEffect(() => {
     const handleKeyDown = (e) => {
+      const gameKeys = [
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space',
+        'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyF', 'KeyG', 'KeyK', 'KeyL', 'Enter'
+      ];
+      if (gameKeys.includes(e.code) || gameKeys.includes(e.key)) {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+        }
+      }
       keysRef.current[e.code] = true;
     };
     const handleKeyUp = (e) => {
@@ -681,7 +716,7 @@ export default function NeonDuel() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-950 to-indigo-950 text-gray-100 py-8 px-4 sm:px-6 lg:px-8 font-inter select-none">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-950 to-indigo-950 text-gray-100 py-8 px-4 sm:px-6 lg:px-8 font-inter select-none">
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Navigation Bar Header */}
@@ -702,13 +737,24 @@ export default function NeonDuel() {
             </div>
           </div>
 
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-2.5 bg-gray-800 hover:bg-gray-700 rounded-xl text-gray-300 transition-colors border border-gray-700"
-            title="Ses Aç/Kapat"
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-red-400" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleFullscreen}
+              className="p-2.5 bg-gray-800 hover:bg-gray-700 rounded-xl text-gray-300 transition-colors border border-gray-700 flex items-center gap-1.5 text-xs font-semibold"
+              title={isTr ? 'Tam Ekran Yap / Çık' : 'Toggle Fullscreen'}
+            >
+              {isFullscreen ? <Minimize className="w-4 h-4 text-cyan-400" /> : <Maximize className="w-4 h-4 text-cyan-400" />}
+              <span className="hidden sm:inline">{isFullscreen ? (isTr ? 'Tam Ekrandan Çık' : 'Exit Fullscreen') : (isTr ? 'Tam Ekran' : 'Fullscreen')}</span>
+            </button>
+
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="p-2.5 bg-gray-800 hover:bg-gray-700 rounded-xl text-gray-300 transition-colors border border-gray-700"
+              title="Ses Aç/Kapat"
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-red-400" />}
+            </button>
+          </div>
         </div>
 
         {/* ─── LOBBY STATE: MENU / CREATE / JOIN / CUSTOM USERNAME ─────────────── */}

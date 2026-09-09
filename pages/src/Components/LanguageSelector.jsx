@@ -12,10 +12,15 @@ export default function LanguageSelector() {
         { code: 'tr', name: 'Türkçe', flag: '🇹🇷' }
     ];
 
-    const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+    const currentLanguage = languages.find(lang => (i18n.language || 'en').startsWith(lang.code)) || languages[0];
 
     const changeLanguage = (langCode) => {
         i18n.changeLanguage(langCode);
+        try {
+            localStorage.setItem('i18nextLng', langCode);
+        } catch (e) {
+            // Storage access blocked or restricted
+        }
         setIsOpen(false);
     };
 
