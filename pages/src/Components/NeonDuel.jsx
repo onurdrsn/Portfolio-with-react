@@ -129,15 +129,17 @@ export default function NeonDuel() {
   const syncIntervalRef = useRef(null);
 
   const gameEngineRef = useRef({
-    p1: { x: 100, y: 300, vx: 0, vy: 0, angle: 0, hp: 100, score: 0, shield: false, name: 'SiberOyuncu' },
-    p2: { x: 700, y: 300, vx: 0, vy: 0, angle: Math.PI, hp: 100, score: 0, shield: false, name: 'RakipOyuncu' },
+    p1: { x: 100, y: 300, vx: 0, vy: 0, angle: 0, hp: 100, heat: 0, overheated: false, shieldCooldown: 0, score: 0, shield: false, name: 'SiberOyuncu' },
+    p2: { x: 700, y: 300, vx: 0, vy: 0, angle: Math.PI, hp: 100, heat: 0, overheated: false, shieldCooldown: 0, score: 0, shield: false, name: 'RakipOyuncu' },
     bullets: [],
     particles: [],
     obstacles: [
-      { x: 350, y: 150, w: 100, h: 40 },
-      { x: 350, y: 410, w: 100, h: 40 },
-      { x: 200, y: 280, w: 40, h: 100 },
-      { x: 560, y: 280, w: 40, h: 100 }
+      { x: 340, y: 100, w: 120, h: 30, type: 'steel', name: 'Zırhlı Siper' },
+      { x: 340, y: 470, w: 120, h: 30, type: 'steel', name: 'Zırhlı Siper' },
+      { x: 180, y: 220, w: 30, h: 160, type: 'energy', name: 'Siber Bariyer' },
+      { x: 590, y: 220, w: 30, h: 160, type: 'energy', name: 'Siber Bariyer' },
+      { x: 375, y: 230, w: 50, h: 50, type: 'core', name: 'Reaktör Çekirdeği' },
+      { x: 375, y: 320, w: 50, h: 50, type: 'core', name: 'Reaktör Çekirdeği' }
     ]
   });
 
@@ -371,10 +373,17 @@ export default function NeonDuel() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Fire Weapon Action
+  // Fire Weapon Action (With Realistic Heat & Overheat Mechanics)
   const triggerFire = (role) => {
     const p = role === 'p1' ? gameEngineRef.current.p1 : gameEngineRef.current.p2;
-    if (p.hp <= 0) return;
+    if (p.hp <= 0 || p.overheated) return;
+
+    // Build weapon heat
+    p.heat = (p.heat || 0) + 24;
+    if (p.heat >= 100) {
+      p.heat = 100;
+      p.overheated = true;
+    }
 
     const speed = 12;
     const vx = Math.cos(p.angle) * speed;
@@ -383,8 +392,8 @@ export default function NeonDuel() {
     const bullet = {
       id: `b-${Date.now()}-${Math.random()}`,
       owner: role,
-      x: p.x + Math.cos(p.angle) * 20,
-      y: p.y + Math.sin(p.angle) * 20,
+      x: p.x + Math.cos(p.angle) * 22,
+      y: p.y + Math.sin(p.angle) * 22,
       vx,
       vy
     };
@@ -396,14 +405,18 @@ export default function NeonDuel() {
     if (soundEnabled) playAudioEffect('shoot');
   };
 
-  // Trigger Shield Action
+  // Trigger Shield Action (With Cooldown Timer)
   const triggerShield = (role) => {
     const p = role === 'p1' ? gameEngineRef.current.p1 : gameEngineRef.current.p2;
+    if (p.hp <= 0 || p.shield || (p.shieldCooldown && p.shieldCooldown > 0)) return;
+
     p.shield = true;
+    p.shieldCooldown = 200; // ~3.3 seconds cooldown
+
     if (soundEnabled) playAudioEffect('shield');
     setTimeout(() => {
       p.shield = false;
-    }, 1500);
+    }, 1200);
   };
 
   // Touch Controls Setup (Mobile Joystick)
@@ -452,7 +465,18 @@ export default function NeonDuel() {
     const ctx = canvas.getContext('2d');
 
     const updateAndRender = () => {
+      // Decay heat & shield cooldowns for both players
       const state = gameEngineRef.current;
+      for (const p of [state.p1, state.p2]) {
+        if (p.heat > 0) {
+          p.heat = Math.max(0, p.heat - 0.75);
+          if (p.heat === 0) p.overheated = false;
+        }
+        if (p.shieldCooldown > 0) {
+          p.shieldCooldown--;
+        }
+      }
+
       const myObj = myRole === 'p1' ? state.p1 : state.p2;
       const speed = 4.5;
 
@@ -498,14 +522,40 @@ export default function NeonDuel() {
         const len = Math.sqrt(moveX * moveX + moveY * moveY);
         const nx = myObj.x + (moveX / len) * speed;
         const ny = myObj.y + (moveY / len) * speed;
+        const radius = 18;
 
-        if (nx > 25 && nx < 775) myObj.x = nx;
-        if (ny > 25 && ny < 575) myObj.y = ny;
+        // Wall Collision Check (Player vs Obstacles)
+        let canMoveX = true;
+        let canMoveY = true;
+
+        for (const obs of state.obstacles) {
+          // Test X movement
+          if (
+            nx + radius > obs.x &&
+            nx - radius < obs.x + obs.w &&
+            myObj.y + radius > obs.y &&
+            myObj.y - radius < obs.y + obs.h
+          ) {
+            canMoveX = false;
+          }
+          // Test Y movement
+          if (
+            myObj.x + radius > obs.x &&
+            myObj.x - radius < obs.x + obs.w &&
+            ny + radius > obs.y &&
+            ny - radius < obs.y + obs.h
+          ) {
+            canMoveY = false;
+          }
+        }
+
+        if (canMoveX && nx > 25 && nx < 775) myObj.x = nx;
+        if (canMoveY && ny > 25 && ny < 575) myObj.y = ny;
 
         myObj.angle = Math.atan2(moveY, moveX);
       }
 
-      // AI Bot Logic
+      // Tactical AI Bot Logic (PvE) with Line-Of-Sight & Flanking
       if (gameMode === 'bot') {
         const bot = state.p2;
         const target = state.p1;
@@ -513,13 +563,33 @@ export default function NeonDuel() {
         const dy = target.y - bot.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        bot.angle = Math.atan2(dy, dx);
-        if (dist > 150) {
-          bot.x += Math.cos(bot.angle) * (speed * 0.7);
-          bot.y += Math.sin(bot.angle) * (speed * 0.7);
+        // Raycast line of sight check
+        let hasLOS = true;
+        const steps = 15;
+        for (let s = 1; s < steps; s++) {
+          const rx = bot.x + (dx * (s / steps));
+          const ry = bot.y + (dy * (s / steps));
+          for (const obs of state.obstacles) {
+            if (rx >= obs.x && rx <= obs.x + obs.w && ry >= obs.y && ry <= obs.y + obs.h) {
+              hasLOS = false;
+              break;
+            }
+          }
+          if (!hasLOS) break;
         }
 
-        if (Math.random() < 0.03) {
+        bot.angle = Math.atan2(dy, dx);
+
+        if (!hasLOS) {
+          // Flank around obstacle horizontally or vertically
+          bot.y += (bot.y < 300 ? -2 : 2);
+          bot.x += (bot.x > 400 ? -1.5 : 1.5);
+        } else if (dist > 160) {
+          bot.x += Math.cos(bot.angle) * (speed * 0.75);
+          bot.y += Math.sin(bot.angle) * (speed * 0.75);
+        }
+
+        if (hasLOS && Math.random() < 0.04) {
           triggerFire('p2');
         }
       }
@@ -530,11 +600,45 @@ export default function NeonDuel() {
         b.x += b.vx;
         b.y += b.vy;
 
+        // Canvas Boundary Hit
         if (b.x < 10 || b.x > 790 || b.y < 10 || b.y > 590) {
           state.bullets.splice(i, 1);
           continue;
         }
 
+        // Obstacle Wall Collisions (Bulletproof Barriers)
+        let hitWall = false;
+        for (const obs of state.obstacles) {
+          if (
+            b.x + 4 >= obs.x &&
+            b.x - 4 <= obs.x + obs.w &&
+            b.y + 4 >= obs.y &&
+            b.y - 4 <= obs.y + obs.h
+          ) {
+            hitWall = true;
+            // Spawn Impact Particles
+            const particleColor = obs.type === 'energy' ? '#c084fc' : obs.type === 'core' ? '#38bdf8' : '#f59e0b';
+            for (let p = 0; p < 8; p++) {
+              state.particles.push({
+                x: b.x,
+                y: b.y,
+                vx: (Math.random() - 0.5) * 7,
+                vy: (Math.random() - 0.5) * 7,
+                color: particleColor,
+                life: 0.8
+              });
+            }
+            if (soundEnabled) playAudioEffect('hit');
+            break;
+          }
+        }
+
+        if (hitWall) {
+          state.bullets.splice(i, 1);
+          continue;
+        }
+
+        // P1 Hit Check
         if (b.owner !== 'p1') {
           const d = Math.hypot(b.x - state.p1.x, b.y - state.p1.y);
           if (d < 22) {
@@ -557,6 +661,7 @@ export default function NeonDuel() {
           }
         }
 
+        // P2 Hit Check
         if (b.owner !== 'p2') {
           const d = Math.hypot(b.x - state.p2.x, b.y - state.p2.y);
           if (d < 22) {
@@ -612,13 +717,48 @@ export default function NeonDuel() {
         ctx.stroke();
       }
 
-      // Render Obstacles
-      ctx.fillStyle = '#1e1b4b';
-      ctx.strokeStyle = '#6366f1';
-      ctx.lineWidth = 2;
+      // Render Tactical Bulletproof Obstacles with Pro Cyber Styling
       for (const obs of state.obstacles) {
-        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-        ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+        ctx.save();
+        if (obs.type === 'steel') {
+          // Metallic Steel Bunker Wall
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = '#f59e0b';
+          ctx.shadowBlur = 8;
+          ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+
+          // Hazard diagonal stripe details
+          ctx.strokeStyle = 'rgba(245, 158, 11, 0.25)';
+          ctx.lineWidth = 1.5;
+          for (let p = 0; p < obs.w + obs.h; p += 12) {
+            ctx.beginPath();
+            ctx.moveTo(Math.max(obs.x, obs.x + p - obs.h), Math.min(obs.y + obs.h, obs.y + p));
+            ctx.lineTo(Math.min(obs.x + obs.w, obs.x + p), Math.max(obs.y, obs.y + p - obs.w));
+            ctx.stroke();
+          }
+        } else if (obs.type === 'energy') {
+          // Purple Energy Barrier Wall
+          ctx.fillStyle = '#2e1065';
+          ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+          ctx.strokeStyle = '#a855f7';
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = '#a855f7';
+          ctx.shadowBlur = 12;
+          ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+        } else if (obs.type === 'core') {
+          // Cyan Reactor Core Pillar
+          ctx.fillStyle = '#082f49';
+          ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 3;
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = 15;
+          ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+        }
+        ctx.restore();
       }
 
       // Render Particles
@@ -697,16 +837,26 @@ export default function NeonDuel() {
     ctx.restore();
 
     // HP Bar
-    ctx.fillStyle = '#334155';
-    ctx.fillRect(p.x - 25, p.y - 32, 50, 6);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(p.x - 25, p.y - 34, 50, 5);
     ctx.fillStyle = p.hp > 50 ? '#22c55e' : p.hp > 25 ? '#eab308' : '#ef4444';
-    ctx.fillRect(p.x - 25, p.y - 32, (p.hp / 100) * 50, 6);
+    ctx.fillRect(p.x - 25, p.y - 34, (p.hp / 100) * 50, 5);
 
-    // Custom Username Tag over head
-    ctx.fillStyle = '#f8fafc';
+    // Heat / Overheat Bar
+    const heatVal = p.heat || 0;
+    if (heatVal > 5 || p.overheated) {
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(p.x - 25, p.y - 27, 50, 4);
+      ctx.fillStyle = p.overheated ? '#ef4444' : '#f97316';
+      ctx.fillRect(p.x - 25, p.y - 27, (heatVal / 100) * 50, 4);
+    }
+
+    // Custom Username Tag & Status overhead
+    ctx.fillStyle = p.overheated ? '#ef4444' : '#f8fafc';
     ctx.font = 'bold 11px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(label || 'Oyuncu', p.x, p.y - 38);
+    const tagText = p.overheated ? '🔥 ISINDI (ISINMA)' : (label || 'Oyuncu');
+    ctx.fillText(tagText, p.x, p.y - 42);
   };
 
   const getWinnerName = () => {
@@ -972,8 +1122,9 @@ export default function NeonDuel() {
               />
 
               {!isMobile && (
-                <div className="absolute top-3 left-3 bg-gray-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-800 text-[10px] text-gray-400 flex items-center gap-2">
+                <div className="absolute top-3 left-3 bg-gray-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-800 text-[10px] text-gray-400 flex flex-wrap items-center gap-2">
                   <span>Kontroller: <strong className="text-white">WASD / Tuşlar</strong> + <strong className="text-cyan-400">Space/F (Ateş)</strong> + <strong className="text-purple-400">G/K (Kalkan)</strong></span>
+                  <span className="text-amber-400 font-bold">| 🛡️ Kurşun Geçirmez Siperler | 🔥 Aşırı Isınma Koruması</span>
                 </div>
               )}
             </div>
