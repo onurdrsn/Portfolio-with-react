@@ -12,13 +12,13 @@ function Games() {
       color: "from-purple-500/30 via-indigo-500/30 to-cyan-500/30",
       hoverColor: "hover:border-purple-500/60"
     },
-    {
-      path: "/games/cyber-strike-3d",
-      iconComponent: <Rocket size={64} className="text-cyan-400 animate-pulse" />,
-      titleKey: "games.gameNames.cyberStrike3D",
-      color: "from-cyan-500/20 via-purple-500/20 to-pink-500/20",
-      hoverColor: "hover:border-cyan-500/50"
-    },
+    //{
+    //  path: "/games/cyber-strike-3d",
+    //  iconComponent: <Rocket size={64} className="text-cyan-400 animate-pulse" />,
+    //  titleKey: "games.gameNames.cyberStrike3D",
+    //  color: "from-cyan-500/20 via-purple-500/20 to-pink-500/20",
+    //  hoverColor: "hover:border-cyan-500/50"
+    //},
     {
       path: "/games/neon-duel",
       iconComponent: <Swords size={64} className="text-pink-400 animate-pulse" />,
