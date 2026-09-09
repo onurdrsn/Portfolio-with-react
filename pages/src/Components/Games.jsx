@@ -6,6 +6,13 @@ function Games() {
   const { t } = useTranslation();
   const games = [
     {
+      path: "/games/space-ace-3d",
+      iconComponent: <Rocket size={64} className="text-purple-400 animate-bounce" />,
+      titleKey: "games.gameNames.spaceAce3D",
+      color: "from-purple-500/30 via-indigo-500/30 to-cyan-500/30",
+      hoverColor: "hover:border-purple-500/60"
+    },
+    {
       path: "/games/cyber-strike-3d",
       iconComponent: <Rocket size={64} className="text-cyan-400 animate-pulse" />,
       titleKey: "games.gameNames.cyberStrike3D",
