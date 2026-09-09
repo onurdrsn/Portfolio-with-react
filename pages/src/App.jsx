@@ -31,6 +31,7 @@ import TypingSpeedGame from './Components/TypingSpeedGame';
 import FlappyBird from './Components/FlappyBird';
 import BreakoutGame from './Components/Breakout';
 import StoryPuzzle from './Components/StoryPuzzle';
+import NeonDuel from './Components/NeonDuel';
 import LanguageSelector from './Components/LanguageSelector';
 
 // Main Navigation (For Portfolio and Games)
@@ -234,6 +235,7 @@ export default function App() {
                             <Route path="/games/flappybird" element={<FlappyBird />} />
                             <Route path="/games/breakout" element={<BreakoutGame />} />
                             <Route path="/games/storypuzzle" element={<StoryPuzzle />} />
+                            <Route path="/games/neon-duel" element={<NeonDuel />} />
                         </Routes>
                     </div>
                 </Router>

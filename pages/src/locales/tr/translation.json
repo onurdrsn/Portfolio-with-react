@@ -278,7 +278,8 @@
             "typingSpeed": "Hız Yazma Oyunu",
             "flappyBird": "Flappy Bird",
             "breakout": "Tuğla Kırma Oyunu",
-            "storyPuzzle": "Olay Örgüsü Bulmacası"
+            "storyPuzzle": "Olay Örgüsü Bulmacası",
+            "neonDuel": "Online Siber Düello (1v1)"
         }
     }
 }

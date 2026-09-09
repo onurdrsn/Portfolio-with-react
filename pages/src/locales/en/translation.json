@@ -278,7 +278,8 @@
             "typingSpeed": "Typing Speed",
             "flappyBird": "Flappy Bird",
             "breakout": "Breakout",
-            "storyPuzzle": "Story Puzzle"
+            "storyPuzzle": "Story Puzzle",
+            "neonDuel": "Online Cyber Duel (1v1)"
         }
     }
 }

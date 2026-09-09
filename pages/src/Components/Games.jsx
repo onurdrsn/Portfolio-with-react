@@ -1,10 +1,17 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { Castle, Router, Keyboard, Target, BrainCircuit } from 'lucide-react';
+import { Castle, Router, Keyboard, Target, BrainCircuit, Swords } from 'lucide-react';
 
 function Games() {
   const { t } = useTranslation();
   const games = [
+    {
+      path: "/games/neon-duel",
+      iconComponent: <Swords size={64} className="text-pink-400 animate-pulse" />,
+      titleKey: "games.gameNames.neonDuel",
+      color: "from-pink-500/20 via-purple-500/20 to-cyan-500/20",
+      hoverColor: "hover:border-pink-500/50"
+    },
     {
       path: "/games/storypuzzle",
       iconComponent: <BrainCircuit size={64} className="text-emerald-400" />,
