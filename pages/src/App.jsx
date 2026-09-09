@@ -32,6 +32,7 @@ import FlappyBird from './Components/FlappyBird';
 import BreakoutGame from './Components/Breakout';
 import StoryPuzzle from './Components/StoryPuzzle';
 import NeonDuel from './Components/NeonDuel';
+import CyberStrike3D from './Components/CyberStrike3D';
 import LanguageSelector from './Components/LanguageSelector';
 
 // Main Navigation (For Portfolio and Games)
@@ -236,6 +237,7 @@ export default function App() {
                             <Route path="/games/breakout" element={<BreakoutGame />} />
                             <Route path="/games/storypuzzle" element={<StoryPuzzle />} />
                             <Route path="/games/neon-duel" element={<NeonDuel />} />
+                            <Route path="/games/cyber-strike-3d" element={<CyberStrike3D />} />
                         </Routes>
                     </div>
                 </Router>

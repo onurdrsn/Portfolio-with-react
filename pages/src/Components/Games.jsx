@@ -1,10 +1,17 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { Castle, Router, Keyboard, Target, BrainCircuit, Swords } from 'lucide-react';
+import { Castle, Router, Keyboard, Target, BrainCircuit, Swords, Rocket } from 'lucide-react';
 
 function Games() {
   const { t } = useTranslation();
   const games = [
+    {
+      path: "/games/cyber-strike-3d",
+      iconComponent: <Rocket size={64} className="text-cyan-400 animate-pulse" />,
+      titleKey: "games.gameNames.cyberStrike3D",
+      color: "from-cyan-500/20 via-purple-500/20 to-pink-500/20",
+      hoverColor: "hover:border-cyan-500/50"
+    },
     {
       path: "/games/neon-duel",
       iconComponent: <Swords size={64} className="text-pink-400 animate-pulse" />,
