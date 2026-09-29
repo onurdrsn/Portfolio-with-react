@@ -76,6 +76,7 @@ describe('Register Page - Passwordless Account Creation Flow', () => {
       expect(screen.getByPlaceholderText('123456')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Hesabı Onayla ve Giriş Yap/i })).toBeInTheDocument();
       expect(screen.getByText(/\* Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir\./i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Yeni parola için bekleyin/i })).toBeDisabled();
     });
   });
 });

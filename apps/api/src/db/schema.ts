@@ -8,6 +8,8 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull().default(""),
   tempCode: text("temp_code"),
   tempCodeExpiresAt: timestamp("temp_code_expires_at"),
+  passcodeResendCount: integer("passcode_resend_count").notNull().default(0),
+  lastPasscodeSentAt: timestamp("last_passcode_sent_at"),
   isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

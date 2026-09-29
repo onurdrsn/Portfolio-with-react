@@ -137,6 +137,31 @@ describe('Auth Route - Passwordless OTP & Passcode Verification', () => {
       expect(mockUsers.length).toBeGreaterThan(0);
       expect(mockUsers[0].email).toBe('newbie@example.com');
     });
+
+    it('should enforce 30s exponential cooldown and reject rapid resends with 429', async () => {
+      const existingUser = {
+        id: 'usr_rate_limit',
+        email: 'speedy@test.com',
+        username: 'speedy',
+        isAdmin: false,
+        tempCode: '111222',
+        tempCodeExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        lastPasscodeSentAt: new Date(),
+        passcodeResendCount: 1,
+      };
+      mockUsers = [existingUser];
+
+      const res = await app.request('/api/auth/send-passcode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'speedy@test.com' }),
+      }, mockEnv);
+
+      expect(res.status).toBe(429);
+      const json: any = await res.json();
+      expect(json.error).toContain('saniye bekleyiniz');
+      expect(json.retryAfter).toBeGreaterThan(0);
+    });
   });
 
   describe('POST /api/auth/login-passcode', () => {

@@ -18,6 +18,10 @@ export default function Register() {
   const [timeLeft, setTimeLeft] = useState(600);
   const [timerActive, setTimerActive] = useState(false);
 
+  // Exponential backoff cooldown: starts at 30s, doubles on each resend (30s, 60s, 120s, 240s...)
+  const [resendCount, setResendCount] = useState(0);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   useEffect(() => {
     let interval: any = null;
     if (timerActive && timeLeft > 0) {
@@ -31,6 +35,16 @@ export default function Register() {
     return () => clearInterval(interval);
   }, [timerActive, timeLeft]);
 
+  useEffect(() => {
+    let interval: any = null;
+    if (resendCooldown > 0) {
+      interval = setInterval(() => {
+        setResendCooldown((prev) => Math.max(0, prev - 1));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -41,6 +55,9 @@ export default function Register() {
     e.preventDefault();
     if (!username.trim() || !email.trim()) {
       return setError("Lütfen kullanıcı adı ve e-posta adresinizi giriniz.");
+    }
+    if (resendCooldown > 0) {
+      return setError(`Yeni bir parola istemek için lütfen ${resendCooldown} saniye bekleyiniz.`);
     }
 
     setError(null);
@@ -53,6 +70,30 @@ export default function Register() {
       setStep("code");
       setTimeLeft(600);
       setTimerActive(true);
+      setResendCooldown(30); // Initial 30s cooldown
+      setResendCount(1);
+    } catch (err: any) {
+      toast?.dismiss?.(toastId);
+      setError(err.message || "İşlem gerçekleştirilemedi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendPasscode = async () => {
+    if (loading || resendCooldown > 0) return;
+    setError(null);
+    setLoading(true);
+    const toastId = toast.loading("Yeni geçici parola gönderiliyor...");
+
+    try {
+      await sendPasscode(email.trim(), username.trim());
+      toast.success("Yeni geçici parolanız e-posta adresinize gönderildi!", { id: toastId });
+      setTimeLeft(600);
+      setTimerActive(true);
+      const nextCooldown = Math.min(30 * Math.pow(2, resendCount), 3600);
+      setResendCooldown(nextCooldown);
+      setResendCount((prev) => prev + 1);
     } catch (err: any) {
       toast?.dismiss?.(toastId);
       setError(err.message || "İşlem gerçekleştirilemedi.");
@@ -217,11 +258,21 @@ export default function Register() {
 
               <button
                 type="button"
-                onClick={handleRequestPasscode}
-                disabled={loading}
-                className="w-full py-2.5 text-xs font-medium text-gray-400 hover:text-white transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                onClick={handleResendPasscode}
+                disabled={loading || resendCooldown > 0}
+                className="w-full py-2.5 text-xs font-medium text-gray-400 hover:text-white transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw size={13} /> Yeni Parola Gönder
+                {resendCooldown > 0 ? (
+                  <>
+                    <Clock size={13} className="text-violet-400 animate-pulse" />
+                    <span>Yeni parola için bekleyin ({resendCooldown}s)</span>
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw size={13} />
+                    <span>Yeni Parola Gönder</span>
+                  </>
+                )}
               </button>
             </form>
           )}

@@ -79,6 +79,7 @@ describe('Login Page - Passwordless OTP Flow', () => {
       expect(screen.getByRole('button', { name: /Giriş Yap/i })).toBeInTheDocument();
       expect(screen.getByText(/\* Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir\./i)).toBeInTheDocument();
       expect(screen.getByText(/\d{2}:\d{2}/)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Yeni parola için bekleyin/i })).toBeDisabled();
     });
   });
 

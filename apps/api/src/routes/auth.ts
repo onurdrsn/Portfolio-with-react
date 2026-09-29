@@ -29,6 +29,8 @@ async function ensureUsersTable(db: any) {
         password_hash text NOT NULL DEFAULT '',
         temp_code text,
         temp_code_expires_at timestamp,
+        passcode_resend_count integer NOT NULL DEFAULT 0,
+        last_passcode_sent_at timestamp,
         is_admin boolean NOT NULL DEFAULT false,
         created_at timestamp NOT NULL DEFAULT now(),
         updated_at timestamp NOT NULL DEFAULT now()
@@ -36,6 +38,8 @@ async function ensureUsersTable(db: any) {
     `);
     await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS temp_code text;`);
     await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS temp_code_expires_at timestamp;`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS passcode_resend_count integer NOT NULL DEFAULT 0;`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_passcode_sent_at timestamp;`);
   } catch (e) {
     console.error("[Auth] ensureUsersTable error:", e);
   }
@@ -67,6 +71,7 @@ const handleSendPasscode = async (c: any) => {
 
   // Find or create user
   let user: any = null;
+  let resendCount = 0;
   const existingUsers = await db
     .select()
     .from(users)
@@ -75,6 +80,32 @@ const handleSendPasscode = async (c: any) => {
 
   if (existingUsers.length > 0) {
     user = existingUsers[0];
+
+    // Check exponential backoff rate limit (starts at 30s, doubles each time: 30s, 60s, 120s...)
+    if (user.lastPasscodeSentAt) {
+      const lastSentTime = new Date(user.lastPasscodeSentAt).getTime();
+      const elapsedSec = Math.floor((Date.now() - lastSentTime) / 1000);
+
+      // Reset resend count if more than 10 minutes (600s) have passed
+      let currentCount = user.passcodeResendCount || 0;
+      if (elapsedSec > 600) {
+        currentCount = 0;
+      }
+
+      const cooldownSec = Math.min(30 * Math.pow(2, currentCount), 3600);
+
+      if (elapsedSec < cooldownSec) {
+        const remainingSec = cooldownSec - elapsedSec;
+        return c.json(
+          {
+            error: `Yeni parola istemek için lütfen ${remainingSec} saniye bekleyiniz.`,
+            retryAfter: remainingSec,
+          },
+          429
+        );
+      }
+      resendCount = currentCount;
+    }
   } else {
     // Automatically create a new user account with default username from email
     const baseUsername = requestedUsername || email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "_");
@@ -125,6 +156,8 @@ const handleSendPasscode = async (c: any) => {
     .set({
       tempCode: code,
       tempCodeExpiresAt: expiresAt,
+      passcodeResendCount: resendCount + 1,
+      lastPasscodeSentAt: new Date(),
       updatedAt: new Date(),
     })
     .where(eq(users.id, user.id));
@@ -210,12 +243,13 @@ const handleLoginPasscode = async (c: any) => {
     return c.json({ error: "Girdiğiniz parola geçersiz veya hatalı. Lütfen e-postanızı kontrol edin." }, 401);
   }
 
-  // Invalidate the temporary password immediately upon successful login
+  // Invalidate the temporary password immediately upon successful login and reset resend count
   await db
     .update(users)
     .set({
       tempCode: null,
       tempCodeExpiresAt: null,
+      passcodeResendCount: 0,
       updatedAt: new Date(),
     })
     .where(eq(users.id, user.id));
