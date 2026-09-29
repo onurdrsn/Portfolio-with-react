@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from 'react-i18next';
 import { apiGet } from "../lib/api";
@@ -19,6 +19,37 @@ export default function Portfolio() {
 
     // Deck slider state
     const [deckIndex, setDeckIndex] = useState(0);
+
+    // Touch swipe support for mobile
+    const touchStartX = useRef(null);
+    const touchStartY = useRef(null);
+
+    const handleTouchStart = (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e) => {
+        if (touchStartX.current === null || touchStartY.current === null) return;
+        const currentTouch = e.changedTouches ? e.changedTouches[0] : null;
+        if (!currentTouch) return;
+        const deltaX = touchStartX.current - currentTouch.clientX;
+        const deltaY = touchStartY.current - currentTouch.clientY;
+
+        // If horizontal swipe distance > 40px and dominant over vertical swipe
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40 && featuredProjects.length > 0) {
+            if (deltaX > 0) {
+                // Swiped left -> next slide
+                setDeckIndex((prev) => (prev + 1) % featuredProjects.length);
+            } else {
+                // Swiped right -> previous slide
+                setDeckIndex((prev) => (prev - 1 + featuredProjects.length) % featuredProjects.length);
+            }
+        }
+        touchStartX.current = null;
+        touchStartY.current = null;
+    };
 
     // Modal state
     const [selectedProject, setSelectedProject] = useState(null);
@@ -55,10 +86,11 @@ export default function Portfolio() {
         return cat;
     };
 
-    // Featured projects for the Spotlight Deck
+    // Featured projects for the Spotlight Deck (only items allowed on home)
     const featuredProjects = useMemo(() => {
-        const featured = portfolioData.filter(p => p.featured);
-        return featured.length > 0 ? featured : portfolioData.slice(0, 6);
+        const homeVisible = portfolioData.filter(p => p.showOnHome !== false);
+        const featured = homeVisible.filter(p => p.featured);
+        return featured.length > 0 ? featured : homeVisible.slice(0, 6);
     }, [portfolioData]);
 
     // Auto rotate deck slider
@@ -70,9 +102,10 @@ export default function Portfolio() {
         return () => clearInterval(timer);
     }, [viewMode, featuredProjects.length]);
 
-    // Filtered projects for the Bento Grid
+    // Filtered projects for the Bento Grid (only items allowed on home)
     const filteredProjects = useMemo(() => {
-        return portfolioData.filter((item) => {
+        const homeVisible = portfolioData.filter(p => p.showOnHome !== false);
+        return homeVisible.filter((item) => {
             const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
             const query = searchQuery.toLowerCase().trim();
             const matchesSearch = !query ||
@@ -177,7 +210,12 @@ export default function Portfolio() {
 
             {/* VIEW 1: 3D SPOTLIGHT SHOWCASE DECK */}
             {viewMode === 'deck' && activeDeckItem && (
-                <div className="relative mb-16 bg-gradient-to-br from-gray-900/90 via-gray-900/50 to-gray-950/90 backdrop-blur-2xl border border-gray-800 rounded-3xl p-6 sm:p-10 shadow-2xl overflow-hidden group">
+                <div
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    style={{ touchAction: 'pan-y' }}
+                    className="relative mb-16 bg-gradient-to-br from-gray-900/90 via-gray-900/50 to-gray-950/90 backdrop-blur-2xl border border-gray-800 rounded-3xl p-6 sm:p-10 shadow-2xl overflow-hidden group select-none transition-all"
+                >
                     <div className="absolute top-0 right-0 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -264,6 +302,9 @@ export default function Portfolio() {
                                             />
                                         ))}
                                     </div>
+                                    <span className="sm:hidden text-[10px] text-violet-400/80 font-medium flex items-center gap-1 animate-pulse">
+                                        👈 Kaydır 👉
+                                    </span>
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => setDeckIndex((prev) => (prev - 1 + featuredProjects.length) % featuredProjects.length)}

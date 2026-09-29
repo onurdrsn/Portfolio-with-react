@@ -5,6 +5,7 @@ import { postsRouter } from "./routes/posts";
 import { commentsRouter } from "./routes/comments";
 import { aiRouter } from "./routes/ai";
 import { gameRoomRouter } from "./routes/gameRoom";
+import { contactRouter } from "./routes/contact";
 import { registerPortfolioRoutes } from "./routes/portfolio";
 import { registerTimelineRoutes } from "./routes/timeline";
 import { registerSettingsRoutes } from "./routes/settings";
@@ -34,6 +35,7 @@ app.use(
 app.route("/api/auth", authRouter);
 app.route("/api/posts", postsRouter);
 app.route("/api/comments", commentsRouter);
+app.route("/api/contact", contactRouter);
 app.route("/api/ai", aiRouter);
 app.route("/api/game", gameRoomRouter);
 

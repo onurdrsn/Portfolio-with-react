@@ -11,8 +11,10 @@ interface User {
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  sendPasscode: (email: string, username?: string) => Promise<{ success: boolean; message: string; devCode?: string }>;
+  loginWithPasscode: (email: string, code: string) => Promise<void>;
+  login: (email: string, passwordOrCode: string) => Promise<void>;
+  register: (username: string, email: string, passwordOrCode?: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -33,10 +35,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const sendPasscode = useCallback(async (email: string, username?: string) => {
+    const res = await apiPost<{ success: boolean; message: string; devCode?: string }>(
+      "/api/auth/send-passcode",
+      { email, username }
+    );
+    return res;
+  }, []);
+
+  const loginWithPasscode = useCallback(async (email: string, code: string) => {
     const res = await apiPost<{ token: string; user: User }>(
-      "/api/auth/login",
-      { email, password }
+      "/api/auth/login-passcode",
+      { email, code }
     );
     if (res.token) {
       localStorage.setItem("token", res.token);
@@ -44,18 +54,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(res.user);
   }, []);
 
+  const login = useCallback(async (email: string, passwordOrCode: string) => {
+    return loginWithPasscode(email, passwordOrCode);
+  }, [loginWithPasscode]);
+
   const register = useCallback(
-    async (username: string, email: string, password: string) => {
-      const res = await apiPost<{ token: string; user: User }>(
-        "/api/auth/register",
-        { username, email, password }
-      );
-      if (res.token) {
-        localStorage.setItem("token", res.token);
+    async (username: string, email: string, passwordOrCode?: string) => {
+      if (passwordOrCode) {
+        return loginWithPasscode(email, passwordOrCode);
       }
-      setUser(res.user);
+      await sendPasscode(email, username);
     },
-    []
+    [loginWithPasscode, sendPasscode]
   );
 
   const logout = useCallback(async () => {
@@ -67,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, sendPasscode, loginWithPasscode, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

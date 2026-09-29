@@ -13,7 +13,7 @@ import {
   XCircle, Clock, Home, ChevronRight, BarChart3, Users,
   BookOpen, TrendingUp, Monitor, Smartphone, Maximize2,
   Minimize2, X as XIcon, Code2, Sparkles, Check, X as XMark, Wand2,
-  FolderGit2, Briefcase, Plus, Save, ChevronDown, Upload
+  FolderGit2, Briefcase, Plus, Save, ChevronDown, Upload, Search, Star, Github, LayoutGrid, Layers
 } from "lucide-react";
 import ImageCropModal from "../Components/ImageCropModal";
 import { diffLines, joinContent, splitContent, type DiffLine } from "../lib/diff";
@@ -277,7 +277,7 @@ function UiSettingsTab() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Version 1 Card */}
         <div className={`bg-[#0d1117] border rounded-2xl p-5 flex flex-col justify-between transition-all ${
           selectedVersion === "v1" ? "border-violet-500 ring-2 ring-violet-500/30 shadow-xl shadow-violet-950/40" : "border-[#1a2035] hover:border-gray-700"
@@ -362,6 +362,37 @@ function UiSettingsTab() {
             }`}
           >
             {uiVersion === "v3" ? "✓ Şu An Aktif Sürüm" : "Bu Sürümü Aktif Yap (v3)"}
+          </button>
+        </div>
+
+        {/* Version 4 Card */}
+        <div className={`bg-[#0d1117] border rounded-2xl p-5 flex flex-col justify-between transition-all ${
+          selectedVersion === "v4" ? "border-violet-500 ring-2 ring-violet-500/30 shadow-xl shadow-violet-950/40" : "border-[#1a2035] hover:border-gray-700"
+        }`}>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold bg-gradient-to-r from-violet-500/20 to-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                <Sparkles size={11} className="text-amber-400" /> SÜRÜM 4
+              </span>
+              {uiVersion === "v4" && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">CANLI AKTİF</span>}
+            </div>
+
+            <h3 className="text-base font-bold text-white">✨ Ultra Canlı & Animasyonlu Cyber-Modern</h3>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              Dinamik parçacık ağı, interaktif 3D mimari penceresi, telefon kaydırma (swipe) destekli vitrin ve üst düzey bento grid tasarımı.
+            </p>
+          </div>
+
+          <button
+            onClick={() => handleActivate("v4")}
+            disabled={saving}
+            className={`mt-6 w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              uiVersion === "v4"
+                ? "bg-emerald-600 text-white cursor-default"
+                : "bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white shadow-lg shadow-violet-900/40"
+            }`}
+          >
+            {uiVersion === "v4" ? "✓ Şu An Aktif Sürüm" : "Bu Sürümü Aktif Yap (v4)"}
           </button>
         </div>
       </div>
@@ -1693,13 +1724,26 @@ function PortfolioTab() {
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
 
+  // Filter & Search & View Mode states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCat, setSelectedCat] = useState("All");
+  const [visibilityFilter, setVisibilityFilter] = useState<"all" | "visible" | "hidden">("all");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+
   // Bulk Selection State
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Form state
   const [formData, setFormData] = useState({
-    title: "", imgUrl: "", category: "Full Stack",
-    stack: "", link: "", github: "", description: "", featured: false
+    title: "",
+    imgUrl: "",
+    category: "Full Stack",
+    stack: "",
+    link: "",
+    github: "",
+    description: "",
+    featured: false,
+    showOnHome: true,
   });
 
   const loadItems = useCallback(() => {
@@ -1714,13 +1758,15 @@ function PortfolioTab() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { loadItems(); }, [loadItems]);
+  useEffect(() => {
+    loadItems();
+  }, [loadItems]);
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === items.length) {
+    if (selectedIds.length === filteredItems.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(items.map((it) => it.id).filter(Boolean));
+      setSelectedIds(filteredItems.map((it) => it.id).filter(Boolean));
     }
   };
 
@@ -1749,6 +1795,36 @@ function PortfolioTab() {
     );
   };
 
+  const handleToggleShowOnHome = async (item: any) => {
+    const nextVal = item.showOnHome === false ? true : false;
+    const toastId = toast.loading("Görünürlük güncelleniyor...");
+    try {
+      await apiPatch(`/api/portfolio/${item.id}/toggle-home`);
+      toast.success(nextVal ? "Proje anasayfada gösteriliyor! 🟢" : "Proje anasayfadan gizlendi! ⚪", { id: toastId });
+      loadItems();
+    } catch {
+      try {
+        await apiPut(`/api/portfolio/${item.id}`, { ...item, showOnHome: nextVal });
+        toast.success(nextVal ? "Proje anasayfada gösteriliyor! 🟢" : "Proje anasayfadan gizlendi! ⚪", { id: toastId });
+        loadItems();
+      } catch {
+        toast.error("Görünürlük güncellenemedi.", { id: toastId });
+      }
+    }
+  };
+
+  const handleToggleFeatured = async (item: any) => {
+    const nextVal = !toBoolean(item.featured);
+    const toastId = toast.loading("Öne çıkarma durumu güncelleniyor...");
+    try {
+      await apiPut(`/api/portfolio/${item.id}`, { ...item, featured: nextVal });
+      toast.success(nextVal ? "Proje vitrinde öne çıkarıldı! ⭐" : "Öne çıkarma kaldırıldı.", { id: toastId });
+      loadItems();
+    } catch {
+      toast.error("İşlem sırasında hata oluştu.", { id: toastId });
+    }
+  };
+
   const handleImportPortfolio = async (jsCode: string) => {
     const parsedItems = parseJSArray(jsCode);
     if (parsedItems.length === 0) {
@@ -1773,15 +1849,26 @@ function PortfolioTab() {
         title: item.title || "",
         imgUrl: item.imgUrl || "",
         category: item.category || "Full Stack",
-        stack: Array.isArray(item.stack) ? item.stack.join(", ") : (item.stack || ""),
+        stack: Array.isArray(item.stack) ? item.stack.join(", ") : item.stack || "",
         link: item.link || "",
         github: item.github || "",
         description: item.description || "",
-        featured: toBoolean(item.featured)
+        featured: toBoolean(item.featured),
+        showOnHome: item.showOnHome !== false,
       });
     } else {
       setEditingItem(null);
-      setFormData({ title: "", imgUrl: "", category: "Full Stack", stack: "", link: "", github: "", description: "", featured: false });
+      setFormData({
+        title: "",
+        imgUrl: "",
+        category: "Full Stack",
+        stack: "",
+        link: "",
+        github: "",
+        description: "",
+        featured: false,
+        showOnHome: true,
+      });
     }
     setIsModalOpen(true);
   };
@@ -1797,16 +1884,21 @@ function PortfolioTab() {
       return toast.error("Başlık ve açıklama gereklidir.");
     }
     const stackArray = formData.stack.split(",").map((s) => s.trim()).filter(Boolean);
-    const payload = { ...formData, featured: toBoolean(formData.featured), stack: stackArray };
+    const payload = {
+      ...formData,
+      featured: toBoolean(formData.featured),
+      showOnHome: toBoolean(formData.showOnHome),
+      stack: stackArray,
+    };
 
     const toastId = toast.loading("Kaydediliyor...");
     try {
       if (editingItem?.id) {
         await apiPut(`/api/portfolio/${editingItem.id}`, payload);
-        toast.success("Proje güncellendi!", { id: toastId });
+        toast.success("Proje başarıyla güncellendi!", { id: toastId });
       } else {
         await apiPost("/api/portfolio", payload);
-        toast.success("Proje eklendi!", { id: toastId });
+        toast.success("Yeni proje başarıyla eklendi!", { id: toastId });
       }
       closeModal();
       loadItems();
@@ -1830,9 +1922,39 @@ function PortfolioTab() {
   const handleSeedDefaults = () => {
     confirmToast("Varsayılan örnek projeler veri tabanına aktarılsın mı?", async () => {
       const sampleItems = [
-        { title: "ChronaMesh", imgUrl: "/assets/chronamesh.png", stack: ["Vite", "React", "TypeScript", "Cloudflare Workers", "Hono"], link: "https://chronamesh.onurd.com.tr", github: "https://github.com/onurdrsn/ChronaMesh", description: "Multi-tenant SaaS decision modeling platform.", category: "Full Stack", featured: true },
-        { title: "Boardra", imgUrl: "/assets/Boardra.png", stack: ["React Native", "TypeScript", "Expo", "Zustand", "Cloudflare Workers"], link: "https://boardra.onurd.com.tr", github: "https://github.com/onurdrsn/Boardra", description: "Real-time collaborative whiteboard platform.", category: "Full Stack", featured: true },
-        { title: "OrbitEdge", imgUrl: "/assets/orbitedge.png", stack: ["Vite", "TypeScript", "Hono", "Cloudflare Workers", "PostgreSQL"], link: "https://orbitedge.onurd.com.tr", github: "https://github.com/onurdrsn/OrbitEdge", description: "Live satellite telemetry and orbit tracking.", category: "Full Stack", featured: true }
+        {
+          title: "ChronaMesh",
+          imgUrl: "/assets/chronamesh.png",
+          stack: ["Vite", "React", "TypeScript", "Cloudflare Workers", "Hono"],
+          link: "https://chronamesh.onurd.com.tr",
+          github: "https://github.com/onurdrsn/ChronaMesh",
+          description: "Multi-tenant SaaS decision modeling platform.",
+          category: "Full Stack",
+          featured: true,
+          showOnHome: true,
+        },
+        {
+          title: "Boardra",
+          imgUrl: "/assets/Boardra.png",
+          stack: ["React Native", "TypeScript", "Expo", "Zustand", "Cloudflare Workers"],
+          link: "https://boardra.onurd.com.tr",
+          github: "https://github.com/onurdrsn/Boardra",
+          description: "Real-time collaborative whiteboard platform.",
+          category: "Full Stack",
+          featured: true,
+          showOnHome: true,
+        },
+        {
+          title: "OrbitEdge",
+          imgUrl: "/assets/orbitedge.png",
+          stack: ["Vite", "TypeScript", "Hono", "Cloudflare Workers", "PostgreSQL"],
+          link: "https://orbitedge.onurd.com.tr",
+          github: "https://github.com/onurdrsn/OrbitEdge",
+          description: "Live satellite telemetry and orbit tracking.",
+          category: "Full Stack",
+          featured: true,
+          showOnHome: true,
+        },
       ];
       const toastId = toast.loading("Örnek projeler yükleniyor...");
       try {
@@ -1845,201 +1967,660 @@ function PortfolioTab() {
     }, "Evet, Yükle");
   };
 
+  // Filtered Items
+  const filteredItems = useMemo(() => {
+    return items.filter((it) => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        (it.title && it.title.toLowerCase().includes(q)) ||
+        (it.description && it.description.toLowerCase().includes(q)) ||
+        (Array.isArray(it.stack) && it.stack.some((s: string) => s.toLowerCase().includes(q)));
+
+      const matchesCat = selectedCat === "All" || it.category === selectedCat;
+
+      const isVisibleOnHome = it.showOnHome !== false;
+      const matchesVisibility =
+        visibilityFilter === "all" ||
+        (visibilityFilter === "visible" && isVisibleOnHome) ||
+        (visibilityFilter === "hidden" && !isVisibleOnHome);
+
+      return matchesSearch && matchesCat && matchesVisibility;
+    });
+  }, [items, searchQuery, selectedCat, visibilityFilter]);
+
+  const totalVisibleCount = items.filter((i) => i.showOnHome !== false).length;
+  const totalHiddenCount = items.filter((i) => i.showOnHome === false).length;
+  const totalFeaturedCount = items.filter((i) => toBoolean(i.featured)).length;
+
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div className="space-y-6">
+      {/* Top Header & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Portfolyo Projeleri</h1>
-          <p className="text-sm text-gray-500">{items.length} proje listeleniyor {selectedIds.length > 0 && `• ${selectedIds.length} seçili`}</p>
+          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            <FolderGit2 className="text-violet-400" /> Portfolyo Projeleri & Siteleri
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-400 mt-1">
+            Anasayfada gösterilecek veya gizlenecek projelerinizi, canlı demo ve depo bağlantılarını yönetin.
+          </p>
         </div>
+
         <div className="flex flex-wrap items-center gap-2">
-          {items.length > 0 && (
-            <button
-              onClick={toggleSelectAll}
-              className="px-3 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all"
-            >
-              {selectedIds.length === items.length ? "Seçimi Kaldır" : "Tümünü Seç"}
-            </button>
-          )}
-
-          {selectedIds.length > 0 && (
-            <button
-              onClick={handleBulkDelete}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/30 transition-all flex items-center gap-1.5 animate-fadeIn"
-            >
-              <Trash2 size={14} className="text-red-400" /> Seçilenleri Sil ({selectedIds.length})
-            </button>
-          )}
-
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="px-3 py-2 rounded-xl text-xs font-semibold bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/20 transition-all flex items-center gap-1.5"
+            className="px-3 py-2 rounded-xl text-xs font-semibold bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/20 transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Code2 size={14} className="text-violet-400" /> JS ile Toplu Ekle
+            <Code2 size={14} className="text-violet-400" /> JS ile İçe Aktar
           </button>
           <button
             onClick={handleSeedDefaults}
-            className="px-3 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all flex items-center gap-1.5"
+            className="px-3 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Sparkles size={14} className="text-amber-400" /> Varsayılanları Yükle (Seed)
+            <Sparkles size={14} className="text-amber-400" /> Örnekleri Yükle
           </button>
           <button
             onClick={() => openModal()}
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white shadow-lg shadow-violet-900/30 transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white shadow-lg shadow-violet-900/30 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus size={16} /> Yeni Proje Ekle
           </button>
         </div>
       </div>
 
+      {/* Statistics Overview Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#1a2035] flex items-center justify-between">
+          <div>
+            <div className="text-2xl font-black text-white">{items.length}</div>
+            <div className="text-xs text-gray-400 font-medium">Toplam Proje</div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-violet-600/10 text-violet-400 flex items-center justify-center font-bold">
+            <FolderGit2 size={18} />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#1a2035] flex items-center justify-between">
+          <div>
+            <div className="text-2xl font-black text-emerald-400">{totalVisibleCount}</div>
+            <div className="text-xs text-gray-400 font-medium">Anasayfada Yayında</div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+            <Eye size={18} />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#1a2035] flex items-center justify-between">
+          <div>
+            <div className="text-2xl font-black text-gray-400">{totalHiddenCount}</div>
+            <div className="text-xs text-gray-400 font-medium">Anasayfada Gizli</div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-gray-800 text-gray-400 flex items-center justify-center font-bold">
+            <EyeOff size={18} />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#1a2035] flex items-center justify-between">
+          <div>
+            <div className="text-2xl font-black text-amber-400">{totalFeaturedCount}</div>
+            <div className="text-xs text-gray-400 font-medium">Öne Çıkan Vitrin</div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
+            <Star size={18} />
+          </div>
+        </div>
+      </div>
+
+      {/* Control Filter Bar */}
+      <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#1a2035] flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          {/* Search Input */}
+          <div className="relative w-full sm:w-64">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Proje veya teknoloji filtrele..."
+              className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-violet-500"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                <XIcon size={13} />
+              </button>
+            )}
+          </div>
+
+          {/* Visibility Filter Selector */}
+          <select
+            value={visibilityFilter}
+            onChange={(e: any) => setVisibilityFilter(e.target.value)}
+            className="bg-[#161b27] border border-[#1f2937] rounded-xl px-3 py-2 text-xs text-gray-300 focus:outline-none focus:border-violet-500 cursor-pointer"
+          >
+            <option value="all">Tüm Görünürlükler</option>
+            <option value="visible">🟢 Sadece Anasayfada Yayında ({totalVisibleCount})</option>
+            <option value="hidden">⚪ Sadece Anasayfada Gizli ({totalHiddenCount})</option>
+          </select>
+
+          {/* Category Filter Selector */}
+          <select
+            value={selectedCat}
+            onChange={(e) => setSelectedCat(e.target.value)}
+            className="bg-[#161b27] border border-[#1f2937] rounded-xl px-3 py-2 text-xs text-gray-300 focus:outline-none focus:border-violet-500 cursor-pointer"
+          >
+            <option value="All">Tüm Kategoriler</option>
+            <option value="Full Stack">Full Stack</option>
+            <option value="Frontend">Frontend</option>
+            <option value="Machine Learning">Machine Learning</option>
+            <option value="AI">AI</option>
+            <option value="Game Dev">Game Dev</option>
+            <option value="Data Science">Data Science</option>
+          </select>
+        </div>
+
+        {/* View Switcher & Bulk Actions */}
+        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+          {selectedIds.length > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              className="px-3 py-2 rounded-xl text-xs font-bold bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/30 transition-all flex items-center gap-1.5"
+            >
+              <Trash2 size={13} /> Seçilenleri Sil ({selectedIds.length})
+            </button>
+          )}
+
+          {filteredItems.length > 0 && (
+            <button
+              onClick={toggleSelectAll}
+              className="px-3 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all cursor-pointer"
+            >
+              {selectedIds.length === filteredItems.length ? "Seçimi Kaldır" : "Tümünü Seç"}
+            </button>
+          )}
+
+          <div className="flex items-center gap-1 bg-[#161b27] p-1 rounded-xl border border-[#1f2937]">
+            <button
+              onClick={() => setViewMode("cards")}
+              className={`p-1.5 rounded-lg text-xs font-semibold transition-all ${
+                viewMode === "cards" ? "bg-violet-600/30 text-violet-300 border border-violet-500/30" : "text-gray-400 hover:text-white"
+              }`}
+              title="Kart Görünümü"
+            >
+              <LayoutGrid size={15} />
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-1.5 rounded-lg text-xs font-semibold transition-all ${
+                viewMode === "table" ? "bg-violet-600/30 text-violet-300 border border-violet-500/30" : "text-gray-400 hover:text-white"
+              }`}
+              title="Tablo Görünümü"
+            >
+              <Layers size={15} />
+            </button>
+          </div>
+        </div>
+      </div>
+
       {loading ? (
         <Spinner />
-      ) : items.length === 0 ? (
-        <div className="text-center py-20 bg-[#0d1117] border border-[#1a2035] rounded-2xl">
-          <p className="text-gray-500 text-sm">Henüz eklenmiş proje yok. "Yeni Proje Ekle" butonuna basarak ekleyebilirsiniz.</p>
+      ) : filteredItems.length === 0 ? (
+        <div className="text-center py-20 bg-[#0d1117] border border-[#1a2035] rounded-3xl">
+          <FolderGit2 size={48} className="mx-auto mb-3 text-gray-600" />
+          <h3 className="text-base font-bold text-white mb-1">Eşleşen Proje Bulunamadı</h3>
+          <p className="text-gray-500 text-xs max-w-sm mx-auto">
+            Filtreleme kriterlerinize uygun proje bulunmuyor. Yeni bir proje ekleyebilir veya filtreleri temizleyebilirsiniz.
+          </p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map((item, idx) => {
-          const isSelected = selectedIds.includes(item.id);
-          return (
-            <div
-              key={item.id || item.title || idx}
-              className={`relative bg-[#0d1117] border rounded-2xl p-4 flex flex-col justify-between transition-all group ${
-                isSelected
-                  ? "border-violet-500 bg-violet-950/20 shadow-lg shadow-violet-900/20"
-                  : "border-[#1a2035] hover:border-violet-500/30"
-              }`}
-            >
-              <div>
-                <div className="relative w-full h-36 rounded-xl overflow-hidden mb-3 bg-gray-900">
-                  {/* Selection Checkbox */}
-                  <div className="absolute top-2 left-2 z-10">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleSelectItem(item.id)}
-                      className="w-4 h-4 rounded border-gray-700 bg-black/70 text-violet-600 focus:ring-violet-500 cursor-pointer"
+      ) : viewMode === "cards" ? (
+        /* ─── Cards Grid View ─── */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredItems.map((item, idx) => {
+            const isSelected = selectedIds.includes(item.id);
+            const isVisibleOnHome = item.showOnHome !== false;
+            const isFeatured = toBoolean(item.featured);
+
+            return (
+              <div
+                key={item.id || idx}
+                className={`relative bg-[#0d1117] border rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 group shadow-xl ${
+                  isSelected
+                    ? "border-violet-500 bg-violet-950/20 shadow-violet-900/20"
+                    : "border-[#1a2035] hover:border-violet-500/40"
+                }`}
+              >
+                <div>
+                  {/* Thumbnail Cover */}
+                  <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-4 bg-gray-900 border border-[#1f2937]/50">
+                    <div className="absolute top-2.5 left-2.5 z-10">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelectItem(item.id)}
+                        className="w-4 h-4 rounded border-gray-700 bg-black/80 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                      />
+                    </div>
+
+                    <img
+                      src={item.imgUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e: any) => {
+                        e.target.src =
+                          "https://placehold.co/400x225/0f172a/8b5cf6?text=" +
+                          encodeURIComponent(item.title);
+                      }}
                     />
+
+                    {/* Category Tag */}
+                    <span className="absolute bottom-2.5 left-2.5 bg-gray-950/85 backdrop-blur text-violet-300 text-[10px] font-bold px-2.5 py-0.5 rounded-lg border border-violet-500/20">
+                      {item.category}
+                    </span>
                   </div>
 
-                  <img src={item.imgUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError={(e: any) => { e.target.src = 'https://placehold.co/400x200?text=' + encodeURIComponent(item.title); }} />
-                  {item.featured && (
-                    <span className="absolute top-2 right-2 bg-violet-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">Öne Çıkan</span>
-                  )}
-                  <span className="absolute bottom-2 left-2 bg-gray-950/80 backdrop-blur text-violet-400 text-[10px] font-medium px-2 py-0.5 rounded-md border border-violet-500/20">
-                    {item.category}
-                  </span>
-                </div>
-                <h3 className="font-bold text-white text-base mb-1 group-hover:text-violet-300 transition-colors">{item.title}</h3>
-                <p className="text-xs text-gray-400 line-clamp-2 mb-3">{item.description}</p>
-                {Array.isArray(item.stack) && item.stack.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {item.stack.slice(0, 4).map((tech: string) => (
-                      <span key={tech} className="text-[10px] bg-violet-500/10 text-violet-300 px-2 py-0.5 rounded border border-violet-500/20">{tech}</span>
-                    ))}
-                    {item.stack.length > 4 && <span className="text-[10px] text-gray-500">+{item.stack.length - 4}</span>}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#1a2035]">
-                <button onClick={() => openModal(item)} className="p-2 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-all text-xs flex items-center gap-1 font-medium">
-                  <Edit3 size={13} /> Düzenle
-                </button>
-                <button onClick={() => handleDelete(item.id)} className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all text-xs">
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-        </div>
-      )}
-
-      {/* Project Modal */}
-      {isModalOpen && createPortal(
-        <div className="fixed inset-0 z-[9999] w-screen h-screen bg-black/80 backdrop-blur-md p-4 flex items-center justify-center animate-fadeIn">
-          <div className="relative w-full max-w-xl bg-[#0d1117] border border-[#1a2035] rounded-2xl shadow-2xl p-5 sm:p-6 text-left flex flex-col max-h-[85vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 pb-3 border-b border-[#1a2035]">
-              <h2 className="text-base sm:text-lg font-bold text-white">{editingItem ? "Proje Düzenle" : "Yeni Proje Ekle"}</h2>
-              <button onClick={closeModal} className="p-1.5 rounded-lg bg-white/5 text-gray-400 hover:text-white transition-all"><XIcon size={18} /></button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">Proje Başlığı *</label>
-                <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500" placeholder="ChronaMesh" />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Kategori</label>
-                  <CustomSelect
-                    value={formData.category}
-                    onChange={(val) => setFormData({ ...formData, category: val })}
-                    options={[
-                      { label: "Full Stack", value: "Full Stack" },
-                      { label: "Frontend", value: "Frontend" },
-                      { label: "Machine Learning", value: "Machine Learning" },
-                      { label: "AI", value: "AI" },
-                      { label: "Game Dev", value: "Game Dev" },
-                      { label: "Data Science", value: "Data Science" },
-                    ]}
-                  />
-                </div>
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="block text-xs font-medium text-gray-400">Görsel URL / Fotoğraf</label>
+                  {/* Interactive Status Pills (Click to toggle) */}
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    {/* Toggle Show on Home */}
                     <button
                       type="button"
-                      onClick={() => setIsCropModalOpen(true)}
-                      className="text-[10px] font-bold text-violet-400 hover:text-violet-300 flex items-center gap-1 bg-violet-500/10 hover:bg-violet-500/20 px-2 py-0.5 rounded border border-violet-500/20 transition-all"
+                      onClick={() => handleToggleShowOnHome(item)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isVisibleOnHome
+                          ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25"
+                          : "bg-gray-800/80 text-gray-400 border-gray-700 hover:bg-gray-700 hover:text-white"
+                      }`}
+                      title={isVisibleOnHome ? "Tıkla: Anasayfadan Gizle" : "Tıkla: Anasayfada Göster"}
                     >
-                      <Upload size={11} /> Fotoğraf Yükle & Kırp
+                      {isVisibleOnHome ? <Eye size={12} /> : <EyeOff size={12} />}
+                      <span>{isVisibleOnHome ? "Anasayfada Yayında" : "Anasayfada Gizli"}</span>
+                    </button>
+
+                    {/* Toggle Featured */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFeatured(item)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isFeatured
+                          ? "bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25"
+                          : "bg-gray-900/60 text-gray-500 border-gray-800 hover:text-gray-300"
+                      }`}
+                      title={isFeatured ? "Tıkla: Öne Çıkarmayı Kaldır" : "Tıkla: Vitrinde Öne Çıkar"}
+                    >
+                      <Sparkles size={11} className={isFeatured ? "text-amber-400" : ""} />
+                      <span>{isFeatured ? "Öne Çıkan Vitrin" : "Standart"}</span>
                     </button>
                   </div>
-                  <input type="text" value={formData.imgUrl} onChange={(e) => setFormData({ ...formData, imgUrl: e.target.value })} className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500" placeholder="/assets/chronamesh.png veya Yüklenen Görsel" />
+
+                  <h3 className="font-bold text-white text-lg mb-1.5 group-hover:text-violet-300 transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-gray-400 line-clamp-2 mb-4 leading-relaxed">
+                    {item.description}
+                  </p>
+
+                  {/* Tech Stack Chips */}
+                  {Array.isArray(item.stack) && item.stack.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {item.stack.slice(0, 4).map((tech: string) => (
+                        <span
+                          key={tech}
+                          className="text-[10px] bg-violet-500/10 text-violet-300 px-2.5 py-0.5 rounded-md border border-violet-500/20 font-medium"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                      {item.stack.length > 4 && (
+                        <span className="text-[10px] text-gray-500 px-1 py-0.5">
+                          +{item.stack.length - 4}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Card Actions Footer */}
+                <div className="flex items-center justify-between pt-3.5 border-t border-[#1a2035]">
+                  <div className="flex items-center gap-1.5">
+                    {item.link && item.link !== "#" && (
+                      <a
+                        href={item.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white text-xs flex items-center gap-1 transition-all"
+                        title="Canlı Siteyi Aç"
+                      >
+                        <ExternalLink size={13} />
+                      </a>
+                    )}
+                    {item.github && (
+                      <a
+                        href={item.github}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white text-xs flex items-center gap-1 transition-all"
+                        title="GitHub Kodunu Gör"
+                      >
+                        <Github size={13} />
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openModal(item)}
+                      className="px-3 py-1.5 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-all text-xs flex items-center gap-1 font-bold cursor-pointer"
+                    >
+                      <Edit3 size={13} /> Düzenle
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all text-xs cursor-pointer"
+                      title="Projeyi Sil"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* ─── Compact Table View ─── */
+        <div className="bg-[#0d1117] border border-[#1a2035] rounded-3xl overflow-hidden shadow-xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-gray-300">
+              <thead className="bg-[#161b27] text-gray-400 uppercase tracking-wider text-[10px] font-bold border-b border-[#1f2937]">
+                <tr>
+                  <th className="p-3.5 w-10 text-center">Seç</th>
+                  <th className="p-3.5">Proje Adı & Görsel</th>
+                  <th className="p-3.5">Kategori</th>
+                  <th className="p-3.5">Anasayfada Göster</th>
+                  <th className="p-3.5">Öne Çıkan</th>
+                  <th className="p-3.5">Bağlantılar</th>
+                  <th className="p-3.5 text-right">İşlemler</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1a2035]">
+                {filteredItems.map((item, idx) => {
+                  const isSelected = selectedIds.includes(item.id);
+                  const isVisibleOnHome = item.showOnHome !== false;
+                  const isFeatured = toBoolean(item.featured);
 
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">Teknoloji Yığını (Virgülle Ayırın)</label>
-                <input type="text" value={formData.stack} onChange={(e) => setFormData({ ...formData, stack: e.target.value })} className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500" placeholder="React, Vite, TypeScript, Cloudflare Workers" />
-              </div>
+                  return (
+                    <tr key={item.id || idx} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="p-3.5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectItem(item.id)}
+                          className="w-4 h-4 rounded border-gray-700 bg-black text-violet-600 focus:ring-violet-500 cursor-pointer"
+                        />
+                      </td>
+                      <td className="p-3.5">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={item.imgUrl}
+                            alt=""
+                            className="w-12 h-8 rounded-lg object-cover bg-gray-900 border border-[#1f2937]"
+                            onError={(e: any) => {
+                              e.target.src =
+                                "https://placehold.co/100x60/0f172a/8b5cf6?text=" +
+                                encodeURIComponent(item.title);
+                            }}
+                          />
+                          <div>
+                            <span className="font-bold text-white block text-sm">{item.title}</span>
+                            <span className="text-[11px] text-gray-500 line-clamp-1 max-w-xs">{item.description}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3.5">
+                        <span className="px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 font-semibold border border-violet-500/20 text-[10px]">
+                          {item.category}
+                        </span>
+                      </td>
+                      <td className="p-3.5">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleShowOnHome(item)}
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all flex items-center gap-1 cursor-pointer ${
+                            isVisibleOnHome
+                              ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                              : "bg-gray-800 text-gray-400 border-gray-700"
+                          }`}
+                        >
+                          {isVisibleOnHome ? <Eye size={11} /> : <EyeOff size={11} />}
+                          <span>{isVisibleOnHome ? "Yayında" : "Gizli"}</span>
+                        </button>
+                      </td>
+                      <td className="p-3.5">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleFeatured(item)}
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all flex items-center gap-1 cursor-pointer ${
+                            isFeatured
+                              ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                              : "bg-gray-900 text-gray-500 border-gray-800"
+                          }`}
+                        >
+                          <Sparkles size={11} className={isFeatured ? "text-amber-400" : ""} />
+                          <span>{isFeatured ? "Vitrin" : "Standart"}</span>
+                        </button>
+                      </td>
+                      <td className="p-3.5">
+                        <div className="flex items-center gap-1.5">
+                          {item.link && item.link !== "#" && (
+                            <a href={item.link} target="_blank" rel="noreferrer" className="p-1 rounded bg-gray-900 text-gray-400 hover:text-white" title="Canlı Site">
+                              <ExternalLink size={13} />
+                            </a>
+                          )}
+                          {item.github && (
+                            <a href={item.github} target="_blank" rel="noreferrer" className="p-1 rounded bg-gray-900 text-gray-400 hover:text-white" title="GitHub Deposu">
+                              <Github size={13} />
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button onClick={() => openModal(item)} className="p-1.5 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20" title="Düzenle">
+                            <Edit3 size={13} />
+                          </button>
+                          <button onClick={() => handleDelete(item.id)} className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20" title="Sil">
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Canlı Demo Bağlantısı (URL)</label>
-                  <input type="text" value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500" placeholder="https://..." />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">GitHub Depo Bağlantısı (URL)</label>
-                  <input type="text" value={formData.github} onChange={(e) => setFormData({ ...formData, github: e.target.value })} className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500" placeholder="https://github.com/..." />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">Proje Açıklaması *</label>
-                <textarea required rows={4} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500 resize-none" placeholder="Projenin detaylarını açıklayın..." />
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <input type="checkbox" id="featured" checked={toBoolean(formData.featured)} onChange={(e) => setFormData((prev) => ({ ...prev, featured: e.target.checked }))} className="rounded bg-[#161b27] border-[#1f2937] text-violet-600 focus:ring-violet-500 cursor-pointer" />
-                <label htmlFor="featured" className="text-xs text-gray-300 font-medium cursor-pointer">Bu projeyi Öne Çıkanlar (Featured Carousel) alanında göster</label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#1a2035]">
-                <button type="button" onClick={closeModal} className="px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-white bg-white/5">İptal</button>
-                <button type="submit" className="px-5 py-2 rounded-xl text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-900/40 flex items-center gap-1.5">
-                  <Save size={14} /> Kaydet
+      {/* ─── ADD / EDIT PROJECT MODAL ─── */}
+      {isModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999] w-screen h-screen bg-black/80 backdrop-blur-md p-4 flex items-center justify-center animate-fadeIn">
+            <div className="relative w-full max-w-xl bg-[#0d1117] border border-[#1a2035] rounded-3xl shadow-2xl p-6 sm:p-7 text-left flex flex-col max-h-[85vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-5 pb-3 border-b border-[#1a2035]">
+                <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <FolderGit2 size={18} className="text-violet-400" />
+                  {editingItem ? "Projeyi Düzenle" : "Yeni Proje Ekle"}
+                </h2>
+                <button onClick={closeModal} className="p-1.5 rounded-lg bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer">
+                  <XIcon size={18} />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>,
-        document.body
-      )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                    Proje Başlığı *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500"
+                    placeholder="ChronaMesh"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                      Kategori
+                    </label>
+                    <CustomSelect
+                      value={formData.category}
+                      onChange={(val) => setFormData({ ...formData, category: val })}
+                      options={[
+                        { label: "Full Stack", value: "Full Stack" },
+                        { label: "Frontend", value: "Frontend" },
+                        { label: "Machine Learning", value: "Machine Learning" },
+                        { label: "AI", value: "AI" },
+                        { label: "Game Dev", value: "Game Dev" },
+                        { label: "Data Science", value: "Data Science" },
+                      ]}
+                    />
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider">
+                        Görsel URL
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIsCropModalOpen(true)}
+                        className="text-[10px] font-bold text-violet-400 hover:text-violet-300 flex items-center gap-1 bg-violet-500/10 hover:bg-violet-500/20 px-2 py-0.5 rounded border border-violet-500/20 transition-all cursor-pointer"
+                      >
+                        <Upload size={11} /> Fotoğraf Kırp
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={formData.imgUrl}
+                      onChange={(e) => setFormData({ ...formData, imgUrl: e.target.value })}
+                      className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500"
+                      placeholder="/assets/chronamesh.png veya https://..."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                    Teknoloji Yığını (Virgülle Ayırın)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.stack}
+                    onChange={(e) => setFormData({ ...formData, stack: e.target.value })}
+                    className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500"
+                    placeholder="React, Vite, TypeScript, Cloudflare Workers, Hono"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                      Canlı Demo Bağlantısı (URL)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.link}
+                      onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                      className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500"
+                      placeholder="https://chronamesh.onurd.com.tr"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                      GitHub Depo Bağlantısı (URL)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.github}
+                      onChange={(e) => setFormData({ ...formData, github: e.target.value })}
+                      className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500"
+                      placeholder="https://github.com/onurdrsn/..."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                    Proje Açıklaması *
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full bg-[#161b27] border border-[#1f2937] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500 resize-none"
+                    placeholder="Projenin mimarisini ve özelliklerini açıklayın..."
+                  />
+                </div>
+
+                {/* VISIBILITY & FEATURED TOGGLES */}
+                <div className="p-3.5 rounded-2xl bg-[#161b27] border border-[#1f2937] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <Eye size={13} className="text-emerald-400" /> Anasayfada Göster
+                      </div>
+                      <div className="text-[11px] text-gray-400 mt-0.5">
+                        Açıkken ziyaretçiler bu projeyi anasayfa vitrininde görür; kapalıyken gizlenir.
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.showOnHome}
+                        onChange={(e) => setFormData({ ...formData, showOnHome: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                  </div>
+
+                  <div className="pt-2 border-t border-[#1f2937] flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <Sparkles size={13} className="text-amber-400" /> Öne Çıkanlar (Featured Showcase)
+                      </div>
+                      <div className="text-[11px] text-gray-400 mt-0.5">
+                        Spotlight 3D vitrininde ana slayt olarak döndürülür.
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={toBoolean(formData.featured)}
+                        onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-3 border-t border-[#1a2035]">
+                  <button type="button" onClick={closeModal} className="px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-white bg-white/5 cursor-pointer">
+                    İptal
+                  </button>
+                  <button type="submit" className="px-5 py-2.5 rounded-xl text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-900/40 flex items-center gap-1.5 cursor-pointer">
+                    <Save size={14} /> Kaydet
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
       <JSImportModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}

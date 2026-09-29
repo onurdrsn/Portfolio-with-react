@@ -11,7 +11,8 @@
     "install:all": "make install",
     "dev:pages": "make dev-pages",
     "dev:worker": "make dev-worker",
-    "build:all": "make build"
+    "build:all": "make build",
+    "test": "npm run test --workspace=worker && npm run test --workspace=pages"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

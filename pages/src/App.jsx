@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { UiVersionProvider, useUiVersion } from './contexts/UiVersionContext';
 import LinuxDesktop from './Components/LinuxDesktop';
 import CyberDeckHUD from './Components/CyberDeckHUD';
+import Version4Home from './Components/Version4/Version4Home';
 
 // Pages
 import BlogList from './pages/BlogList';
@@ -122,6 +123,8 @@ function MainNavigation() {
 // Blog Navigation (For /blog, /login, /register, /admin)
 function BlogNavigation() {
     const { user, logout } = useAuth();
+    const location = useLocation();
+    const isBlogPost = location.pathname.startsWith('/blog/') && location.pathname !== '/blog';
 
     return (
         <nav className="sticky top-0 z-50 bg-gray-950/90 backdrop-blur-md border-b border-gray-800 shadow-lg">
@@ -129,9 +132,15 @@ function BlogNavigation() {
                 <div className="flex justify-between items-center h-16">
                     {/* Logo Area */}
                     <div className="flex items-center gap-4">
-                        <Link to="/" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
-                            <span>←</span> Portfolio
-                        </Link>
+                        {isBlogPost ? (
+                            <Link to="/blog" className="text-xs sm:text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1.5 py-1 px-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20">
+                                <span>←</span> Blog Listesine Dön
+                            </Link>
+                        ) : (
+                            <Link to="/" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
+                                <span>←</span> Portfolio
+                            </Link>
+                        )}
                         <div className="h-4 w-px bg-gray-700"></div>
                         <Link to="/blog" className="flex items-center group">
                             <span className="text-xl font-bold bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent group-hover:from-violet-300 group-hover:to-indigo-300 transition-all duration-300">
@@ -256,6 +265,9 @@ const MainPage = () => {
     }
     if (uiVersion === 'v3') {
         return <CyberDeckHUD />;
+    }
+    if (uiVersion === 'v4') {
+        return <Version4Home />;
     }
 
     return (

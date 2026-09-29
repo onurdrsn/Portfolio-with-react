@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Mail, Github, Linkedin, Send, MessageSquare } from 'lucide-react';
+import { apiPost } from "../lib/api";
 
 export default function Contact() {
     const { t } = useTranslation();
@@ -12,22 +13,17 @@ export default function Contact() {
         setIsSubmitting(true);
         const form = e.target;
         const formData = new FormData(form);
+        const name = (formData.get("Name") || "").toString();
+        const email = (formData.get("Email") || "").toString();
+        const message = (formData.get("Message") || "").toString();
 
+        const toastId = toast.loading("Mesajınız iletiliyor...");
         try {
-            const response = await fetch("https://getform.io/f/raeqmjma", {
-                method: "POST",
-                body: formData,
-                headers: { 'Accept': 'application/json' },
-            });
-
-            if (response.ok) {
-                toast.success(t('contact.toast.success') || "Mesajınız başarıyla gönderildi!");
-                form.reset();
-            } else {
-                toast.error(t('contact.toast.error') || "Mesaj gönderilirken bir hata oluştu.");
-            }
+            const res = await apiPost("/api/contact", { name, email, message });
+            toast.success(res?.message || t('contact.toast.success') || "Mesajınız başarıyla gönderildi!", { id: toastId });
+            form.reset();
         } catch (error) {
-            toast.error(t('contact.toast.error') || "Mesaj gönderilirken bir hata oluştu.");
+            toast.error(error.message || t('contact.toast.error') || "Mesaj gönderilirken bir hata oluştu.", { id: toastId });
         } finally {
             setIsSubmitting(false);
         }

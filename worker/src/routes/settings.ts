@@ -40,10 +40,10 @@ export function registerSettingsRoutes(app: Hono<{ Bindings: Env; Variables: Var
   app.put("/api/settings", requireAdmin, async (c: any) => {
     const db = getDb(c.env.DATABASE_URL);
     const body = await c.req.json();
-    const { uiVersion } = body;
+    const { uiVersion, ...otherSettings } = body;
 
-    if (uiVersion && !["v1", "v2", "v3"].includes(uiVersion)) {
-      return c.json({ error: "Invalid uiVersion. Must be 'v1', 'v2', or 'v3'" }, 400);
+    if (uiVersion && !["v1", "v2", "v3", "v4"].includes(uiVersion)) {
+      return c.json({ error: "Invalid uiVersion. Must be 'v1', 'v2', 'v3', or 'v4'" }, 400);
     }
 
     try {
@@ -55,6 +55,17 @@ export function registerSettingsRoutes(app: Hono<{ Bindings: Env; Variables: Var
             target: siteSettings.key,
             set: { value: uiVersion, updatedAt: new Date() },
           });
+      }
+      for (const [key, val] of Object.entries(otherSettings)) {
+        if (typeof val === "string") {
+          await db
+            .insert(siteSettings)
+            .values({ key, value: val, updatedAt: new Date() })
+            .onConflictDoUpdate({
+              target: siteSettings.key,
+              set: { value: val, updatedAt: new Date() },
+            });
+        }
       }
       return c.json({ success: true, uiVersion: uiVersion || "v1" });
     } catch {

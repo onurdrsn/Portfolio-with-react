@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { apiGet, apiPut } from "../lib/api";
 
-export type UiVersion = "v1" | "v2" | "v3";
+export type UiVersion = "v1" | "v2" | "v3" | "v4";
 
 interface UiVersionContextType {
   uiVersion: UiVersion;
@@ -10,20 +10,39 @@ interface UiVersionContextType {
   refetchSettings: () => Promise<void>;
 }
 
+const UI_STORAGE_KEY = "portfolio_ui_version";
+
+function getInitialUiVersion(): UiVersion {
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(UI_STORAGE_KEY);
+      if (stored && ["v1", "v2", "v3", "v4"].includes(stored)) {
+        return stored as UiVersion;
+      }
+    } catch {}
+  }
+  return "v1";
+}
+
 const UiVersionContext = createContext<UiVersionContextType | null>(null);
 
 export function UiVersionProvider({ children }: { children: React.ReactNode }) {
-  const [uiVersion, setUiVersionState] = useState<UiVersion>("v1");
-  const [loading, setLoading] = useState(true);
+  // Synchronous initialization prevents any flashing of default v1 when reloading
+  const [uiVersion, setUiVersionState] = useState<UiVersion>(getInitialUiVersion);
+  const [loading, setLoading] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
       const res = await apiGet<{ uiVersion?: string }>("/api/settings", { silent: true });
-      if (res && res.uiVersion && ["v1", "v2", "v3"].includes(res.uiVersion)) {
-        setUiVersionState(res.uiVersion as UiVersion);
+      if (res && res.uiVersion && ["v1", "v2", "v3", "v4"].includes(res.uiVersion)) {
+        const serverVersion = res.uiVersion as UiVersion;
+        setUiVersionState(serverVersion);
+        try {
+          localStorage.setItem(UI_STORAGE_KEY, serverVersion);
+        } catch {}
       }
     } catch {
-      // Fallback to v1 on network error
+      // Retain stored version on network error
     } finally {
       setLoading(false);
     }
@@ -37,6 +56,10 @@ export function UiVersionProvider({ children }: { children: React.ReactNode }) {
   }, [fetchSettings]);
 
   const setUiVersion = async (newVersion: UiVersion) => {
+    // Immediately persist to localStorage synchronously so any refresh instantly picks it up
+    try {
+      localStorage.setItem(UI_STORAGE_KEY, newVersion);
+    } catch {}
     setUiVersionState(newVersion);
     try {
       await apiPut("/api/settings", { uiVersion: newVersion });

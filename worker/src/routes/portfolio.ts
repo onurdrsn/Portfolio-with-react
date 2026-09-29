@@ -17,10 +17,12 @@ async function ensurePortfolioTable(db: any) {
       description text NOT NULL,
       category text NOT NULL DEFAULT 'Full Stack',
       featured boolean NOT NULL DEFAULT false,
+      show_on_home boolean NOT NULL DEFAULT true,
       display_order integer NOT NULL DEFAULT 0,
       created_at timestamp NOT NULL DEFAULT now(),
       updated_at timestamp NOT NULL DEFAULT now()
     );
+    ALTER TABLE portfolio_items ADD COLUMN IF NOT EXISTS show_on_home boolean NOT NULL DEFAULT true;
   `);
 }
 
@@ -55,7 +57,7 @@ export function registerPortfolioRoutes(app: Hono<{ Bindings: Env; Variables: Va
   const createPortfolio = async (c: any) => {
     const db = getDb(c.env.DATABASE_URL);
     const body = await c.req.json();
-    const { title, imgUrl, stack, link, github, description, category, featured, displayOrder } = body;
+    const { title, imgUrl, stack, link, github, description, category, featured, showOnHome, displayOrder } = body;
 
     if (!title || !description) {
       return c.json({ error: "Title and description are required" }, 400);
@@ -70,6 +72,7 @@ export function registerPortfolioRoutes(app: Hono<{ Bindings: Env; Variables: Va
       description,
       category: category || "Full Stack",
       featured: toBoolean(featured),
+      showOnHome: showOnHome !== undefined ? toBoolean(showOnHome) : true,
       displayOrder: displayOrder !== undefined ? Number(displayOrder) : 0,
     };
 
@@ -104,6 +107,7 @@ export function registerPortfolioRoutes(app: Hono<{ Bindings: Env; Variables: Va
       description: item.description || "",
       category: item.category || "Full Stack",
       featured: toBoolean(item.featured),
+      showOnHome: item.showOnHome !== undefined ? toBoolean(item.showOnHome) : true,
       displayOrder: idx,
     }));
 
@@ -135,6 +139,7 @@ export function registerPortfolioRoutes(app: Hono<{ Bindings: Env; Variables: Va
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
     if (body.featured !== undefined) updateData.featured = toBoolean(body.featured);
+    if (body.showOnHome !== undefined) updateData.showOnHome = toBoolean(body.showOnHome);
     if (body.displayOrder !== undefined) updateData.displayOrder = Number(body.displayOrder);
 
     try {
@@ -149,6 +154,33 @@ export function registerPortfolioRoutes(app: Hono<{ Bindings: Env; Variables: Va
     } catch {
       await ensurePortfolioTable(db);
       return c.json({ error: "Portfolio item not found" }, 404);
+    }
+  });
+
+  // PATCH /api/portfolio/:id/toggle-home
+  app.patch("/api/portfolio/:id/toggle-home", requireAdmin, async (c: any) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const { id } = c.req.param();
+    try {
+      const [existing] = await db
+        .select()
+        .from(portfolioItems)
+        .where(eq(portfolioItems.id, id))
+        .limit(1);
+
+      if (!existing) return c.json({ error: "Portfolio item not found" }, 404);
+
+      const nextVal = !existing.showOnHome;
+      const [updated] = await db
+        .update(portfolioItems)
+        .set({ showOnHome: nextVal, updatedAt: new Date() })
+        .where(eq(portfolioItems.id, id))
+        .returning();
+
+      return c.json(updated);
+    } catch {
+      await ensurePortfolioTable(db);
+      return c.json({ error: "Database error" }, 500);
     }
   });
 

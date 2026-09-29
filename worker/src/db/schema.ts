@@ -5,7 +5,9 @@ export const users = pgTable("users", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
+  passwordHash: text("password_hash").notNull().default(""),
+  tempCode: text("temp_code"),
+  tempCodeExpiresAt: timestamp("temp_code_expires_at"),
   isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -57,6 +59,7 @@ export const portfolioItems = pgTable("portfolio_items", {
   description: text("description").notNull(),
   category: text("category").notNull().default("Full Stack"),
   featured: boolean("featured").notNull().default(false),
+  showOnHome: boolean("show_on_home").notNull().default(true),
   displayOrder: integer("display_order").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -82,6 +85,16 @@ export const siteSettings = pgTable("site_settings", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// ─── Contact Messages ─────────────────────────────────────────────────
+export const contactMessages = pgTable("contact_messages", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  message: text("message").notNull(),
+  read: boolean("read").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // ─── Types ────────────────────────────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -94,4 +107,6 @@ export type NewPortfolioItem = typeof portfolioItems.$inferInsert;
 export type TimelineItem = typeof timelineItems.$inferSelect;
 export type NewTimelineItem = typeof timelineItems.$inferInsert;
 export type SiteSetting = typeof siteSettings.$inferSelect;
+export type ContactMessage = typeof contactMessages.$inferSelect;
+export type NewContactMessage = typeof contactMessages.$inferInsert;
 
