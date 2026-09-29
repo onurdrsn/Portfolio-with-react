@@ -36,9 +36,9 @@ describe('Register Page - Passwordless Account Creation Flow', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByPlaceholderText('kullanici_adi')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/adiniz@example\.com/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Geçici Parola İle Kayıt Ol/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/(?:kullanici_adi|username)/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/(?:adiniz|example)@/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /(?:Geçici Parola İle Kayıt Ol|Register with Passcode)/i })).toBeInTheDocument();
 
     // Verify absence of password fields
     const passwordInputs = screen.queryAllByPlaceholderText(/şifre|password/i);
@@ -61,9 +61,9 @@ describe('Register Page - Passwordless Account Creation Flow', () => {
       </MemoryRouter>
     );
 
-    await user.type(screen.getByPlaceholderText('kullanici_adi'), 'ahmet_dev');
-    await user.type(screen.getByPlaceholderText(/adiniz@example\.com/i), 'ahmet@dev.com');
-    await user.click(screen.getByRole('button', { name: /Geçici Parola İle Kayıt Ol/i }));
+    await user.type(screen.getByPlaceholderText(/(?:kullanici_adi|username)/i), 'ahmet_dev');
+    await user.type(screen.getByPlaceholderText(/(?:adiniz|example)@/i), 'ahmet@dev.com');
+    await user.click(screen.getByRole('button', { name: /(?:Geçici Parola İle Kayıt Ol|Register with Passcode)/i }));
 
     await waitFor(() => {
       expect(api.apiPost).toHaveBeenCalledWith('/api/auth/send-passcode', {
@@ -74,9 +74,9 @@ describe('Register Page - Passwordless Account Creation Flow', () => {
 
     await waitFor(() => {
       expect(screen.getByPlaceholderText('123456')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Hesabı Onayla ve Giriş Yap/i })).toBeInTheDocument();
-      expect(screen.getByText(/\* Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir\./i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Yeni parola için bekleyin/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /(?:Hesabı Onayla ve Giriş Yap|Confirm & Log In)/i })).toBeInTheDocument();
+      expect(screen.getByText(/\* (?:Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir|This passcode remains valid for 10 minutes)/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /(?:Yeni parola için bekleyin|Wait for new passcode)/i })).toBeDisabled();
     });
   });
 });

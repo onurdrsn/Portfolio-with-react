@@ -75,12 +75,12 @@ function MainNavigation() {
                     {/* Desktop Navigation Links */}
                     <div className="hidden md:flex items-center space-x-1 bg-gray-900/50 p-1.5 rounded-2xl border border-gray-800/80">
                         <Link to="/" className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${location.pathname === '/' ? 'bg-violet-600/30 text-white border border-violet-500/30 shadow' : 'text-gray-300 hover:text-white hover:bg-gray-800/50'}`}>{t('nav.home') || 'Ana Sayfa'}</Link>
-                        <a href="/#projects" className="px-4 py-2 text-xs font-bold text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all">Projeler</a>
-                        <a href="/#experience" className="px-4 py-2 text-xs font-bold text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all">Deneyim</a>
+                        <a href="/#projects" className="px-4 py-2 text-xs font-bold text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all">{t('nav.projects') || 'Projeler'}</a>
+                        <a href="/#experience" className="px-4 py-2 text-xs font-bold text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all">{t('nav.experience') || 'Deneyim'}</a>
                         <Link to="/blog" className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${location.pathname.startsWith('/blog') ? 'bg-violet-600/30 text-white border border-violet-500/30' : 'text-violet-300 hover:text-violet-200 hover:bg-violet-950/40'}`}>Blog</Link>
                         <Link to="/games" className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${location.pathname.startsWith('/games') ? 'bg-violet-600/30 text-white border border-violet-500/30' : 'text-gray-300 hover:text-white hover:bg-gray-800/50'}`}>{t('nav.games') || 'Oyunlar'}</Link>
                         {user?.isAdmin && (
-                            <Link to="/admin" className="px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 rounded-xl border border-amber-500/20 transition-all">Admin</Link>
+                            <Link to="/admin" className="px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 rounded-xl border border-amber-500/20 transition-all">{t('nav.admin') || 'Admin'}</Link>
                         )}
                     </div>
 
@@ -106,12 +106,12 @@ function MainNavigation() {
             {mobileOpen && (
                 <div className="md:hidden bg-gray-950 border-b border-gray-800 px-4 py-4 space-y-2 animate-fadeIn">
                     <Link to="/" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-200 hover:bg-gray-900">{t('nav.home') || 'Ana Sayfa'}</Link>
-                    <a href="/#projects" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-200 hover:bg-gray-900">Projeler</a>
-                    <a href="/#experience" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-200 hover:bg-gray-900">Deneyim</a>
+                    <a href="/#projects" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-200 hover:bg-gray-900">{t('nav.projects') || 'Projeler'}</a>
+                    <a href="/#experience" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-200 hover:bg-gray-900">{t('nav.experience') || 'Deneyim'}</a>
                     <Link to="/blog" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-violet-300 hover:bg-gray-900">Blog</Link>
                     <Link to="/games" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-200 hover:bg-gray-900">{t('nav.games') || 'Oyunlar'}</Link>
                     {user?.isAdmin && (
-                        <Link to="/admin" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-amber-300 bg-amber-500/10">Admin Paneli</Link>
+                        <Link to="/admin" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-amber-300 bg-amber-500/10">{t('nav.admin') || 'Admin Paneli'}</Link>
                     )}
                     <button onClick={handleContactClick} className="w-full text-left px-4 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-bold shadow">{t('nav.contact') || 'İletişim'}</button>
                 </div>
@@ -122,6 +122,7 @@ function MainNavigation() {
 
 // Blog Navigation (For /blog, /login, /register, /admin)
 function BlogNavigation() {
+    const { t } = useTranslation();
     const { user, logout } = useAuth();
     const location = useLocation();
     const isBlogPost = location.pathname.startsWith('/blog/') && location.pathname !== '/blog';
@@ -134,11 +135,11 @@ function BlogNavigation() {
                     <div className="flex items-center gap-4">
                         {isBlogPost ? (
                             <Link to="/blog" className="text-xs sm:text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1.5 py-1 px-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20">
-                                <span>←</span> Blog Listesine Dön
+                                <span>←</span> {t('nav.backToBlog') ? t('nav.backToBlog').replace(/^←\s*/, '') : 'Blog Listesine Dön'}
                             </Link>
                         ) : (
                             <Link to="/" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
-                                <span>←</span> Portfolio
+                                <span>←</span> {t('nav.backToPortfolio') ? t('nav.backToPortfolio').replace(/^←\s*/, '') : 'Portfolio'}
                             </Link>
                         )}
                         <div className="h-4 w-px bg-gray-700"></div>
@@ -153,23 +154,25 @@ function BlogNavigation() {
                     <div className="flex items-center space-x-2">
                         {user ? (
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-400 hidden sm:inline-block">Hoş geldin, <span className="text-white">@{user.username}</span></span>
+                                <span className="text-sm text-gray-400 hidden sm:inline-block">
+                                    {t('nav.welcomeUser', { username: user.username }) || `Hoş geldin, @${user.username}`}
+                                </span>
                                 {user.isAdmin && (
                                     <Link to="/admin" className="px-4 py-1.5 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-lg border border-violet-500/20 transition-all duration-200 text-sm font-medium">
-                                        Admin Paneli
+                                        {t('nav.admin') || 'Admin Paneli'}
                                     </Link>
                                 )}
                                 <button onClick={logout} className="px-4 py-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-200 text-sm">
-                                    Çıkış
+                                    {t('nav.logout') || 'Çıkış'}
                                 </button>
                             </div>
                         ) : (
                             <div className="flex items-center gap-2">
                                 <Link to="/login" className="px-4 py-1.5 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all duration-200 text-sm font-medium">
-                                    Giriş Yap
+                                    {t('nav.login') || 'Giriş Yap'}
                                 </Link>
                                 <Link to="/register" className="px-4 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg shadow-violet-600/20">
-                                    Kayıt Ol
+                                    {t('nav.register') || 'Kayıt Ol'}
                                 </Link>
                             </div>
                         )}

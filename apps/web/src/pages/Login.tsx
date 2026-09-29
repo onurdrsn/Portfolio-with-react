@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { Mail, KeyRound, ArrowRight, RefreshCw, CheckCircle2, Clock, Sparkles } from "lucide-react";
 
 export default function Login() {
+  const { t } = useTranslation();
   const { sendPasscode, loginWithPasscode } = useAuth();
   const navigate = useNavigate();
 
@@ -31,10 +33,10 @@ export default function Login() {
       }, 1000);
     } else if (timeLeft === 0 && timerActive) {
       setTimerActive(false);
-      setError("10 dakikalık parolanızın süresi doldu. Lütfen yeni bir parola isteyin.");
+      setError(t("auth.errors.expired"));
     }
     return () => clearInterval(interval);
-  }, [timerActive, timeLeft]);
+  }, [timerActive, timeLeft, t]);
 
   useEffect(() => {
     let interval: any = null;
@@ -56,19 +58,19 @@ export default function Login() {
   const handleRequestPasscode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
-      return setError("Lütfen geçerli bir e-posta adresi giriniz.");
+      return setError(t("auth.errors.invalidEmail"));
     }
     if (resendCooldown > 0) {
-      return setError(`Yeni bir parola istemek için lütfen ${resendCooldown} saniye bekleyiniz.`);
+      return setError(t("auth.errors.cooldown", { seconds: resendCooldown }));
     }
 
     setError(null);
     setLoading(true);
-    const toastId = toast.loading("Geçici parola e-posta adresinize gönderiliyor...");
+    const toastId = toast.loading(t("auth.toasts.sending"));
 
     try {
       await sendPasscode(email.trim());
-      toast.success("Geçici parolanız e-posta adresinize iletildi!", { id: toastId });
+      toast.success(t("auth.toasts.sent"), { id: toastId });
       setStep("code");
       setTimeLeft(600); // 10 minutes
       setTimerActive(true);
@@ -76,7 +78,7 @@ export default function Login() {
       setResendCount(1);
     } catch (err: any) {
       toast?.dismiss?.(toastId);
-      setError(err.message || "E-posta gönderilemedi.");
+      setError(err.message || t("auth.errors.emailFailed"));
     } finally {
       setLoading(false);
     }
@@ -87,11 +89,11 @@ export default function Login() {
     if (loading || resendCooldown > 0) return;
     setError(null);
     setLoading(true);
-    const toastId = toast.loading("Yeni geçici parola gönderiliyor...");
+    const toastId = toast.loading(t("auth.toasts.resending"));
 
     try {
       await sendPasscode(email.trim());
-      toast.success("Yeni geçici parolanız e-posta adresinize iletildi!", { id: toastId });
+      toast.success(t("auth.toasts.resent"), { id: toastId });
       setTimeLeft(600);
       setTimerActive(true);
       // Double the cooldown: 30 * 2^resendCount
@@ -100,7 +102,7 @@ export default function Login() {
       setResendCount((prev) => prev + 1);
     } catch (err: any) {
       toast?.dismiss?.(toastId);
-      setError(err.message || "E-posta gönderilemedi.");
+      setError(err.message || t("auth.errors.emailFailed"));
     } finally {
       setLoading(false);
     }
@@ -110,20 +112,20 @@ export default function Login() {
   const handleVerifyPasscode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) {
-      return setError("Lütfen e-postanıza gelen geçici parolayı giriniz.");
+      return setError(t("auth.errors.enterPasscode"));
     }
 
     setError(null);
     setLoading(true);
-    const toastId = toast.loading("Parola doğrulanıyor ve oturum açılıyor...");
+    const toastId = toast.loading(t("auth.toasts.verifying"));
 
     try {
       await loginWithPasscode(email.trim(), code.trim());
-      toast.success("Başarıyla giriş yapıldı! Hoş geldiniz.", { id: toastId });
+      toast.success(t("auth.toasts.loginSuccess"), { id: toastId });
       navigate("/blog");
     } catch (err: any) {
       toast?.dismiss?.(toastId);
-      setError(err.message || "Parola hatalı veya süresi dolmuş.");
+      setError(err.message || t("auth.errors.invalidPasscode"));
     } finally {
       setLoading(false);
     }
@@ -146,12 +148,12 @@ export default function Login() {
               )}
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              {step === "email" ? "Güvenli Giriş" : "Geçici Parolayı Girin"}
+              {step === "email" ? t("auth.loginTitle") : t("auth.loginPasscodeTitle")}
             </h1>
             <p className="text-gray-400 text-xs sm:text-sm mt-1.5 max-w-xs mx-auto">
               {step === "email"
-                ? "Şifre hatırlamanıza gerek yok. E-postanıza 10 dakika geçerli tek kullanımlık parola göndereceğiz."
-                : `${email} adresine gönderilen 6 haneli geçici parolayı yazın.`}
+                ? t("auth.loginDesc")
+                : t("auth.loginPasscodeDesc", { email })}
             </p>
           </div>
 
@@ -168,7 +170,7 @@ export default function Login() {
             <form onSubmit={handleRequestPasscode} className="flex flex-col gap-4 relative z-10">
               <div>
                 <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                  E-Posta Adresiniz
+                  {t("auth.email")}
                 </label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -177,7 +179,7 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    placeholder="adiniz@example.com"
+                    placeholder={t("auth.emailPlaceholder") || "adiniz@example.com"}
                     autoFocus
                     className="w-full rounded-2xl bg-gray-950/80 border border-gray-800 pl-11 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all placeholder:text-gray-600"
                   />
@@ -190,10 +192,10 @@ export default function Login() {
                 className="w-full py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-violet-900/40 flex items-center justify-center gap-2 mt-2 group cursor-pointer"
               >
                 {loading ? (
-                  <span>Parola Gönderiliyor...</span>
+                  <span>{t("auth.sendingPasscode")}</span>
                 ) : (
                   <>
-                    <span>Giriş Parolası Gönder</span>
+                    <span>{t("auth.sendPasscode")}</span>
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -213,14 +215,14 @@ export default function Login() {
                   onClick={() => { setStep("email"); setError(null); }}
                   className="text-violet-400 hover:text-white underline text-[11px] shrink-0 ml-2"
                 >
-                  Değiştir
+                  {t("auth.changeEmail")}
                 </button>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider">
-                    Geçici Parola (6 Hane)
+                    {t("auth.passcode")}
                   </label>
                   <div className={`flex items-center gap-1 text-xs font-mono font-bold ${timeLeft < 60 ? "text-red-400 animate-pulse" : "text-violet-400"}`}>
                     <Clock size={13} />
@@ -241,7 +243,7 @@ export default function Login() {
                   />
                 </div>
                 <p className="text-[11px] text-gray-500 mt-2 text-center">
-                  * Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir.
+                  {t("auth.passcodeNotice")}
                 </p>
               </div>
 
@@ -250,7 +252,7 @@ export default function Login() {
                 disabled={loading || timeLeft === 0}
                 className="w-full py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-violet-900/40 flex items-center justify-center gap-2 cursor-pointer"
               >
-                {loading ? "Doğrulanıyor..." : "Giriş Yap"}
+                {loading ? t("auth.verifying") : t("auth.verifyAndLogin")}
               </button>
 
               <button
@@ -262,25 +264,33 @@ export default function Login() {
                 {resendCooldown > 0 ? (
                   <>
                     <Clock size={13} className="text-violet-400 animate-pulse" />
-                    <span>Yeni parola için bekleyin ({resendCooldown}s)</span>
+                    <span>{t("auth.resendCooldown", { seconds: resendCooldown })}</span>
                   </>
                 ) : (
                   <>
                     <RefreshCw size={13} />
-                    <span>Yeni Parola Gönder</span>
+                    <span>{t("auth.resendPasscode")}</span>
                   </>
                 )}
               </button>
             </form>
           )}
 
+          {/* Register Link */}
+          <p className="text-center text-xs sm:text-sm text-gray-500 mt-6">
+            {t("auth.noAccount")}{" "}
+            <Link to="/register" className="text-violet-400 hover:text-violet-300 font-bold">
+              {t("auth.registerLink")}
+            </Link>
+          </p>
+
           {/* Footer Back Link */}
-          <div className="mt-8 pt-6 border-t border-gray-800/80 text-center">
+          <div className="mt-6 pt-6 border-t border-gray-800/80 text-center">
             <Link
               to="/blog"
               className="text-xs text-gray-400 hover:text-violet-400 transition-colors inline-flex items-center gap-1"
             >
-              <span>← Blog Listesine Dön</span>
+              <span>{t("auth.backToBlog")}</span>
             </Link>
           </div>
         </div>

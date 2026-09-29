@@ -9,7 +9,7 @@ export default function Intro() {
     const handleCopyEmail = () => {
         navigator.clipboard.writeText('onurdrsn@gmail.com');
         setCopied(true);
-        toast.success('E-posta adresi kopyalandı!');
+        toast.success(t('hero.copied') || 'E-posta adresi kopyalandı!');
         setTimeout(() => setCopied(false), 2000);
     };
 
@@ -72,7 +72,7 @@ export default function Intro() {
                         <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
-                        {copied ? 'Kopyalandı!' : (t('hero.getInTouch') || 'İletişime Geç')}
+                        {copied ? (t('hero.copied') || 'Kopyalandı!') : (t('hero.getInTouch') || 'İletişime Geç')}
                     </button>
                 </div>
 
@@ -89,15 +89,15 @@ export default function Intro() {
                 <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-2xl w-full p-4 sm:p-6 bg-gradient-to-br from-gray-900/60 to-gray-950/80 backdrop-blur-xl border border-gray-800/80 rounded-2xl shadow-2xl">
                     <div className="text-center">
                         <div className="text-2xl sm:text-4xl font-extrabold text-white bg-gradient-to-r from-violet-400 to-purple-300 bg-clip-text text-transparent">35+</div>
-                        <div className="text-[11px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">Tamamlanan Proje</div>
+                        <div className="text-[11px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">{t('hero.stats.projects') || "Tamamlanan Proje"}</div>
                     </div>
                     <div className="text-center border-x border-gray-800/80 px-2">
                         <div className="text-2xl sm:text-4xl font-extrabold text-white bg-gradient-to-r from-purple-400 to-pink-300 bg-clip-text text-transparent">3+ Yıl</div>
-                        <div className="text-[11px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">Geliştirme Deneyimi</div>
+                        <div className="text-[11px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">{t('hero.stats.experience') || "Geliştirme Deneyimi"}</div>
                     </div>
                     <div className="text-center">
                         <div className="text-2xl sm:text-4xl font-extrabold text-white bg-gradient-to-r from-indigo-400 to-violet-300 bg-clip-text text-transparent">100%</div>
-                        <div className="text-[11px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">Canlı & Performanslı</div>
+                        <div className="text-[11px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">{t('hero.stats.quality') || "Canlı & Performanslı"}</div>
                     </div>
                 </div>
             </div>

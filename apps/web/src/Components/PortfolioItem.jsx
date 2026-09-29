@@ -10,8 +10,8 @@ export default function PortfolioItem({ title, imgUrl, stack = [], link, github,
             'Full Stack': t('projects.categories.fullStack') || 'Full Stack',
             'Frontend': t('projects.categories.frontend') || 'Frontend',
             'Machine Learning': t('projects.categories.machineLearning') || 'Machine Learning',
-            'AI': 'AI & Sinir Ağları',
-            'Game Dev': 'Oyun Geliştirme'
+            'AI': t('projects.categories.ai') || 'AI & Sinir Ağları',
+            'Game Dev': t('projects.categories.gameDev') || 'Oyun Geliştirme'
         };
         return categoryMap[cat] || cat;
     };
@@ -92,7 +92,7 @@ export default function PortfolioItem({ title, imgUrl, stack = [], link, github,
                             className="text-xs font-semibold text-violet-400 hover:text-violet-300 flex items-center gap-1 group/btn"
                         >
                             <Eye size={13} />
-                            <span>Detaylar</span>
+                            <span>{t('projects.details') || 'Detaylar'}</span>
                             <ArrowRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
                         </button>
 
@@ -103,7 +103,7 @@ export default function PortfolioItem({ title, imgUrl, stack = [], link, github,
                                     target="_blank"
                                     rel="noreferrer"
                                     className="p-1.5 rounded-lg bg-gray-800/60 hover:bg-gray-700 text-gray-400 hover:text-white transition-all"
-                                    title="GitHub Deposu"
+                                    title={t('projects.viewGithub') || "GitHub"}
                                 >
                                     <Github size={14} />
                                 </a>
@@ -114,7 +114,7 @@ export default function PortfolioItem({ title, imgUrl, stack = [], link, github,
                                     target="_blank"
                                     rel="noreferrer"
                                     className="p-1.5 rounded-lg bg-violet-600/20 hover:bg-violet-600/40 text-violet-300 border border-violet-500/30 transition-all"
-                                    title="Canlı Demo"
+                                    title={t('projects.liveDemo') || "Canlı Demo"}
                                 >
                                     <ExternalLink size={14} />
                                 </a>

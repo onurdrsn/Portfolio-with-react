@@ -17,7 +17,7 @@ export default function Contact() {
         const email = (formData.get("Email") || "").toString();
         const message = (formData.get("Message") || "").toString();
 
-        const toastId = toast.loading("Mesajınız iletiliyor...");
+        const toastId = toast.loading(t('contact.toast.sending') || "Mesajınız iletiliyor...");
         try {
             const res = await apiPost("/api/contact", { name, email, message });
             toast.success(res?.message || t('contact.toast.success') || "Mesajınız başarıyla gönderildi!", { id: toastId });
@@ -35,7 +35,7 @@ export default function Contact() {
             <div className="text-center mb-12">
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-bold uppercase tracking-widest mb-3">
                     <MessageSquare size={13} />
-                    <span>İletişim Kurun</span>
+                    <span>{t('contact.badge') || "İletişim Kurun"}</span>
                 </div>
                 <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight">
                     {t('contact.title') || "Birlikte"} <span className="bg-gradient-to-r from-violet-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">{t('contact.titleHighlight') || "Harika İşler Yapalım"}</span>

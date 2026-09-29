@@ -7,7 +7,13 @@
         "contact": "Contact",
         "games": "Games",
         "admin": "Admin Panel",
-        "calculator": "42 Calculator"
+        "calculator": "42 Calculator",
+        "login": "Log In",
+        "register": "Sign Up",
+        "logout": "Log Out",
+        "welcomeUser": "Welcome, @{{username}}",
+        "backToBlog": "← Back to Blog List",
+        "backToPortfolio": "← Portfolio"
     },
     "hero": {
         "welcome": "👋 Welcome — Active & Available for Projects",
@@ -32,9 +38,10 @@
         "featured": "Featured Spotlight",
         "liveDemo": "Live Demo",
         "viewGithub": "GitHub",
-        "details": "Details",
+        "details": "Inspect Details",
         "readMore": "Read More",
         "readLess": "Read Less",
+        "swipeHint": "👈 Swipe Left / Right 👉",
         "searchPlaceholder": "Search project or technology...",
         "noProjectsFound": "No Projects Found",
         "noProjectsDesc": "No projects match your search criteria.",
@@ -255,12 +262,15 @@
             "linkedin": "LinkedIn"
         },
         "toast": {
+            "sending": "Sending your message...",
             "success": "Your message has been sent successfully!",
             "error": "An error occurred while sending your message."
         }
     },
     "footer": {
-        "rights": "Onur Dursun. All rights reserved."
+        "rights": "Onur Dursun. All rights reserved.",
+        "builtWith": "Built with",
+        "tagline": "Onur Dursun Portfolio Systems"
     },
     "games": {
         "title": "Game",
@@ -282,6 +292,58 @@
             "neonDuel": "Online Cyber Duel (1v1)",
             "cyberStrike3D": "CyberStrike 3D: Mech Warfare (1v1)",
             "spaceAce3D": "Space-Ace 3D: Interstellar Combat (1v1)"
+        }
+    },
+    "auth": {
+        "loginTitle": "Secure Login",
+        "loginPasscodeTitle": "Enter One-Time Passcode",
+        "loginDesc": "No need to remember passwords. We will send a 10-minute temporary passcode to your email.",
+        "loginPasscodeDesc": "Enter the 6-digit temporary passcode sent to {{email}}.",
+        "registerTitle": "Create Account",
+        "registerPasscodeTitle": "Enter One-Time Passcode",
+        "registerDesc": "No password needed. We will send a secure one-time passcode to your email.",
+        "registerPasscodeDesc": "Enter the passcode sent to {{email}}.",
+        "username": "Username",
+        "usernamePlaceholder": "username",
+        "email": "Email Address",
+        "emailPlaceholder": "example@domain.com",
+        "passcode": "Temporary Passcode (6 Digits)",
+        "passcodePlaceholder": "123456",
+        "passcodeNotice": "* This passcode remains valid for 10 minutes until you log in.",
+        "sendPasscode": "Send Login Passcode",
+        "sendingPasscode": "Sending Passcode...",
+        "registerButton": "Register with Passcode",
+        "registering": "Sending...",
+        "verifyAndLogin": "Log In",
+        "verifyAndRegister": "Confirm & Log In",
+        "verifying": "Verifying...",
+        "changeEmail": "Change",
+        "resendCooldown": "Wait for new passcode ({{seconds}}s)",
+        "resendPasscode": "Resend New Passcode",
+        "backToBlog": "← Back to Blog List",
+        "hasAccount": "Already have an account?",
+        "noAccount": "Don't have an account?",
+        "loginLink": "Log In",
+        "registerLink": "Sign Up",
+        "errors": {
+            "invalidEmail": "Please enter a valid email address.",
+            "fillAll": "Please enter both username and email address.",
+            "cooldown": "Please wait {{seconds}} seconds before requesting a new passcode.",
+            "expired": "Your 10-minute passcode has expired. Please request a new one.",
+            "enterPasscode": "Please enter the passcode sent to your email.",
+            "invalidPasscode": "Invalid or expired passcode.",
+            "emailFailed": "Could not send email.",
+            "general": "Operation could not be completed."
+        },
+        "toasts": {
+            "sending": "Sending temporary passcode to your email...",
+            "sent": "Temporary passcode sent to your email!",
+            "resending": "Sending new temporary passcode...",
+            "resent": "New temporary passcode sent to your email!",
+            "verifying": "Verifying passcode and logging in...",
+            "registerVerifying": "Logging in...",
+            "loginSuccess": "Successfully logged in! Welcome.",
+            "registerSuccess": "Account created and logged in successfully!"
         }
     },
     "v4": {

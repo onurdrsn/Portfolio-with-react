@@ -7,7 +7,13 @@
         "contact": "İletişim",
         "games": "Oyunlar",
         "admin": "Admin Paneli",
-        "calculator": "42 Hesaplayıcı"
+        "calculator": "42 Hesaplayıcı",
+        "login": "Giriş Yap",
+        "register": "Kayıt Ol",
+        "logout": "Çıkış",
+        "welcomeUser": "Hoş geldin, @{{username}}",
+        "backToBlog": "← Blog Listesine Dön",
+        "backToPortfolio": "← Portfolio"
     },
     "hero": {
         "welcome": "👋 Hoş Geldiniz — Projeler için Aktif & Hazır",
@@ -32,9 +38,10 @@
         "featured": "Öne Çıkan Vitrin",
         "liveDemo": "Canlı Demo",
         "viewGithub": "GitHub",
-        "details": "Detaylar",
+        "details": "Detayları İncele",
         "readMore": "Devamını Oku",
         "readLess": "Daha Az Göster",
+        "swipeHint": "👈 Sağa / Sola Kaydır 👉",
         "searchPlaceholder": "Proje veya teknoloji ara...",
         "noProjectsFound": "Proje Bulunamadı",
         "noProjectsDesc": "Arama kriterlerinize uyan proje bulunamadı.",
@@ -255,12 +262,15 @@
             "linkedin": "LinkedIn"
         },
         "toast": {
+            "sending": "Mesajınız iletiliyor...",
             "success": "Mesajınız başarıyla gönderildi!",
             "error": "Mesaj gönderilirken bir hata oluştu."
         }
     },
     "footer": {
-        "rights": "Onur Dursun. Tüm hakları saklıdır."
+        "rights": "Onur Dursun. Tüm hakları saklıdır.",
+        "builtWith": "ile geliştirildi",
+        "tagline": "Onur Dursun Portföy Sistemleri"
     },
     "games": {
         "title": "Oyun",
@@ -282,6 +292,58 @@
             "neonDuel": "Online Siber Düello (1v1)",
             "cyberStrike3D": "CyberStrike 3D: Mech Savaşı (1v1)",
             "spaceAce3D": "Space-Ace 3D: Uzay  Simülatörü"
+        }
+    },
+    "auth": {
+        "loginTitle": "Güvenli Giriş",
+        "loginPasscodeTitle": "Geçici Parolayı Girin",
+        "loginDesc": "Şifre hatırlamanıza gerek yok. E-postanıza 10 dakika geçerli tek kullanımlık parola göndereceğiz.",
+        "loginPasscodeDesc": "{{email}} adresine gönderilen 6 haneli geçici parolayı yazın.",
+        "registerTitle": "Hesap Oluştur",
+        "registerPasscodeTitle": "Geçici Parolayı Girin",
+        "registerDesc": "Şifre oluşturmaya gerek yok. E-postanıza tek kullanımlık geçici parola göndereceğiz.",
+        "registerPasscodeDesc": "{{email}} adresine gönderilen parolanızı yazın.",
+        "username": "Kullanıcı Adı",
+        "usernamePlaceholder": "kullaniciadi",
+        "email": "E-Posta Adresi",
+        "emailPlaceholder": "ornek@domain.com",
+        "passcode": "Geçici Parola (6 Hane)",
+        "passcodePlaceholder": "123456",
+        "passcodeNotice": "* Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir.",
+        "sendPasscode": "Giriş Parolası Gönder",
+        "sendingPasscode": "Parola Gönderiliyor...",
+        "registerButton": "Geçici Parola İle Kayıt Ol",
+        "registering": "Gönderiliyor...",
+        "verifyAndLogin": "Giriş Yap",
+        "verifyAndRegister": "Hesabı Onayla ve Giriş Yap",
+        "verifying": "Doğrulanıyor...",
+        "changeEmail": "Değiştir",
+        "resendCooldown": "Yeni parola için bekleyin ({{seconds}}s)",
+        "resendPasscode": "Yeni Parola Gönder",
+        "backToBlog": "← Blog Listesine Dön",
+        "hasAccount": "Zaten hesabınız var mı?",
+        "noAccount": "Hesabınız yok mu?",
+        "loginLink": "Giriş Yap",
+        "registerLink": "Kayıt Ol",
+        "errors": {
+            "invalidEmail": "Lütfen geçerli bir e-posta adresi giriniz.",
+            "fillAll": "Lütfen kullanıcı adı ve e-posta adresinizi giriniz.",
+            "cooldown": "Yeni bir parola istemek için lütfen {{seconds}} saniye bekleyiniz.",
+            "expired": "10 dakikalık parolanızın süresi doldu. Lütfen yeni bir parola isteyin.",
+            "enterPasscode": "Lütfen e-postanıza gelen geçici parolayı giriniz.",
+            "invalidPasscode": "Parola hatalı veya süresi dolmuş.",
+            "emailFailed": "E-posta gönderilemedi.",
+            "general": "İşlem gerçekleştirilemedi."
+        },
+        "toasts": {
+            "sending": "Geçici parola e-posta adresinize gönderiliyor...",
+            "sent": "Geçici parolanız e-posta adresinize iletildi!",
+            "resending": "Yeni geçici parola gönderiliyor...",
+            "resent": "Yeni geçici parolanız e-posta adresinize iletildi!",
+            "verifying": "Parola doğrulanıyor ve oturum açılıyor...",
+            "registerVerifying": "Giriş yapılıyor...",
+            "loginSuccess": "Başarıyla giriş yapıldı! Hoş geldiniz.",
+            "registerSuccess": "Hesabınız oluşturuldu ve giriş yapıldı!"
         }
     },
     "v4": {

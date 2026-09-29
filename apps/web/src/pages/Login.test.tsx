@@ -37,8 +37,8 @@ describe('Login Page - Passwordless OTP Flow', () => {
     );
 
     // Email field should be present
-    expect(screen.getByPlaceholderText(/adiniz@example\.com/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Giriş Parolası Gönder/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/(?:adiniz|example)@/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /(?:Giriş Parolası Gönder|Send Login Passcode)/i })).toBeInTheDocument();
 
     // Password input MUST NOT exist anywhere
     const passwordInputs = screen.queryAllByPlaceholderText(/şifre|password/i);
@@ -61,9 +61,9 @@ describe('Login Page - Passwordless OTP Flow', () => {
       </MemoryRouter>
     );
 
-    const emailInput = screen.getByPlaceholderText(/adiniz@example\.com/i);
+    const emailInput = screen.getByPlaceholderText(/(?:adiniz|example)@/i);
     await user.type(emailInput, 'developer@onurd.com');
-    await user.click(screen.getByRole('button', { name: /Giriş Parolası Gönder/i }));
+    await user.click(screen.getByRole('button', { name: /(?:Giriş Parolası Gönder|Send Login Passcode)/i }));
 
     // Should call API to send passcode
     await waitFor(() => {
@@ -76,10 +76,10 @@ describe('Login Page - Passwordless OTP Flow', () => {
     // Should now show Step 2 (Passcode verification with 10-minute timer and 10-minute validity notice)
     await waitFor(() => {
       expect(screen.getByPlaceholderText('123456')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Giriş Yap/i })).toBeInTheDocument();
-      expect(screen.getByText(/\* Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir\./i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /(?:Giriş Yap|Log In)/i })).toBeInTheDocument();
+      expect(screen.getByText(/\* (?:Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir|This passcode remains valid for 10 minutes)/i)).toBeInTheDocument();
       expect(screen.getByText(/\d{2}:\d{2}/)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Yeni parola için bekleyin/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /(?:Yeni parola için bekleyin|Wait for new passcode)/i })).toBeDisabled();
     });
   });
 
@@ -102,9 +102,9 @@ describe('Login Page - Passwordless OTP Flow', () => {
     );
 
     // Step 1: Send code
-    const emailInput = screen.getByPlaceholderText(/adiniz@example\.com/i);
+    const emailInput = screen.getByPlaceholderText(/(?:adiniz|example)@/i);
     await user.type(emailInput, 'developer@onurd.com');
-    await user.click(screen.getByRole('button', { name: /Giriş Parolası Gönder/i }));
+    await user.click(screen.getByRole('button', { name: /(?:Giriş Parolası Gönder|Send Login Passcode)/i }));
 
     // Step 2: Enter code
     await waitFor(() => {
@@ -113,7 +113,7 @@ describe('Login Page - Passwordless OTP Flow', () => {
 
     const codeInput = screen.getByPlaceholderText('123456');
     await user.type(codeInput, '852963');
-    await user.click(screen.getByRole('button', { name: /Giriş Yap/i }));
+    await user.click(screen.getByRole('button', { name: /(?:Giriş Yap|Log In)/i }));
 
     await waitFor(() => {
       expect(api.apiPost).toHaveBeenCalledWith('/api/auth/login-passcode', {

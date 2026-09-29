@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { Mail, User, KeyRound, ArrowRight, RefreshCw, CheckCircle2, Clock } from "lucide-react";
 
 export default function Register() {
+  const { t } = useTranslation();
   const { sendPasscode, loginWithPasscode } = useAuth();
   const navigate = useNavigate();
 
@@ -30,10 +32,10 @@ export default function Register() {
       }, 1000);
     } else if (timeLeft === 0 && timerActive) {
       setTimerActive(false);
-      setError("10 dakikalık parolanızın süresi doldu. Lütfen yeni bir parola talep edin.");
+      setError(t("auth.errors.expired"));
     }
     return () => clearInterval(interval);
-  }, [timerActive, timeLeft]);
+  }, [timerActive, timeLeft, t]);
 
   useEffect(() => {
     let interval: any = null;
@@ -54,19 +56,19 @@ export default function Register() {
   const handleRequestPasscode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !email.trim()) {
-      return setError("Lütfen kullanıcı adı ve e-posta adresinizi giriniz.");
+      return setError(t("auth.errors.fillAll"));
     }
     if (resendCooldown > 0) {
-      return setError(`Yeni bir parola istemek için lütfen ${resendCooldown} saniye bekleyiniz.`);
+      return setError(t("auth.errors.cooldown", { seconds: resendCooldown }));
     }
 
     setError(null);
     setLoading(true);
-    const toastId = toast.loading("Geçici parolanız oluşturuluyor...");
+    const toastId = toast.loading(t("auth.toasts.sending"));
 
     try {
       await sendPasscode(email.trim(), username.trim());
-      toast.success("Geçici parolanız e-posta adresinize gönderildi!", { id: toastId });
+      toast.success(t("auth.toasts.sent"), { id: toastId });
       setStep("code");
       setTimeLeft(600);
       setTimerActive(true);
@@ -74,7 +76,7 @@ export default function Register() {
       setResendCount(1);
     } catch (err: any) {
       toast?.dismiss?.(toastId);
-      setError(err.message || "İşlem gerçekleştirilemedi.");
+      setError(err.message || t("auth.errors.general"));
     } finally {
       setLoading(false);
     }
@@ -84,11 +86,11 @@ export default function Register() {
     if (loading || resendCooldown > 0) return;
     setError(null);
     setLoading(true);
-    const toastId = toast.loading("Yeni geçici parola gönderiliyor...");
+    const toastId = toast.loading(t("auth.toasts.resending"));
 
     try {
       await sendPasscode(email.trim(), username.trim());
-      toast.success("Yeni geçici parolanız e-posta adresinize gönderildi!", { id: toastId });
+      toast.success(t("auth.toasts.resent"), { id: toastId });
       setTimeLeft(600);
       setTimerActive(true);
       const nextCooldown = Math.min(30 * Math.pow(2, resendCount), 3600);
@@ -96,7 +98,7 @@ export default function Register() {
       setResendCount((prev) => prev + 1);
     } catch (err: any) {
       toast?.dismiss?.(toastId);
-      setError(err.message || "İşlem gerçekleştirilemedi.");
+      setError(err.message || t("auth.errors.general"));
     } finally {
       setLoading(false);
     }
@@ -105,20 +107,20 @@ export default function Register() {
   const handleVerifyPasscode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) {
-      return setError("Lütfen gelen 6 haneli geçici parolayı giriniz.");
+      return setError(t("auth.errors.enterPasscode"));
     }
 
     setError(null);
     setLoading(true);
-    const toastId = toast.loading("Giriş yapılıyor...");
+    const toastId = toast.loading(t("auth.toasts.registerVerifying"));
 
     try {
       await loginWithPasscode(email.trim(), code.trim());
-      toast.success("Hesabınız oluşturuldu ve giriş yapıldı!", { id: toastId });
+      toast.success(t("auth.toasts.registerSuccess"), { id: toastId });
       navigate("/blog");
     } catch (err: any) {
       toast?.dismiss?.(toastId);
-      setError(err.message || "Parola geçersiz veya süresi dolmuş.");
+      setError(err.message || t("auth.errors.invalidPasscode"));
     } finally {
       setLoading(false);
     }
@@ -135,12 +137,12 @@ export default function Register() {
               <span className="text-2xl">✨</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              {step === "info" ? "Hesap Oluştur" : "Geçici Parolayı Girin"}
+              {step === "info" ? t("auth.registerTitle") : t("auth.registerPasscodeTitle")}
             </h1>
             <p className="text-gray-400 text-xs sm:text-sm mt-1.5 max-w-xs mx-auto">
               {step === "info"
-                ? "Şifre oluşturmaya gerek yok. E-postanıza tek kullanımlık geçici parola göndereceğiz."
-                : `${email} adresine gönderilen parolanızı yazın.`}
+                ? t("auth.registerDesc")
+                : t("auth.registerPasscodeDesc", { email })}
             </p>
           </div>
 
@@ -155,7 +157,7 @@ export default function Register() {
             <form onSubmit={handleRequestPasscode} className="flex flex-col gap-4 relative z-10">
               <div>
                 <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                  Kullanıcı Adı
+                  {t("auth.username")}
                 </label>
                 <div className="relative">
                   <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -164,7 +166,7 @@ export default function Register() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
-                    placeholder="kullanici_adi"
+                    placeholder={t("auth.usernamePlaceholder") || "kullanici_adi"}
                     minLength={2}
                     autoFocus
                     className="w-full rounded-2xl bg-gray-950/80 border border-gray-800 pl-11 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all placeholder:text-gray-600"
@@ -174,7 +176,7 @@ export default function Register() {
 
               <div>
                 <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                  E-Posta Adresi
+                  {t("auth.email")}
                 </label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -183,7 +185,7 @@ export default function Register() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    placeholder="adiniz@example.com"
+                    placeholder={t("auth.emailPlaceholder") || "adiniz@example.com"}
                     className="w-full rounded-2xl bg-gray-950/80 border border-gray-800 pl-11 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all placeholder:text-gray-600"
                   />
                 </div>
@@ -195,10 +197,10 @@ export default function Register() {
                 className="w-full py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-violet-900/40 flex items-center justify-center gap-2 mt-2 cursor-pointer"
               >
                 {loading ? (
-                  <span>Gönderiliyor...</span>
+                  <span>{t("auth.registering")}</span>
                 ) : (
                   <>
-                    <span>Geçici Parola İle Kayıt Ol</span>
+                    <span>{t("auth.registerButton")}</span>
                     <ArrowRight size={16} />
                   </>
                 )}
@@ -216,14 +218,14 @@ export default function Register() {
                   onClick={() => { setStep("info"); setError(null); }}
                   className="text-violet-400 hover:text-white underline text-[11px] shrink-0 ml-2"
                 >
-                  Değiştir
+                  {t("auth.changeEmail")}
                 </button>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider">
-                    Geçici Parola (6 Hane)
+                    {t("auth.passcode")}
                   </label>
                   <div className={`flex items-center gap-1 text-xs font-mono font-bold ${timeLeft < 60 ? "text-red-400 animate-pulse" : "text-violet-400"}`}>
                     <Clock size={13} />
@@ -244,7 +246,7 @@ export default function Register() {
                   />
                 </div>
                 <p className="text-[11px] text-gray-500 mt-2 text-center">
-                  * Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir.
+                  {t("auth.passcodeNotice")}
                 </p>
               </div>
 
@@ -253,7 +255,7 @@ export default function Register() {
                 disabled={loading || timeLeft === 0}
                 className="w-full py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-violet-900/40 flex items-center justify-center gap-2 cursor-pointer"
               >
-                {loading ? "Doğrulanıyor..." : "Hesabı Onayla ve Giriş Yap"}
+                {loading ? t("auth.verifying") : t("auth.verifyAndRegister")}
               </button>
 
               <button
@@ -265,12 +267,12 @@ export default function Register() {
                 {resendCooldown > 0 ? (
                   <>
                     <Clock size={13} className="text-violet-400 animate-pulse" />
-                    <span>Yeni parola için bekleyin ({resendCooldown}s)</span>
+                    <span>{t("auth.resendCooldown", { seconds: resendCooldown })}</span>
                   </>
                 ) : (
                   <>
                     <RefreshCw size={13} />
-                    <span>Yeni Parola Gönder</span>
+                    <span>{t("auth.resendPasscode")}</span>
                   </>
                 )}
               </button>
@@ -278,11 +280,20 @@ export default function Register() {
           )}
 
           <p className="text-center text-xs sm:text-sm text-gray-500 mt-6">
-            Zaten hesabınız var mı?{" "}
+            {t("auth.hasAccount")}{" "}
             <Link to="/login" className="text-violet-400 hover:text-violet-300 font-bold">
-              Giriş Yap
+              {t("auth.loginLink")}
             </Link>
           </p>
+
+          <div className="mt-6 pt-6 border-t border-gray-800/80 text-center">
+            <Link
+              to="/blog"
+              className="text-xs text-gray-400 hover:text-violet-400 transition-colors inline-flex items-center gap-1"
+            >
+              <span>{t("auth.backToBlog")}</span>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

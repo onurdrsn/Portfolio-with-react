@@ -303,7 +303,7 @@ export default function Portfolio() {
                                         ))}
                                     </div>
                                     <span className="sm:hidden text-[10px] text-violet-400/80 font-medium flex items-center gap-1 animate-pulse">
-                                        👈 Kaydır 👉
+                                        {t('projects.swipeHint') || "👈 Sağa / Sola Kaydır 👉"}
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <button
