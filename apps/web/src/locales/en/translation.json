@@ -281,6 +281,148 @@
             "storyPuzzle": "Story Puzzle",
             "neonDuel": "Online Cyber Duel (1v1)",
             "cyberStrike3D": "CyberStrike 3D: Mech Warfare (1v1)",
-            "spaceAce3D": "Space-Ace 3D: Interstellar Combat (1v1)"        }
+            "spaceAce3D": "Space-Ace 3D: Interstellar Combat (1v1)"
+        }
+    },
+    "v4": {
+        "hero": {
+            "status": "Available for Projects & Collaborations",
+            "badge": "2026 v4",
+            "nameFirst": "Onur",
+            "nameLast": "Dursun",
+            "description": "I engineer zero-latency Cloudflare Workers serverless architectures, real-time WebSocket networks, modern React ecosystems, and high-performance AI-integrated systems.",
+            "viewProjects": "Explore Projects",
+            "copyEmail": "onurdrsn55@gmail.com",
+            "copied": "Copied!",
+            "copySuccessToast": "Email address copied to clipboard!",
+            "stats": {
+                "projectsCount": "35+",
+                "projectsLabel": "Completed Projects",
+                "latencyValue": "<15ms",
+                "latencyLabel": "Global Edge Latency",
+                "liveValue": "100%",
+                "liveLabel": "Live & In Production"
+            },
+            "roles": [
+                "Senior Full Stack Architect",
+                "Cloudflare Edge & Serverless Specialist",
+                "AI & Neural Systems Engineer",
+                "High-Concurrency Web Developer"
+            ],
+            "terminal": {
+                "title": "onur@edge-worker: ~",
+                "online": "ONLINE",
+                "tabArchitecture": "Architecture.ts",
+                "tabStack": "Stack.json",
+                "tabHealth": "Health.sh",
+                "engineReady": "V4 Engine Ready",
+                "engineSpecs": "UTF-8 • TS • 60 FPS"
+            }
+        },
+        "bento": {
+            "badge": "Engineering Standards",
+            "title": "Modern Tech &",
+            "titleHighlight": "Architecture Matrix",
+            "description": "Not just writing code; architecting high-volume, resilient, and secure production systems.",
+            "items": {
+                "edge": {
+                    "title": "Cloudflare Edge & Serverless",
+                    "tag": "Zero Cold Start",
+                    "description": "Global edge infrastructure powered by Cloudflare Workers & Hono.js across 300+ edge locations responding to users in sub-15ms.",
+                    "badge": "< 15ms Latency"
+                },
+                "realtime": {
+                    "title": "Realtime WebSocket Hub",
+                    "tag": "Live Concurrency",
+                    "description": "Low-latency WebSocket protocols tailored for multiplayer web games, instant collaborative workspaces, and live state sync.",
+                    "badge": "Realtime Sync"
+                },
+                "ai": {
+                    "title": "AI & Neural Vector Intelligence",
+                    "tag": "Workers AI",
+                    "description": "Deep integration with Cloudflare Workers AI, Llama-3, neural embeddings, and vector similarity search engines.",
+                    "badge": "Edge AI Inferences"
+                },
+                "db": {
+                    "title": "Neon Serverless Postgres & Drizzle",
+                    "tag": "Full Type Safety",
+                    "description": "Scalable relational schema design on Neon Serverless Postgres with complete end-to-end TypeScript safety via Drizzle ORM.",
+                    "badge": "Branchable DB"
+                },
+                "frontend": {
+                    "title": "Modern React & Frontend Excellence",
+                    "tag": "Smooth Motion & UX",
+                    "description": "Elevated digital experiences crafted with Vite, TailwindCSS, interactive Three.js canvases, and fluid mobile micro-interactions.",
+                    "badge": "60+ FPS Motion"
+                }
+            }
+        },
+        "portfolio": {
+            "badge": "V4 Dynamic Showcase",
+            "title": "Featured",
+            "titleHighlight": "Creations & Works",
+            "description": "Mobile swipe-ready, filterable, and highly interactive modern project showcase.",
+            "searchPlaceholder": "Search project or technology...",
+            "clearSearch": "Clear search",
+            "categories": {
+                "all": "All",
+                "fullStack": "Full Stack",
+                "ml": "Machine Learning",
+                "frontend": "Frontend",
+                "gameDev": "Game Dev",
+                "ai": "AI"
+            },
+            "views": {
+                "spotlight": "Spotlight",
+                "grid": "Bento Grid"
+            },
+            "featuredBadge": "Featured Creation",
+            "inspectDetails": "Inspect Details",
+            "demo": "Demo",
+            "github": "GitHub",
+            "swipeHint": "👈 Swipe Left / Right 👉",
+            "emptyTitle": "No Projects Found",
+            "emptyDescription": "No projects match your search criteria.",
+            "inspect": "Inspect",
+            "usedTech": "Technologies Used",
+            "openLive": "Open Live Site",
+            "viewSource": "View Source Code",
+            "close": "Close"
+        },
+        "timeline": {
+            "badge": "Professional Journey",
+            "title": "Career &",
+            "titleHighlight": "Roadmap",
+            "description": "Enterprise systems, open source architectures, and engineering milestones I've built."
+        },
+        "contact": {
+            "badge": "Contact & Collaboration",
+            "title": "Let's Build",
+            "titleHighlight": "The Future Together",
+            "description": "Directly send a message for your project visions, architecture consulting, or technical inquiries.",
+            "successTitle": "Message Received!",
+            "successDescription": "Your message has been dispatched directly to my inbox. I will get back to you shortly.",
+            "sendAnother": "Send Another Message",
+            "form": {
+                "nameLabel": "Your Name *",
+                "namePlaceholder": "John Doe",
+                "emailLabel": "Your Email *",
+                "emailPlaceholder": "john@example.com",
+                "messageLabel": "Your Message *",
+                "messagePlaceholder": "Tell me about your project or inquiry...",
+                "submitButton": "Send Message",
+                "submitting": "Sending..."
+            },
+            "toast": {
+                "sending": "Sending your message...",
+                "success": "Your message has been sent successfully!",
+                "error": "An error occurred while sending your message."
+            },
+            "channels": {
+                "email": "Email",
+                "github": "GitHub",
+                "linkedin": "LinkedIn"
+            }
+        }
     }
 }

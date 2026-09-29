@@ -36,7 +36,7 @@ describe('V4Hero Component - Cyber Interactive Hero Section', () => {
     fireEvent.click(copyBtn);
 
     expect(writeTextMock).toHaveBeenCalledWith('onurdrsn55@gmail.com');
-    expect(screen.getByText(/Kopyalandı!/i)).toBeInTheDocument();
+    expect(screen.getByText(/Kopyalandı!|Copied!/i)).toBeInTheDocument();
   });
 
   it('should toggle between architecture, stack, and health terminal tabs', () => {

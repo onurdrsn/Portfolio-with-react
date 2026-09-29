@@ -31,6 +31,26 @@ html {
   }
 }
 
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes explode {
   0% {
     transform: scale(1);
@@ -52,6 +72,16 @@ html {
 /* Slide In Animation */
 .animate-slideIn {
   animation: slideIn 0.2s ease-out forwards;
+}
+
+/* Fade In Animation */
+.animate-fadeIn {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Shimmer Animation */
+.animate-shimmer {
+  animation: shimmer 2s infinite;
 }
 
 /* Line Clamp Utility */

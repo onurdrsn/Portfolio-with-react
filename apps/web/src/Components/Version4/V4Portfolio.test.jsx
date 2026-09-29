@@ -96,7 +96,7 @@ describe('V4Portfolio Component - Mobile Swipe & Filter Validation', () => {
     const gridBtn = buttons.find(b => b.textContent && b.textContent.includes('Bento Grid'));
     if (gridBtn) await user.click(gridBtn);
 
-    const searchInput = screen.getByPlaceholderText(/Proje veya teknoloji ara/i);
+    const searchInput = screen.getByPlaceholderText(/Proje veya teknoloji ara|Search project or technology/i);
     await user.type(searchInput, 'Neural');
 
     expect(screen.getAllByText('Distributed Neural Cluster').length).toBeGreaterThanOrEqual(1);

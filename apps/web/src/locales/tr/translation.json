@@ -283,5 +283,146 @@
             "cyberStrike3D": "CyberStrike 3D: Mech Savaşı (1v1)",
             "spaceAce3D": "Space-Ace 3D: Uzay  Simülatörü"
         }
+    },
+    "v4": {
+        "hero": {
+            "status": "Projeler & İş Birlikleri İçin Aktif",
+            "badge": "2026 v4",
+            "nameFirst": "Onur",
+            "nameLast": "Dursun",
+            "description": "Gecikmesiz Cloudflare Workers sunucusuz mimarileri, gerçek zamanlı WebSocket ağları, modern React ekosistemi ve yapay zeka entegrasyonlu yüksek performanslı sistemler geliştiriyorum.",
+            "viewProjects": "Projelerimi İncele",
+            "copyEmail": "onurdrsn55@gmail.com",
+            "copied": "Kopyalandı!",
+            "copySuccessToast": "E-posta adresi panoya kopyalandı!",
+            "stats": {
+                "projectsCount": "35+",
+                "projectsLabel": "Tamamlanan Proje",
+                "latencyValue": "<15ms",
+                "latencyLabel": "Global Edge Yanıt",
+                "liveValue": "%100",
+                "liveLabel": "Canlı ve Yayında"
+            },
+            "roles": [
+                "Senior Full Stack Mimar",
+                "Cloudflare Edge & Serverless Uzmanı",
+                "Yapay Zeka & Nöral Sistemler Mühendisi",
+                "Yüksek Eşzamanlı Web Geliştirici"
+            ],
+            "terminal": {
+                "title": "onur@edge-worker: ~",
+                "online": "ONLINE",
+                "tabArchitecture": "Architecture.ts",
+                "tabStack": "Stack.json",
+                "tabHealth": "Health.sh",
+                "engineReady": "V4 Engine Hazır",
+                "engineSpecs": "UTF-8 • TS • 60 FPS"
+            }
+        },
+        "bento": {
+            "badge": "Mühendislik Standartları",
+            "title": "Modern Teknoloji &",
+            "titleHighlight": "Mimari Matrisi",
+            "description": "Sadece kod yazmıyor; yüksek hacimli, güvenli ve sürdürülebilir sistemler inşa ediyorum.",
+            "items": {
+                "edge": {
+                    "title": "Cloudflare Edge & Serverless",
+                    "tag": "Zero Cold Start",
+                    "description": "Dünyanın 300+ noktasında çalışan Cloudflare Workers & Hono.js mimarileri ile kullanıcılara milisaniyeler içinde yanıt veren global altyapılar.",
+                    "badge": "< 15ms Latency"
+                },
+                "realtime": {
+                    "title": "Realtime WebSocket Hub",
+                    "tag": "Live Concurrency",
+                    "description": "Çok oyunculu web oyunları, anlık mesajlaşma ve ortak çalışma platformları için düşük gecikmeli WebSocket protokolleri.",
+                    "badge": "Realtime Sync"
+                },
+                "ai": {
+                    "title": "AI & Neural Vector Intelligence",
+                    "tag": "Workers AI",
+                    "description": "Cloudflare Workers AI, Llama-3, embedding modelleri ve anlamsal arama motorları entegrasyonu.",
+                    "badge": "Edge AI Inferences"
+                },
+                "db": {
+                    "title": "Neon Serverless Postgres & Drizzle",
+                    "tag": "Full Type Safety",
+                    "description": "Drizzle ORM ile uçtan uca tip güvenliği sağlanan, Neon Serverless PostgreSQL üzerinde ölçeklenebilir veritabanı şemaları.",
+                    "badge": "Branchable DB"
+                },
+                "frontend": {
+                    "title": "Modern React & Frontend Excellence",
+                    "tag": "Smooth Motion & UX",
+                    "description": "Vite, TailwindCSS, interaktif Three.js canvasları ve mobil uyumlu akıcı mikro animasyonlarla zenginleştirilmiş kullanıcı deneyimleri.",
+                    "badge": "60+ FPS Motion"
+                }
+            }
+        },
+        "portfolio": {
+            "badge": "V4 Dinamik Vitrin",
+            "title": "Öne Çıkan",
+            "titleHighlight": "Eserler & Projeler",
+            "description": "Mobil kaydırma (swipe) destekli, filtrelenebilir ve yüksek etkileşimli modern proje vitrini.",
+            "searchPlaceholder": "Proje veya teknoloji ara...",
+            "clearSearch": "Aramayı Temizle",
+            "categories": {
+                "all": "Tümü",
+                "fullStack": "Full Stack",
+                "ml": "Makine Öğrenmesi",
+                "frontend": "Frontend",
+                "gameDev": "Oyun Geliştirme",
+                "ai": "Yapay Zeka"
+            },
+            "views": {
+                "spotlight": "Spotlight",
+                "grid": "Bento Grid"
+            },
+            "featuredBadge": "Öne Çıkan Eser",
+            "inspectDetails": "Detayları İncele",
+            "demo": "Demo",
+            "github": "GitHub",
+            "swipeHint": "👈 Sağa / Sola Kaydır 👉",
+            "emptyTitle": "Eser Bulunamadı",
+            "emptyDescription": "Arama kriterlerinize uygun proje bulunmuyor.",
+            "inspect": "İncele",
+            "usedTech": "Kullanılan Teknolojiler",
+            "openLive": "Canlı Siteyi Aç",
+            "viewSource": "Kaynak Kodu Gör",
+            "close": "Kapat"
+        },
+        "timeline": {
+            "badge": "Profesyonel Geçmiş",
+            "title": "Kariyer &",
+            "titleHighlight": "Yol Haritası",
+            "description": "Geliştirdiğim kurumsal sistemler, açık kaynak projeleri ve mimari sorumluluklar."
+        },
+        "contact": {
+            "badge": "İletişim & İş Birliği",
+            "title": "Birlikte",
+            "titleHighlight": "Geleceği İnşa Edelim",
+            "description": "Proje fikirleriniz, mimari danışmanlık veya sorularınız için doğrudan mesaj gönderebilirsiniz.",
+            "successTitle": "Mesajınız Alındı!",
+            "successDescription": "Mesajınız doğrudan e-posta adresime iletildi. En kısa sürede size geri dönüş yapacağım.",
+            "sendAnother": "Yeni Mesaj Gönder",
+            "form": {
+                "nameLabel": "Adınız Soyadınız *",
+                "namePlaceholder": "John Doe",
+                "emailLabel": "E-Posta Adresiniz *",
+                "emailPlaceholder": "john@example.com",
+                "messageLabel": "Mesajınız *",
+                "messagePlaceholder": "Projeniz veya sorunuz hakkında detayları yazın...",
+                "submitButton": "Mesajı İlet",
+                "submitting": "İletiliyor..."
+            },
+            "toast": {
+                "sending": "Mesajınız iletiliyor...",
+                "success": "Mesajınız başarıyla gönderildi!",
+                "error": "Mesaj gönderilirken bir hata oluştu."
+            },
+            "channels": {
+                "email": "E-Posta",
+                "github": "GitHub",
+                "linkedin": "LinkedIn"
+            }
+        }
     }
 }
