@@ -22,9 +22,20 @@ const COOKIE_OPTIONS = {
 async function ensureUsersTable(db: any) {
   try {
     await db.execute(sql`
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS temp_code text;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS temp_code_expires_at timestamp;
+      CREATE TABLE IF NOT EXISTS users (
+        id text PRIMARY KEY DEFAULT gen_random_uuid(),
+        username text NOT NULL UNIQUE,
+        email text NOT NULL UNIQUE,
+        password_hash text NOT NULL DEFAULT '',
+        temp_code text,
+        temp_code_expires_at timestamp,
+        is_admin boolean NOT NULL DEFAULT false,
+        created_at timestamp NOT NULL DEFAULT now(),
+        updated_at timestamp NOT NULL DEFAULT now()
+      );
     `);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS temp_code text;`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS temp_code_expires_at timestamp;`);
   } catch (e) {
     console.error("[Auth] ensureUsersTable error:", e);
   }

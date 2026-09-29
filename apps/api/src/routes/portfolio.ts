@@ -6,24 +6,28 @@ import type { Hono } from "hono";
 import type { Env, Variables } from "../middleware/auth";
 
 async function ensurePortfolioTable(db: any) {
-  await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS portfolio_items (
-      id text PRIMARY KEY DEFAULT gen_random_uuid(),
-      title text NOT NULL,
-      img_url text NOT NULL DEFAULT '',
-      stack text[] NOT NULL DEFAULT '{}',
-      link text DEFAULT '',
-      github text DEFAULT '',
-      description text NOT NULL,
-      category text NOT NULL DEFAULT 'Full Stack',
-      featured boolean NOT NULL DEFAULT false,
-      show_on_home boolean NOT NULL DEFAULT true,
-      display_order integer NOT NULL DEFAULT 0,
-      created_at timestamp NOT NULL DEFAULT now(),
-      updated_at timestamp NOT NULL DEFAULT now()
-    );
-    ALTER TABLE portfolio_items ADD COLUMN IF NOT EXISTS show_on_home boolean NOT NULL DEFAULT true;
-  `);
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS portfolio_items (
+        id text PRIMARY KEY DEFAULT gen_random_uuid(),
+        title text NOT NULL,
+        img_url text NOT NULL DEFAULT '',
+        stack text[] NOT NULL DEFAULT '{}',
+        link text DEFAULT '',
+        github text DEFAULT '',
+        description text NOT NULL,
+        category text NOT NULL DEFAULT 'Full Stack',
+        featured boolean NOT NULL DEFAULT false,
+        show_on_home boolean NOT NULL DEFAULT true,
+        display_order integer NOT NULL DEFAULT 0,
+        created_at timestamp NOT NULL DEFAULT now(),
+        updated_at timestamp NOT NULL DEFAULT now()
+      );
+    `);
+    await db.execute(sql`ALTER TABLE portfolio_items ADD COLUMN IF NOT EXISTS show_on_home boolean NOT NULL DEFAULT true;`);
+  } catch (e) {
+    console.error("[Portfolio] ensurePortfolioTable error:", e);
+  }
 }
 
 function toBoolean(val: any): boolean {
