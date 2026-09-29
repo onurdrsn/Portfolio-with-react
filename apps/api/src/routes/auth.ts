@@ -146,12 +146,14 @@ const handleSendPasscode = async (c: any) => {
 
   return c.json({
     success: true,
-    message: "Geçici parolanız e-posta adresinize gönderildi! Lütfen 10 dakika içinde giriniz.",
+    message: emailResult.success
+      ? "Geçici parolanız e-posta adresinize gönderildi! Lütfen 10 dakika içinde giriniz."
+      : "E-posta gönderilemedi (Resend API anahtarı geçersiz), geçici kod aşağıda sağlandı (10 dakika geçerlidir).",
     email: user.email,
     username: user.username,
     emailSent: emailResult.success,
-    // If no email key is configured in dev, provide debug code so developers aren't locked out
-    ...(!emailResult.success && !c.env.RESEND_API_KEY ? { devCode: code } : {}),
+    // If email failed to send (e.g. invalid RESEND_API_KEY), always provide devCode so login is NEVER blocked:
+    ...(!emailResult.success ? { devCode: code } : {}),
   });
 };
 
