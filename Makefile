@@ -29,6 +29,7 @@ build-api:
 	npm run build:api
 
 build-pages: build-web
+	@node scripts/sync-build.cjs
 build-worker: build-api
 
 # Testler (Vitest & Testing Library)

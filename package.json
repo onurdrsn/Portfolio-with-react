@@ -13,15 +13,15 @@
     "dev:api": "npm run dev -w portfolio-worker",
     "dev:pages": "npm run dev:web",
     "dev:worker": "npm run dev:api",
-    "build": "npm run build -w portfolio-worker && npm run build -w portfolio-react",
-    "build:web": "npm run build -w portfolio-react",
+    "build": "npm run build -w portfolio-worker && npm run build:web",
+    "build:web": "npm run build -w portfolio-react && node scripts/sync-build.cjs",
     "build:api": "npm run build -w portfolio-worker",
     "build:all": "npm run build",
     "test": "npm run test -w portfolio-worker && npm run test -w portfolio-react",
     "test:web": "npm run test -w portfolio-react",
     "test:api": "npm run test -w portfolio-worker",
     "lint": "npm run lint -w portfolio-react",
-    "clean": "rm -rf apps/web/dist apps/api/dist"
+    "clean": "rm -rf apps/web/dist apps/api/dist pages/dist dist"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
