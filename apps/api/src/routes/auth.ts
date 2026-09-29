@@ -148,7 +148,7 @@ const handleSendPasscode = async (c: any) => {
     success: true,
     message: emailResult.success
       ? "Geçici parolanız e-posta adresinize gönderildi! Lütfen 10 dakika içinde giriniz."
-      : "E-posta gönderilemedi (Resend API anahtarı geçersiz), geçici kod aşağıda sağlandı (10 dakika geçerlidir).",
+      : "Sistemsel bir hata oluştu veya geçici parola gönderilemedi. Lütfen daha sonra tekrar deneyin.",
     email: user.email,
     username: user.username,
     emailSent: emailResult.success,
