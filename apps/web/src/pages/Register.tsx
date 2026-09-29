@@ -58,7 +58,7 @@ export default function Register() {
         setDevCode(res.devCode);
       }
     } catch (err: any) {
-      toast.error(err.message || "İşlem sırasında bir hata oluştu.", { id: toastId });
+      toast?.dismiss?.(toastId);
       setError(err.message || "İşlem gerçekleştirilemedi.");
     } finally {
       setLoading(false);
@@ -80,7 +80,7 @@ export default function Register() {
       toast.success("Hesabınız oluşturuldu ve giriş yapıldı!", { id: toastId });
       navigate("/blog");
     } catch (err: any) {
-      toast.error(err.message || "Doğrulama başarısız oldu.", { id: toastId });
+      toast?.dismiss?.(toastId);
       setError(err.message || "Parola geçersiz veya süresi dolmuş.");
     } finally {
       setLoading(false);

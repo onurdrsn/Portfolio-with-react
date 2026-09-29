@@ -41,7 +41,7 @@ async function handleResponse<T>(res: Response, silent = false, isGet = false): 
 
     // Do NOT show error toast pop-ups for 404/401 errors, or GET fetches, or silent requests
     if (!silent && !isGet && res.status !== 404 && res.status !== 401) {
-      toast.error(msg);
+      toast.error(msg, { id: "api_global_error" });
     }
     throw new Error(msg);
   }

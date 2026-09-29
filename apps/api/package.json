@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npx wrangler dev --remote",
+    "dev": "npx wrangler dev --port 8787 --local",
+    "dev:remote": "npx wrangler dev --remote",
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "npx wrangler deploy --dry-run --outdir=dist",

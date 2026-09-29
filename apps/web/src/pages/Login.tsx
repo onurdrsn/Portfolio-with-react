@@ -60,7 +60,7 @@ export default function Login() {
         setDevCode(res.devCode);
       }
     } catch (err: any) {
-      toast.error(err.message || "E-posta gönderilirken bir hata oluştu.", { id: toastId });
+      toast?.dismiss?.(toastId);
       setError(err.message || "E-posta gönderilemedi.");
     } finally {
       setLoading(false);
@@ -83,7 +83,7 @@ export default function Login() {
       toast.success("Başarıyla giriş yapıldı! Hoş geldiniz.", { id: toastId });
       navigate("/blog");
     } catch (err: any) {
-      toast.error(err.message || "Giriş başarısız oldu.", { id: toastId });
+      toast?.dismiss?.(toastId);
       setError(err.message || "Parola hatalı veya süresi dolmuş.");
     } finally {
       setLoading(false);
