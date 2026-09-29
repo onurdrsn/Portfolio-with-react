@@ -55,4 +55,9 @@ describe('V4Hero Component - Cyber Interactive Hero Section', () => {
     fireEvent.click(screen.getByRole('button', { name: /Health\.sh/i }));
     expect(screen.getByText(/portfolio-worker\.onurd\.com\.tr\/api\/health/i)).toBeInTheDocument();
   });
+
+  it('should render the dynamic morphing role text without lag or errors', () => {
+    render(<V4Hero />);
+    expect(screen.getByText(/Senior Full Stack/i)).toBeInTheDocument();
+  });
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import {
@@ -15,51 +15,109 @@ import {
   Layers,
 } from "lucide-react";
 
+// GPU-accelerated, lightweight morphing role rotator (zero layout-shift, 60/120fps on mobile & desktop)
+const MorphingRole = React.memo(function MorphingRole({ roles }) {
+  const [index, setIndex] = useState(0);
+  const [animState, setAnimState] = useState("visible"); // "visible" | "exiting" | "entering"
+
+  useEffect(() => {
+    if (!roles || roles.length <= 1) return;
+
+    let exitTimeout;
+    let enterTimeout;
+
+    const interval = setInterval(() => {
+      // Phase 1: Slide up & fade out
+      setAnimState("exiting");
+
+      exitTimeout = setTimeout(() => {
+        // Phase 2: Switch role and position at bottom instantly
+        setIndex((prev) => (prev + 1) % roles.length);
+        setAnimState("entering");
+
+        // Phase 3: Slide up to center smoothly
+        enterTimeout = setTimeout(() => {
+          setAnimState("visible");
+        }, 30);
+      }, 300);
+    }, 3200);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(exitTimeout);
+      clearTimeout(enterTimeout);
+    };
+  }, [roles]);
+
+  const currentRole = roles[index % roles.length];
+
+  const getStyle = () => {
+    switch (animState) {
+      case "exiting":
+        return {
+          transform: "translate3d(0, -10px, 0)",
+          opacity: 0,
+          filter: "blur(2px)",
+          transition: "transform 0.3s cubic-bezier(0.4, 0, 1, 1), opacity 0.25s ease, filter 0.25s ease",
+        };
+      case "entering":
+        return {
+          transform: "translate3d(0, 10px, 0)",
+          opacity: 0,
+          filter: "blur(2px)",
+          transition: "none",
+        };
+      case "visible":
+      default:
+        return {
+          transform: "translate3d(0, 0, 0)",
+          opacity: 1,
+          filter: "blur(0px)",
+          transition: "transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, filter 0.35s ease",
+        };
+    }
+  };
+
+  return (
+    <div className="h-10 sm:h-12 flex items-center justify-center lg:justify-start mb-6 overflow-hidden">
+      <div className="flex items-center min-w-0 max-w-full">
+        <span
+          style={{
+            ...getStyle(),
+            willChange: "transform, opacity, filter",
+          }}
+          className="text-lg sm:text-2xl md:text-3xl font-extrabold text-transparent bg-gradient-to-r from-violet-300 via-indigo-200 to-cyan-200 bg-clip-text select-none leading-tight truncate sm:overflow-visible"
+        >
+          {currentRole}
+        </span>
+        <span className="w-1.5 h-5 sm:h-6 bg-gradient-to-b from-violet-400 to-cyan-400 ml-2 rounded-full animate-pulse shadow-[0_0_10px_rgba(167,139,250,0.8)] inline-block shrink-0" />
+      </div>
+    </div>
+  );
+});
+
 export default function V4Hero() {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("architecture");
 
-  // Dynamic typing role
-  const defaultRoles = [
-    "Senior Full Stack Architect",
-    "Cloudflare Edge & Serverless Specialist",
-    "AI & Neural Systems Engineer",
-    "High-Concurrency Web Developer",
-  ];
+  // Dynamic roles list (memoized to keep reference strictly stable)
+  const defaultRoles = useMemo(
+    () => [
+      "Senior Full Stack Architect",
+      "Cloudflare Edge & Serverless Specialist",
+      "AI & Neural Systems Engineer",
+      "High-Concurrency Web Developer",
+    ],
+    []
+  );
+
   const translatedRoles = t("v4.hero.roles", { returnObjects: true });
-  const roles = Array.isArray(translatedRoles) && translatedRoles.length > 0 ? translatedRoles : defaultRoles;
-
-  const [roleIndex, setRoleIndex] = useState(0);
-  const [displayText, setDisplayText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    const currentFull = roles[roleIndex % roles.length];
-    let speed = isDeleting ? 35 : 70;
-
-    if (!isDeleting && displayText === currentFull) {
-      speed = 2200; // Pause at full text
-      const timeout = setTimeout(() => setIsDeleting(true), speed);
-      return () => clearTimeout(timeout);
-    }
-
-    if (isDeleting && displayText === "") {
-      setIsDeleting(false);
-      setRoleIndex((prev) => (prev + 1) % roles.length);
-      speed = 400;
-    }
-
-    const timer = setTimeout(() => {
-      setDisplayText(
-        isDeleting
-          ? currentFull.substring(0, displayText.length - 1)
-          : currentFull.substring(0, displayText.length + 1)
-      );
-    }, speed);
-
-    return () => clearTimeout(timer);
-  }, [displayText, isDeleting, roleIndex, roles]);
+  const roles = useMemo(() => {
+    return Array.isArray(translatedRoles) && translatedRoles.length > 0
+      ? translatedRoles
+      : defaultRoles;
+  }, [translatedRoles, defaultRoles]);
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText("onurdrsn55@gmail.com");
@@ -70,8 +128,8 @@ export default function V4Hero() {
 
   return (
     <section className="relative pt-24 pb-20 sm:pt-32 sm:pb-28 overflow-hidden">
-      {/* Background Aura Lighting */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-gradient-to-tr from-violet-600/20 via-purple-600/15 to-cyan-500/10 rounded-full blur-[140px] pointer-events-none -z-10 animate-pulse" />
+      {/* Background Aura Lighting (optimized with transform-gpu and responsive blur) */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-gradient-to-tr from-violet-600/20 via-purple-600/15 to-cyan-500/10 rounded-full blur-[80px] sm:blur-[140px] pointer-events-none -z-10 animate-pulse transform-gpu" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -100,12 +158,7 @@ export default function V4Hero() {
             </h1>
 
             {/* Dynamic Morphing Role */}
-            <div className="h-10 sm:h-12 flex items-center justify-center lg:justify-start mb-6">
-              <span className="text-xl sm:text-2xl md:text-3xl font-extrabold text-transparent bg-gradient-to-r from-violet-300 via-indigo-200 to-cyan-200 bg-clip-text">
-                {displayText}
-              </span>
-              <span className="w-0.5 h-6 sm:h-7 bg-violet-400 ml-1.5 animate-pulse inline-block"></span>
-            </div>
+            <MorphingRole roles={roles} />
 
             {/* Lead Narrative */}
             <p className="text-gray-300 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal mb-8">
