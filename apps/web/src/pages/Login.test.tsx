@@ -49,7 +49,6 @@ describe('Login Page - Passwordless OTP Flow', () => {
     vi.mocked(api.apiPost).mockResolvedValueOnce({
       success: true,
       message: 'Geçici parola gönderildi',
-      devCode: '852963',
     });
 
     const user = userEvent.setup();

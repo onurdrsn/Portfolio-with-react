@@ -144,16 +144,21 @@ const handleSendPasscode = async (c: any) => {
     db
   );
 
+  if (!emailResult.success) {
+    console.error("[Auth] E-posta gönderimi başarısız:", emailResult.error);
+    return c.json(
+      {
+        error: "E-posta gönderilemedi. Lütfen daha sonra tekrar deneyiniz.",
+      },
+      500
+    );
+  }
+
   return c.json({
     success: true,
-    message: emailResult.success
-      ? "Geçici parolanız e-posta adresinize gönderildi! Lütfen 10 dakika içinde giriniz."
-      : "Sistemsel bir hata oluştu veya geçici parola gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+    message: "Geçici parolanız e-posta adresinize gönderildi! Lütfen 10 dakika içinde giriniz.",
     email: user.email,
     username: user.username,
-    emailSent: emailResult.success,
-    // If email failed to send (e.g. invalid RESEND_API_KEY), always provide devCode so login is NEVER blocked:
-    ...(!emailResult.success ? { devCode: code } : {}),
   });
 };
 

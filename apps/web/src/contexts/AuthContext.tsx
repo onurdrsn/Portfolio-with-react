@@ -11,7 +11,7 @@ interface User {
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
-  sendPasscode: (email: string, username?: string) => Promise<{ success: boolean; message: string; devCode?: string }>;
+  sendPasscode: (email: string, username?: string) => Promise<{ success: boolean; message: string }>;
   loginWithPasscode: (email: string, code: string) => Promise<void>;
   login: (email: string, passwordOrCode: string) => Promise<void>;
   register: (username: string, email: string, passwordOrCode?: string) => Promise<void>;
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const sendPasscode = useCallback(async (email: string, username?: string) => {
-    const res = await apiPost<{ success: boolean; message: string; devCode?: string }>(
+    const res = await apiPost<{ success: boolean; message: string }>(
       "/api/auth/send-passcode",
       { email, username }
     );

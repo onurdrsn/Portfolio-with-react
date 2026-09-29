@@ -14,7 +14,6 @@ export default function Login() {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [devCode, setDevCode] = useState<string | null>(null);
 
   // 10 minutes countdown (600 seconds)
   const [timeLeft, setTimeLeft] = useState(600);
@@ -51,14 +50,11 @@ export default function Login() {
     const toastId = toast.loading("Geçici parola e-posta adresinize gönderiliyor...");
 
     try {
-      const res = await sendPasscode(email.trim());
+      await sendPasscode(email.trim());
       toast.success("Geçici parolanız e-posta adresinize iletildi!", { id: toastId });
       setStep("code");
       setTimeLeft(600); // 10 minutes
       setTimerActive(true);
-      if (res.devCode) {
-        setDevCode(res.devCode);
-      }
     } catch (err: any) {
       toast?.dismiss?.(toastId);
       setError(err.message || "E-posta gönderilemedi.");
@@ -177,20 +173,6 @@ export default function Login() {
                   Değiştir
                 </button>
               </div>
-
-              {/* Dev mode hint if no email key */}
-              {devCode && (
-                <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-300 flex items-center justify-between">
-                  <span>Geliştirme Kodu: <strong className="font-mono font-bold text-white tracking-widest">{devCode}</strong></span>
-                  <button
-                    type="button"
-                    onClick={() => setCode(devCode)}
-                    className="underline text-[10px] text-amber-400 hover:text-amber-200"
-                  >
-                    Doldur
-                  </button>
-                </div>
-              )}
 
               <div>
                 <div className="flex items-center justify-between mb-2">

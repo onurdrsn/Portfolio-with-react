@@ -14,7 +14,6 @@ export default function Register() {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [devCode, setDevCode] = useState<string | null>(null);
 
   const [timeLeft, setTimeLeft] = useState(600);
   const [timerActive, setTimerActive] = useState(false);
@@ -49,14 +48,11 @@ export default function Register() {
     const toastId = toast.loading("Geçici parolanız oluşturuluyor...");
 
     try {
-      const res = await sendPasscode(email.trim(), username.trim());
+      await sendPasscode(email.trim(), username.trim());
       toast.success("Geçici parolanız e-posta adresinize gönderildi!", { id: toastId });
       setStep("code");
       setTimeLeft(600);
       setTimerActive(true);
-      if (res.devCode) {
-        setDevCode(res.devCode);
-      }
     } catch (err: any) {
       toast?.dismiss?.(toastId);
       setError(err.message || "İşlem gerçekleştirilemedi.");
@@ -182,19 +178,6 @@ export default function Register() {
                   Değiştir
                 </button>
               </div>
-
-              {devCode && (
-                <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-300 flex items-center justify-between">
-                  <span>Geliştirme Kodu: <strong className="font-mono font-bold text-white tracking-widest">{devCode}</strong></span>
-                  <button
-                    type="button"
-                    onClick={() => setCode(devCode)}
-                    className="underline text-[10px] text-amber-400 hover:text-amber-200"
-                  >
-                    Doldur
-                  </button>
-                </div>
-              )}
 
               <div>
                 <div className="flex items-center justify-between mb-2">

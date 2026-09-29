@@ -49,7 +49,6 @@ describe('Register Page - Passwordless Account Creation Flow', () => {
     vi.mocked(api.apiPost).mockResolvedValueOnce({
       success: true,
       message: 'Geçici parolanız gönderildi',
-      devCode: '654321',
     });
 
     const user = userEvent.setup();
