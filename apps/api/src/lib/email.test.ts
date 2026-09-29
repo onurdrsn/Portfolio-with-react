@@ -48,6 +48,7 @@ describe('Worker Email Service', () => {
       expect(result.success).toBe(true);
       expect(result.messageId).toBe('resend_msg_123');
       expect(capturedBody).not.toBeNull();
+      expect(capturedBody.from).toBe('Onur Dursun <admin@onurd.com.tr>');
       expect(capturedBody.to).toEqual(['test@example.com']);
       expect(capturedBody.subject).toContain('Giriş Doğrulama Kodunuz: 748291');
 

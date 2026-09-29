@@ -11,6 +11,7 @@ account_id = "df78ac02dad5500795c67541353ed776"
 
 [vars]
 FRONTEND_URL = "https://onurd.com.tr"
+RESEND_FROM = "Onur Dursun <admin@onurd.com.tr>"
 JWT_SECRET = "onur_portfolio_jwt_secure_secret_key_2026_999"
 REFRESH_TOKEN_SECRET = "onur_portfolio_refresh_secure_secret_key_2026_999"
 JWT_EXPIRATION_TIME = "7d"

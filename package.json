@@ -2,17 +2,26 @@
   "name": "portfolio-monorepo",
   "version": "1.0.0",
   "private": true,
-  "description": "Portfolio Mono-repo combining React Vite Frontend and Cloudflare Worker Backend",
+  "description": "Professional Full Stack Portfolio Monorepo (React 18 + Cloudflare Workers + Neon Postgres)",
   "workspaces": [
-    "pages",
-    "worker"
+    "apps/*"
   ],
   "scripts": {
-    "install:all": "make install",
-    "dev:pages": "make dev-pages",
-    "dev:worker": "make dev-worker",
-    "build:all": "make build",
-    "test": "npm run test --workspace=worker && npm run test --workspace=pages"
+    "install:all": "npm install",
+    "dev": "concurrently -n \"api,web\" -c \"cyan,magenta\" \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "npm run dev -w portfolio-react",
+    "dev:api": "npm run dev -w portfolio-worker",
+    "dev:pages": "npm run dev:web",
+    "dev:worker": "npm run dev:api",
+    "build": "npm run build -w portfolio-worker && npm run build -w portfolio-react",
+    "build:web": "npm run build -w portfolio-react",
+    "build:api": "npm run build -w portfolio-worker",
+    "build:all": "npm run build",
+    "test": "npm run test -w portfolio-worker && npm run test -w portfolio-react",
+    "test:web": "npm run test -w portfolio-react",
+    "test:api": "npm run test -w portfolio-worker",
+    "lint": "npm run lint -w portfolio-react",
+    "clean": "rm -rf apps/web/dist apps/api/dist"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

@@ -58,8 +58,8 @@ export async function sendEmail(
     };
   }
 
-  // Resend requires a verified sender or the default sandbox sender
-  const from = options.from || env?.RESEND_FROM || "Onur Dursun Portfolio <onboarding@resend.dev>";
+  // Resend verified domain sender
+  const from = options.from || env?.RESEND_FROM || "Onur Dursun <admin@onurd.com.tr>";
 
   try {
     const res = await fetch("https://api.resend.com/emails", {

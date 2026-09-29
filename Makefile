@@ -1,35 +1,63 @@
-.PHONY: install dev dev-pages dev-worker build build-pages build-worker db-migrate-local deploy-pages deploy-worker
+.PHONY: install dev dev-web dev-api dev-pages dev-worker build build-web build-api build-pages build-worker test test-web test-api db-migrate-local db-push deploy-web deploy-api deploy-pages deploy-worker clean
 
-# Kurulum Kuralları
+# Kurulum
 install:
 	npm install
 
-# Geliştirici Ortamı Kuralları (Dev)
+# Geliştirici Ortamı (Development)
 dev:
-	npx concurrently "make dev-worker" "make dev-pages"
+	npm run dev
 
-dev-pages:
-	npm run dev -w portfolio-react
+dev-web:
+	npm run dev:web
 
-dev-worker:
-	npm run dev -w portfolio-worker
+dev-api:
+	npm run dev:api
 
-# Derleme Kuralları (Build)
-build: build-worker build-pages
+# Geriye dönük uyumluluk takma adları (Aliases)
+dev-pages: dev-web
+dev-worker: dev-api
 
-build-pages:
-	npm run build -w portfolio-react
+# Derleme (Build)
+build:
+	npm run build
 
-build-worker:
-	npm run build -w portfolio-worker
+build-web:
+	npm run build:web
 
-# Veritabanı (NeonDB) Göç Kuralı
+build-api:
+	npm run build:api
+
+build-pages: build-web
+build-worker: build-api
+
+# Testler (Vitest & Testing Library)
+test:
+	npm run test
+
+test-web:
+	npm run test:web
+
+test-api:
+	npm run test:api
+
+# Veritabanı (Neon Serverless PostgreSQL - Drizzle Migration)
 db-migrate-local:
 	npm run db:migrate -w portfolio-worker
 
-# Dağıtım Kuralları (Deploy - Cloudflare Pages / Workers)
-deploy-pages: build-pages
-	npx wrangler pages deploy pages/dist --project-name portfolio-react
+db-push:
+	npm run db:push -w portfolio-worker
 
-deploy-worker: build-worker
-	npx wrangler deploy -c worker/wrangler.toml
+# Dağıtım (Deploy - Cloudflare Pages / Workers)
+deploy-web: build-web
+	npx wrangler pages deploy apps/web/dist --project-name portfolio-react
+
+deploy-api: build-api
+	npx wrangler deploy -c apps/api/wrangler.toml
+
+deploy-pages: deploy-web
+deploy-worker: deploy-api
+
+# Temizlik
+clean:
+	npm run clean
