@@ -1,4 +1,3 @@
-import React from "react";
 import { useTranslation } from "react-i18next";
 import {
   CloudLightning,
@@ -135,8 +134,20 @@ export default function V4BentoGrid() {
                 <div className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
                   {c.tag}
                 </div>
-                <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-white transition-colors tracking-tight">
-                  {c.title}
+                <h3
+                  aria-label={c.title}
+                  className="text-xl sm:text-2xl font-black text-white group-hover:text-white transition-colors tracking-tight"
+                >
+                  {Array.from(c.title).map((character, index) => (
+                    <span
+                      aria-hidden="true"
+                      className="bento-title-character"
+                      key={`${c.id}-${index}`}
+                      style={{ animationDelay: `${index * 35}ms` }}
+                    >
+                      {character === " " ? "\u00a0" : character}
+                    </span>
+                  ))}
                 </h3>
                 <p className="text-gray-300 text-sm leading-relaxed pt-1 font-normal">
                   {c.description}

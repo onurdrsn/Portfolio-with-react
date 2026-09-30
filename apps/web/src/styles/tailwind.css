@@ -42,6 +42,33 @@ html {
   }
 }
 
+@keyframes bentoTitleCharacter {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bento-title-character {
+  display: inline-block;
+  opacity: 0;
+  animation: bentoTitleCharacter 0.24s ease-out forwards;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-title-character {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);
