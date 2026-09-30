@@ -14,6 +14,8 @@ function AnimatedTitle({ title }) {
   const [isVisible, setIsVisible] = useState(
     () => typeof window === "undefined" || !("IntersectionObserver" in window),
   );
+  const [visibleCharacterCount, setVisibleCharacterCount] = useState(0);
+  const characters = Array.from(title);
 
   useEffect(() => {
     const heading = headingRef.current;
@@ -33,18 +35,36 @@ function AnimatedTitle({ title }) {
     return () => observer.disconnect();
   }, [isVisible, title]);
 
+  useEffect(() => {
+    if (!isVisible || characters.length === 0) return;
+
+    let nextCharacter = 0;
+    let timeoutId;
+
+    const revealNextCharacter = () => {
+      nextCharacter += 1;
+      setVisibleCharacterCount(nextCharacter);
+
+      if (nextCharacter < characters.length) {
+        timeoutId = window.setTimeout(revealNextCharacter, 34);
+      }
+    };
+
+    revealNextCharacter();
+    return () => window.clearTimeout(timeoutId);
+  }, [characters.length, isVisible]);
+
   return (
     <h3
       ref={headingRef}
       aria-label={title}
       className="text-xl sm:text-2xl font-black text-white group-hover:text-white transition-colors tracking-tight"
     >
-      {Array.from(title).map((character, index) => (
+      {characters.slice(0, visibleCharacterCount).map((character, index) => (
         <span
           aria-hidden="true"
-          className={`bento-title-character${isVisible ? " is-visible" : ""}`}
+          className="bento-title-character is-visible"
           key={`${index}-${character}`}
-          style={{ "--character-delay": `${index * 26}ms` }}
         >
           {character === " " ? "\u00a0" : character}
         </span>

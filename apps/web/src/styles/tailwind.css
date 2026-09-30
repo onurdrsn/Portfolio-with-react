@@ -60,8 +60,7 @@ html {
 }
 
 .bento-title-character.is-visible {
-  opacity: 0;
-  animation: bentoTitleCharacter 0.2s ease-out var(--character-delay) forwards;
+  animation: bentoTitleCharacter 0.2s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
