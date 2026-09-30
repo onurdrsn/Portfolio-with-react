@@ -123,4 +123,50 @@ describe('Login Page - Passwordless OTP Flow', () => {
       expect(localStorage.getItem('token')).toBe('auth-jwt-token-12345');
     });
   });
+
+  it('should lock input and show lockout banner when 5 failed attempts reached (HTTP 423)', async () => {
+    vi.mocked(api.apiPost)
+      .mockResolvedValueOnce({ success: true, message: 'Code sent' })
+      .mockRejectedValueOnce({
+        status: 423,
+        locked: true,
+        remainingSec: 900,
+        failedAttempts: 5,
+        remainingAttempts: 0,
+        message: '5 kez hatalı şifre girdiniz! Güvenlik sebebiyle şifre girme kilitlendi. Lütfen 15 dakika bekleyiniz.',
+      });
+
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter>
+        <AuthProvider>
+          <Login />
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    // Step 1: Send code
+    const emailInput = screen.getByPlaceholderText(/(?:adiniz|example)@/i);
+    await user.type(emailInput, 'hacker@onurd.com');
+    await user.click(screen.getByRole('button', { name: /(?:Giriş Parolası Gönder|Send Login Passcode)/i }));
+
+    // Step 2: Enter wrong code
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('123456')).toBeInTheDocument();
+    });
+
+    const codeInput = screen.getByPlaceholderText('123456');
+    await user.type(codeInput, '000000');
+    await user.click(screen.getByRole('button', { name: /(?:Giriş Yap|Log In)/i }));
+
+    // Verification step should now be locked
+    await waitFor(() => {
+      expect(screen.getByText(/(?:Güvenlik Kilidi Aktif|Security Lockout Active)/i)).toBeInTheDocument();
+      expect(screen.getByText(/(?:Kalan Kilit Süresi|Remaining Lockout Time): 15:00/i)).toBeInTheDocument();
+      expect(codeInput).toBeDisabled();
+      expect(screen.getByRole('button', { name: /(?:Giriş Yap|Log In)/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /(?:Değiştir|Change)/i })).toBeDisabled();
+    });
+  });
 });

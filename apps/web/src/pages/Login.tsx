@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { Mail, KeyRound, ArrowRight, RefreshCw, CheckCircle2, Clock, Sparkles } from "lucide-react";
+import { Mail, KeyRound, ArrowRight, RefreshCw, CheckCircle2, Clock, Sparkles, Lock, ShieldAlert } from "lucide-react";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -24,6 +24,50 @@ export default function Login() {
   // Exponential backoff cooldown: starts at 30s, doubles on each resend (30s, 60s, 120s, 240s...)
   const [resendCount, setResendCount] = useState(0);
   const [resendCooldown, setResendCooldown] = useState(0);
+
+  // 5 Failed attempts lockout state
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutRemainingSec, setLockoutRemainingSec] = useState(0);
+  const isAccountLocked = lockoutRemainingSec > 0;
+
+  // Restore lockout from localStorage when email changes
+  useEffect(() => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) return;
+    try {
+      const storedLock = localStorage.getItem(`auth_locked_until_${cleanEmail}`);
+      if (storedLock) {
+        const lockUntil = Number(storedLock);
+        const diffSec = Math.ceil((lockUntil - Date.now()) / 1000);
+        if (diffSec > 0) {
+          setLockoutRemainingSec(diffSec);
+          setFailedAttempts(5);
+        } else {
+          localStorage.removeItem(`auth_locked_until_${cleanEmail}`);
+          setLockoutRemainingSec(0);
+        }
+      }
+    } catch {}
+  }, [email]);
+
+  // Lockout countdown timer
+  useEffect(() => {
+    let interval: any = null;
+    if (lockoutRemainingSec > 0) {
+      interval = setInterval(() => {
+        setLockoutRemainingSec((prev) => {
+          if (prev <= 1) {
+            const cleanEmail = email.trim().toLowerCase();
+            if (cleanEmail) localStorage.removeItem(`auth_locked_until_${cleanEmail}`);
+            setFailedAttempts(0);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [lockoutRemainingSec, email]);
 
   useEffect(() => {
     let interval: any = null;
@@ -57,6 +101,9 @@ export default function Login() {
   // Step 1: Request temporary passcode via Resend
   const handleRequestPasscode = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isAccountLocked) {
+      return setError(`Hesabınız 5 kez hatalı şifre girildiği için kilitlenmiştir. Yeni şifre talep edemezsiniz. Kalan süre: ${formatTime(lockoutRemainingSec)}`);
+    }
     if (!email.trim()) {
       return setError(t("auth.errors.invalidEmail"));
     }
@@ -78,6 +125,16 @@ export default function Login() {
       setResendCount(1);
     } catch (err: any) {
       toast?.dismiss?.(toastId);
+      if (err.locked || err.status === 423) {
+        const lockDuration = err.remainingSec || (15 * 60);
+        setLockoutRemainingSec(lockDuration);
+        const cleanEmail = email.trim().toLowerCase();
+        if (cleanEmail) {
+          try {
+            localStorage.setItem(`auth_locked_until_${cleanEmail}`, String(Date.now() + lockDuration * 1000));
+          } catch {}
+        }
+      }
       setError(err.message || t("auth.errors.emailFailed"));
     } finally {
       setLoading(false);
@@ -86,7 +143,7 @@ export default function Login() {
 
   // Step 2 Resend: Exponentially increasing cooldown (30s, 60s, 120s, 240s...)
   const handleResendPasscode = async () => {
-    if (loading || resendCooldown > 0) return;
+    if (loading || resendCooldown > 0 || isAccountLocked) return;
     setError(null);
     setLoading(true);
     const toastId = toast.loading(t("auth.toasts.resending"));
@@ -102,6 +159,10 @@ export default function Login() {
       setResendCount((prev) => prev + 1);
     } catch (err: any) {
       toast?.dismiss?.(toastId);
+      if (err.locked || err.status === 423) {
+        const lockDuration = err.remainingSec || (15 * 60);
+        setLockoutRemainingSec(lockDuration);
+      }
       setError(err.message || t("auth.errors.emailFailed"));
     } finally {
       setLoading(false);
@@ -111,6 +172,9 @@ export default function Login() {
   // Step 2: Verify passcode and log in
   const handleVerifyPasscode = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isAccountLocked) {
+      return setError(`Hesabınız 5 kez hatalı şifre girildiği için kilitlenmiştir. Kalan süre: ${formatTime(lockoutRemainingSec)}`);
+    }
     if (!code.trim()) {
       return setError(t("auth.errors.enterPasscode"));
     }
@@ -122,10 +186,27 @@ export default function Login() {
     try {
       await loginWithPasscode(email.trim(), code.trim());
       toast.success(t("auth.toasts.loginSuccess"), { id: toastId });
+      const cleanEmail = email.trim().toLowerCase();
+      if (cleanEmail) localStorage.removeItem(`auth_locked_until_${cleanEmail}`);
       navigate("/blog");
     } catch (err: any) {
       toast?.dismiss?.(toastId);
-      setError(err.message || t("auth.errors.invalidPasscode"));
+      const newAttempts = err.failedAttempts ?? (failedAttempts + 1);
+      setFailedAttempts(newAttempts);
+
+      if (err.locked || err.status === 423 || newAttempts >= 5) {
+        const lockDuration = err.remainingSec || (15 * 60);
+        setLockoutRemainingSec(lockDuration);
+        const cleanEmail = email.trim().toLowerCase();
+        if (cleanEmail) {
+          try {
+            localStorage.setItem(`auth_locked_until_${cleanEmail}`, String(Date.now() + lockDuration * 1000));
+          } catch {}
+        }
+        setError(err.message || "5 kez hatalı şifre girdiniz! Güvenlik sebebiyle şifre girme kilitlendi. Lütfen 15 dakika bekleyiniz.");
+      } else {
+        setError(err.message || t("auth.errors.invalidPasscode"));
+      }
     } finally {
       setLoading(false);
     }
@@ -212,12 +293,30 @@ export default function Login() {
                 </span>
                 <button
                   type="button"
+                  disabled={isAccountLocked}
                   onClick={() => { setStep("email"); setError(null); }}
-                  className="text-violet-400 hover:text-white underline text-[11px] shrink-0 ml-2"
+                  className="text-violet-400 hover:text-white underline text-[11px] shrink-0 ml-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {t("auth.changeEmail")}
                 </button>
               </div>
+
+              {/* 5-Attempt Security Lockout Banner */}
+              {isAccountLocked ? (
+                <div className="p-4 rounded-2xl bg-red-950/50 border border-red-500/40 text-red-200 flex flex-col gap-2 shadow-lg">
+                  <div className="flex items-center gap-2 font-bold text-red-400 text-sm">
+                    <ShieldAlert size={18} className="shrink-0 text-red-400" />
+                    <span>{t("auth.lockoutTitle")}</span>
+                  </div>
+                  <p className="text-xs text-red-300/90 leading-relaxed">
+                    {t("auth.lockoutDesc")}
+                  </p>
+                  <div className="flex items-center gap-1.5 font-mono font-bold text-xs text-red-400 bg-red-900/30 px-3 py-1.5 rounded-lg border border-red-500/20 w-fit">
+                    <Clock size={13} />
+                    <span>{t("auth.remainingLockout", { time: formatTime(lockoutRemainingSec) })}</span>
+                  </div>
+                </div>
+              ) : null}
 
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -236,20 +335,27 @@ export default function Login() {
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\s+/g, ""))}
                     required
+                    disabled={loading || isAccountLocked || timeLeft === 0}
                     placeholder="123456"
                     maxLength={10}
                     autoFocus
-                    className="w-full rounded-2xl bg-gray-950/80 border border-gray-800 pl-11 pr-4 py-3.5 text-white text-base tracking-[0.3em] font-mono text-center focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all placeholder:tracking-normal placeholder:font-sans placeholder:text-gray-600"
+                    className="w-full rounded-2xl bg-gray-950/80 border border-gray-800 pl-11 pr-4 py-3.5 text-white text-base tracking-[0.3em] font-mono text-center focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all placeholder:tracking-normal placeholder:font-sans placeholder:text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed"
                   />
                 </div>
-                <p className="text-[11px] text-gray-500 mt-2 text-center">
-                  {t("auth.passcodeNotice")}
-                </p>
+                {failedAttempts > 0 && !isAccountLocked ? (
+                  <p className="text-[11px] text-amber-400 mt-2 text-center font-medium">
+                    ⚠️ {t("auth.remainingAttempts", { count: Math.max(0, 5 - failedAttempts) })}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-gray-500 mt-2 text-center">
+                    {t("auth.passcodeNotice")}
+                  </p>
+                )}
               </div>
 
               <button
                 type="submit"
-                disabled={loading || timeLeft === 0}
+                disabled={loading || timeLeft === 0 || isAccountLocked}
                 className="w-full py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-violet-900/40 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {loading ? t("auth.verifying") : t("auth.verifyAndLogin")}
@@ -258,7 +364,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={handleResendPasscode}
-                disabled={loading || resendCooldown > 0}
+                disabled={loading || resendCooldown > 0 || isAccountLocked}
                 className="w-full py-2.5 text-xs font-medium text-gray-400 hover:text-white transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {resendCooldown > 0 ? (

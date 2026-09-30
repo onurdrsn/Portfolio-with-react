@@ -25,401 +25,39 @@ import {
   Search,
   X,
   Grid,
-  Play
+  Play,
+  Lock
 } from 'lucide-react';
 
-const WORKER_URL = 'https://portfolio-worker.onurd.com.tr';
+import { STORIES, normalizePuzzleText, evaluateStoryQuestion } from './storyPuzzlesData';
+export { STORIES, normalizePuzzleText, evaluateStoryQuestion };
 
-// Expanded Library of 20 Lateral Thinking Puzzles
-const STORIES = [
-  {
-    id: 'seagull-meat',
-    titleTr: 'Martı Eti ve Kör Adam',
-    titleEn: 'Seagull Meat and The Blind Man',
-    difficulty: 'Zor',
-    difficultyColor: 'bg-red-500/20 text-red-400 border-red-500/30',
-    promptTr: 'Bir adam karısıyla adaya uçmuşlar. Adam kör ve adada her gün martı eti yemiş, en sonunda şehre dönüp lokantada martı eti sipariş etmiş. Yediği ilk lokmadan sonra intihar etmiş. Neden?',
-    promptEn: 'A man flew to an island with his wife. The man was blind and ate seagull meat every day on the island. Later, back in the city, he ordered seagull meat at a restaurant. After his first bite, he committed suicide. Why?',
-    fullStoryTr: 'Uçak adaya düşer ve kaza sonucu adam gözlerini kaybeder. Karısıyla birlikte hayatta kalırlar. Karısı adam aç kalmasın diye dışarıda bulduğu kendi uzuvlarını ve et parçalarını adam beslensin diye "martı eti" diyerek yedirir. Kadın sonunda kan kaybından ölür. Adam kurtarılıp şehre döndüğünde bir lokantada gerçek martı eti yer. Tadının adadakiyle alakası olmadığını anlayınca adada yediği etin karısının eti olduğunu fark eder ve vicdan azabıyla intihar eder.',
-    fullStoryEn: 'Their plane crashed on a deserted island, blinding the man. His wife kept him alive by cutting parts of her own flesh to feed him, telling him it was seagull meat. She eventually died of blood loss. Upon rescue, the man orders real seagull meat at a restaurant. Realizing the tastes are completely different, he understands he ate his wife\'s flesh to survive, and commits suicide out of remorse.',
-    hintsTr: [
-      'Adam adadayken yediği etin tadını unutmamıştı.',
-      'Karısı adamı korumak ve yaşatmak için büyük bir fedakarlık yaptı.',
-      'Lokantada yediği et GERÇEK martı etiydi.'
-    ],
-    hintsEn: [
-      'The man remembered the taste of the meat he ate on the island.',
-      'His wife made an extreme sacrifice to keep him fed.',
-      'The meat at the restaurant was REAL seagull meat.'
-    ],
-    keyFacts: ['kaza', 'uçak', 'kör', 'uzuv', 'insan', 'karısı', 'fedakarlık', 'lokanta', 'gerçek', 'fark'],
-    rules: [
-      { keywords: ['doğuştan', 'doğuştan mı', 'doğuştan kör', 'born blind'], answer: 'Hayır' },
-      { keywords: ['kazada mı', 'kazada gözlerini', 'sonradan mı', 'kazada kör', 'gözlerini mi kaybetti'], answer: 'Evet' },
-      { keywords: ['uçak', 'kaza', 'düştü', 'plane', 'crash'], answer: 'Evet' },
-      { keywords: ['karısı', 'kadın', 'öldü mü', 'wife', 'dead'], answer: 'Evet' },
-      { keywords: ['adam mı öldürdü', 'cinayet', 'murder'], answer: 'Hayır' },
-      { keywords: ['adadaki et', 'martı eti miydi', 'is seagull'], answer: 'Hayır' },
-      { keywords: ['insan eti', 'kendi eti', 'karısının eti', 'uzuv', 'human flesh'], answer: 'Evet' },
-      { keywords: ['lokantadaki et', 'restorant', 'restaurant'], answer: 'Evet' },
-      { keywords: ['intihar', 'suicide'], answer: 'Evet' }
-    ],
-    irrelevantKeywords: ['şehir', 'ada ismi', 'uçak modeli', 'lokanta adı', 'garson', 'saat']
-  },
-  {
-    id: 'elevator-man',
-    titleTr: 'Asansördeki Adam',
-    titleEn: 'The Elevator Man',
-    difficulty: 'Orta',
-    difficultyColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    promptTr: 'Bir adam gökdelenin 10. katında oturuyor. Her sabah asansörle 1. kata iniyor. Akşam dönerken 7. kata çıkıp 3 katı yürüyor. Ancak yağmurlu günlerde veya yanında biri varken 10. kata kadar çıkıyor. Neden?',
-    promptEn: 'A man lives on the 10th floor. Every morning he takes the elevator down to 1st floor. Every evening he takes it to the 7th floor and walks 3 floors up. On rainy days or with company, he goes to the 10th floor. Why?',
-    fullStoryTr: 'Adam cücedir ve boyu 10. kat düğmesine yetişmemektedir. En fazla 7. kat düğmesine uzanabilir. Yağmurlu günlerde şemsiyesini kullanarak 10. kat düğmesine basar, yanında biri olduğunda ise ondan basmasını ister.',
-    fullStoryEn: 'The man is a dwarf and cannot reach the 10th floor button. He can only reach the 7th floor. On rainy days he uses an umbrella to hit the button, or asks others when accompanied.',
-    hintsTr: [
-      'Adamın fiziksel bir özelliği duruma sebep oluyor.',
-      '7 ve 10. kat düğmeleri arasındaki tek fark yüksekliktir.',
-      'Yağmurlu günlerde yanında taşıdığı bir nesne yardım eder.'
-    ],
-    hintsEn: [
-      'A physical attribute of the man causes this.',
-      'The difference between 7th and 10th floor button is height.',
-      'An object he carries on rainy days helps him.'
-    ],
-    keyFacts: ['cüce', 'boyu kısa', 'düğme', 'yetişmiyor', 'şemsiye'],
-    rules: [
-      { keywords: ['cüce', 'boyu kısa', 'dwarf', 'short'], answer: 'Evet' },
-      { keywords: ['düğme', 'düğmeye yetişmiyor', 'button'], answer: 'Evet' },
-      { keywords: ['şemsiye', 'umbrella'], answer: 'Evet' },
-      { keywords: ['spor', 'egzersiz', 'exercise'], answer: 'Hayır' }
-    ],
-    irrelevantKeywords: ['işi ne', 'meslek', 'bina rengi', 'asansör markası']
-  },
-  {
-    id: 'bar-water',
-    titleTr: 'Bar Masasındaki Bardak Su',
-    titleEn: 'Glass of Water at The Bar',
-    difficulty: 'Kolay',
-    difficultyColor: 'bg-green-500/20 text-green-400 border-green-500/30',
-    promptTr: 'Bir adam bara girip bir bardak su ister. Barmen silah çıkarıp adamın kafasına doğrultur. Adam "Teşekkür ederim" der ve su içmeden çıkar. Neden?',
-    promptEn: 'A man asks a bartender for water. The bartender points a gun at him. The man says "Thank you" and leaves without drinking. Why?',
-    fullStoryTr: 'Adam şiddetli hıçkırmaktadır ve hıçkırığı kesmek için su istemiştir. Barmen korkutarak hıçkırığı geçirmek için silah doğrultur. Adam hıçkırığının geçtiğini fark edince teşekkür eder ve çıkar.',
-    fullStoryEn: 'The man had severe hiccups. The bartender pointed a gun to scare him and cure the hiccups. Once cured, the man thanked him and left.',
-    hintsTr: [
-      'Adamın zararsız ama rahatsız edici bir fiziksel durumu vardı.',
-      'Barmen adama zarar vermek istemiyordu.',
-      'Korkmak bu duruma iyi gelir.'
-    ],
-    hintsEn: [
-      'The man had a harmless but annoying condition.',
-      'The bartender did not want to harm him.',
-      'Getting scared cures this condition.'
-    ],
-    keyFacts: ['hıçkırık', 'korkutmak', 'geçti', 'silah'],
-    rules: [
-      { keywords: ['hıçkırık', 'hiccup'], answer: 'Evet' },
-      { keywords: ['korkutmak', 'scare'], answer: 'Evet' },
-      { keywords: ['düşman', 'borç', 'enemy'], answer: 'Hayır' }
-    ],
-    irrelevantKeywords: ['bar adı', 'silah markası', 'saat']
-  },
-  {
-    id: 'desert-match',
-    titleTr: 'Çöldeki Yanık Kibrit',
-    titleEn: 'Burnt Match in The Desert',
-    difficulty: 'Zor',
-    difficultyColor: 'bg-red-500/20 text-red-400 border-red-500/30',
-    promptTr: 'Çölün ortasında çırılçıplak bir adam ölü bulunuyor. Elinde sönmüş yarım kibrit var. Çevrede hiç iz yok. Neden ölmüştür?',
-    promptEn: 'A naked man is found dead in the desert holding half a burnt match. No footprints around. How did he die?',
-    fullStoryTr: 'Adam arkadaşlarıyla sıcak hava balonundaydı. Balon irtifa kaybetmeye başlayınca hafiflemek için elbiselerini attılar. Yetmeyince aralarından birinin atlaması gerekti. Kibrit çektiler, kısa kibriti çeken adam balondan atladı.',
-    fullStoryEn: 'He was in a falling hot air balloon with friends. They stripped to lose weight, then drew matches to decide who must jump. He drew the short match and jumped.',
-    hintsTr: [
-      'Adam gökyüzünden düştü.',
-      'Kıyafetlerini hafiflemek için kendisi çıkardı.',
-      'Kibrit çöpü kura çekimi içindi.'
-    ],
-    hintsEn: [
-      'He fell from the sky.',
-      'He stripped to shed weight.',
-      'The match was for drawing lots.'
-    ],
-    keyFacts: ['balon', 'sıcak hava balonu', 'düştü', 'kura', 'kibrit'],
-    rules: [
-      { keywords: ['balon', 'balloon'], answer: 'Evet' },
-      { keywords: ['düştü', 'fall'], answer: 'Evet' },
-      { keywords: ['kura', 'draw'], answer: 'Evet' }
-    ],
-    irrelevantKeywords: ['çöl adı', 'kıyafet rengi']
-  },
-  {
-    id: 'lighthouse-keeper',
-    titleTr: 'Deniz Feneri Bekçisi',
-    titleEn: 'The Lighthouse Keeper',
-    difficulty: 'Orta',
-    difficultyColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    promptTr: 'Bir adam gece yatmadan önce düğmeye basıp ışığı söndürür. Sabah gazeteyi okuyunca pencereden atlayarak intihar eder. Neden?',
-    promptEn: 'A man turns off a light switch before going to sleep. Next morning he reads the newspaper and jumps out the window. Why?',
-    fullStoryTr: 'Adam bir deniz feneri bekçisidir. Yanlışlıkla deniz fenerinin ışığını söndürmüştür. Gece fenerin ışığı yanmadığı için büyük bir yolcu gemisi kayalıklara çarpmış ve yüzlerce insan ölmüştür. Adam gazeteden bu felaketi öğrenince intihar eder.',
-    fullStoryEn: 'He was a lighthouse keeper who accidentally turned off the lighthouse light. A large ship crashed into rocks overnight killing hundreds. Seeing the tragedy in the morning news, he committed suicide.',
-    hintsTr: [
-      'Adam normal bir evde oturmuyordu.',
-      'Söndürdüğü ışık denizciler için hayati önem taşıyordu.',
-      'Gazetedeki haber büyük bir gemi kazası hakkındaydı.'
-    ],
-    hintsEn: [
-      'He didn\'t live in a normal house.',
-      'The light he turned off was vital for sailors.',
-      'The newspaper reported a massive shipwreck.'
-    ],
-    keyFacts: ['deniz feneri', 'gemi', 'kaza', 'çarptı', 'gazete', 'ışık'],
-    rules: [
-      { keywords: ['fener', 'deniz feneri', 'lighthouse'], answer: 'Evet' },
-      { keywords: ['gemi', 'kaza', 'ship', 'crash'], answer: 'Evet' },
-      { keywords: ['gazete', 'haber', 'newspaper'], answer: 'Evet' }
-    ],
-    irrelevantKeywords: ['ev numarası', 'gazete adı', 'hava durumu']
-  },
-  {
-    id: 'ice-block',
-    titleTr: 'Kilitli Odadaki Su Birikintisi',
-    titleEn: 'Pool of Water in Locked Room',
-    difficulty: 'Zor',
-    difficultyColor: 'bg-red-500/20 text-red-400 border-red-500/30',
-    promptTr: 'Kilitli boş bir odada tavandan asılı ölü bir adam var. Odada hiç eşya yok, sadece altında bir su birikintisi var. Nasıl asılmıştır?',
-    promptEn: 'A man is hanged in a locked room with no furniture, only a pool of water beneath him. How did he hang himself?',
-    fullStoryTr: 'Adam büyük bir buz kalıbının üzerine çıkıp ipi boynuna geçirdi. Buz eriyince adam havada asılı kaldı ve geriye sadece su kaldı.',
-    fullStoryEn: 'He stood on a block of ice to put the noose around his neck. The ice melted over time, leaving only water.',
-    hintsTr: ['Su önceden katı haldeydi.', 'Sıcaklık bir nesneyi eritti.'],
-    hintsEn: ['The water was solid before.', 'Heat melted an object.'],
-    keyFacts: ['buz', 'eridi', 'su'],
-    rules: [{ keywords: ['buz', 'ice'], answer: 'Evet' }, { keywords: ['eridi', 'melt'], answer: 'Evet' }],
-    irrelevantKeywords: ['ip tipi', 'oda rengi']
-  },
-  {
-    id: 'tunnel-train',
-    titleTr: 'Tüneldeki Tren ve Kör Adam',
-    titleEn: 'Train in The Tunnel',
-    difficulty: 'Zor',
-    difficultyColor: 'bg-red-500/20 text-red-400 border-red-500/30',
-    promptTr: 'Göz ameliyatından dönen adam trende seyahat ederken trenin penceresinden atlayıp intihar eder. Neden?',
-    promptEn: 'A man returning from eye surgery jumps out a moving train window. Why?',
-    fullStoryTr: 'Adam daha önce kördü ve gözleri ameliyatla açılmıştı. Tren tünele girince ortalık karardı, ameliyatın başarısız olduğunu sanıp intihar etti.',
-    fullStoryEn: 'He was blind and had surgery to restore sight. Entering a dark tunnel, he thought he went blind again and panicked.',
-    hintsTr: ['Tren karanlık bir yere girdi.', 'Ameliyatın başarısız olduğunu sandı.'],
-    hintsEn: ['Train entered darkness.', 'Thought surgery failed.'],
-    keyFacts: ['tünel', 'karanlık', 'ameliyat'],
-    rules: [{ keywords: ['tünel', 'tunnel'], answer: 'Evet' }, { keywords: ['karanlık', 'dark'], answer: 'Evet' }],
-    irrelevantKeywords: ['bilet', 'vagon']
-  },
-  {
-    id: 'severed-arm',
-    titleTr: 'Postadaki Kesik Kol',
-    titleEn: 'Severed Arm in Mail',
-    difficulty: 'Zor',
-    difficultyColor: 'bg-red-500/20 text-red-400 border-red-500/30',
-    promptTr: 'Doktor postayla gelen kesik insan kolunu inceler, onaylar ve denize atar. Neden?',
-    promptEn: 'A doctor inspects a mailed severed arm, approves it, and throws it in the ocean. Why?',
-    fullStoryTr: '4 arkadaş ıssız adada açlıktan ölmemek için sırayla birer kolunu feda etmeyi kabul etti. Kurtarıldıktan sonra son arkadaşı yeminini tutup kolunu doktora postaladı.',
-    fullStoryEn: '4 friends agreed to eat one arm each to survive on an island. After rescue, the last man mailed his severed arm to prove he kept the promise.',
-    hintsTr: ['Geçmişte adada verilen bir yemin vardı.', 'Hayatta kalmak için organ feda ettiler.'],
-    hintsEn: ['A pact was made on an island.', 'Sacrificed limbs to survive.'],
-    keyFacts: ['ada', 'yemin', 'kol'],
-    rules: [{ keywords: ['ada', 'shipwreck'], answer: 'Evet' }, { keywords: ['yemin', 'pact'], answer: 'Evet' }],
-    irrelevantKeywords: ['kargo şirketi']
-  },
-  {
-    id: 'poisoned-ice',
-    titleTr: 'Zehirli Buz Küpleri',
-    titleEn: 'Poisoned Ice Cubes',
-    difficulty: 'Orta',
-    difficultyColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    promptTr: 'İki adam aynı zehirli içecekten sipariş eder. Hızlı içen yaşar, yavaş içen ölür. Neden?',
-    promptEn: 'Two men order poisoned drinks. Fast drinker lives, slow drinker dies. Why?',
-    fullStoryTr: 'Zehir buz küplerinin içindeydi. Hızlı içen buz erimeden bitirdi, yavaş içende buz eriyip zehir karıştı.',
-    fullStoryEn: 'Poison was in the ice. The fast drinker finished before ice melted.',
-    hintsTr: ['Zehir buzun içindeydi.', 'Buz zamanla eridi.'],
-    hintsEn: ['Poison was in the ice.', 'Ice melted over time.'],
-    keyFacts: ['buz', 'eridi'],
-    rules: [{ keywords: ['buz', 'ice'], answer: 'Evet' }, { keywords: ['eridi', 'melt'], answer: 'Evet' }],
-    irrelevantKeywords: ['bardak türü']
-  },
-  {
-    id: 'push-car',
-    titleTr: 'Arabayı Otel Önüne İten Adam',
-    titleEn: 'Pushing Car to Hotel',
-    difficulty: 'Kolay',
-    difficultyColor: 'bg-green-500/20 text-green-400 border-green-500/30',
-    promptTr: 'Bir adam arabasını bir otelin önüne iter ve aniden iflas ettiğini anlar. Neden?',
-    promptEn: 'A man pushes his car to a hotel and realizes he is bankrupt. Why?',
-    fullStoryTr: 'Adam Monopoly oyunu oynamaktadır. Arabası otel olan bir kareye gelmiştir ve otel kirasını ödeyemeyeceği için iflas eder.',
-    fullStoryEn: 'He is playing Monopoly. His car piece landed on a hotel square and he can\'t afford rent.',
-    hintsTr: ['Bu gerçek bir araba değil.', 'Bir masa oyunudur.'],
-    hintsEn: ['Not a real car.', 'It\'s a board game.'],
-    keyFacts: ['monopoly', 'oyun', 'piyon'],
-    rules: [{ keywords: ['monopoly', 'oyun'], answer: 'Evet' }],
-    irrelevantKeywords: ['otel adı']
-  },
-  {
-    id: 'radio-dj',
-    titleTr: 'Gece Yarısı Radyosu',
-    titleEn: 'Midnight Radio DJ',
-    difficulty: 'Zor',
-    difficultyColor: 'bg-red-500/20 text-red-400 border-red-500/30',
-    promptTr: 'Radyo sunucusu arabasında canlı yayınını dinlerken yayını kapatır ve intihar eder. Neden?',
-    promptEn: 'A radio host listens to his live broadcast in his car, turns off radio and shoots himself. Why?',
-    fullStoryTr: 'Sunucu karısını öldürüp alibi yapmak için radyoda önceden kaydettiği bandı yayına vermişti. Arabada kayıttaki duraklama hatasını fark edince alibisiz kaldığını anlayıp intihar etti.',
-    fullStoryEn: 'He killed his wife and set a tape to play live on radio for an alibi. Hearing a glitch on air, he knew his alibi was ruined.',
-    hintsTr: ['Yayın canlı değildi, banttı.', 'Cinayet işlemişti.'],
-    hintsEn: ['Broadcast was pre-recorded.', 'He committed a murder.'],
-    keyFacts: ['bant', 'kayıt', 'alibi', 'cinayet'],
-    rules: [{ keywords: ['kayıt', 'tape'], answer: 'Evet' }, { keywords: ['alibi', 'cinayet'], answer: 'Evet' }],
-    irrelevantKeywords: ['frekans']
-  },
-  {
-    id: 'circus-tightrope',
-    titleTr: 'Müzik Durduğunda',
-    titleEn: 'When Music Stopped',
-    difficulty: 'Zor',
-    difficultyColor: 'bg-red-500/20 text-red-400 border-red-500/30',
-    promptTr: 'Gözleri bağlı sirk cambazı müzik durunca ipten aşağı atlar ve ölür. Neden?',
-    promptEn: 'A blindfolded tightrope walker jumps off when music stops and dies. Why?',
-    fullStoryTr: 'Cambaz gösteride ipin sonuna geldiğini anlamak için müziğin bitmesini işaret alıyordu. Ancak orkestra şefi aniden kalp krizi geçirip müziği erken kesince cambaz boşluğa atladı.',
-    fullStoryEn: 'He used music timing to know when he reached the end platform. Music stopped early due to conductor\'s heart attack.',
-    hintsTr: ['Müzik ona ipin bittiğini haber veriyordu.', 'Müzik erken kesildi.'],
-    hintsEn: ['Music signalled the end.', 'Music stopped early.'],
-    keyFacts: ['sirk', 'müzik', 'erken'],
-    rules: [{ keywords: ['müzik', 'music'], answer: 'Evet' }],
-    irrelevantKeywords: ['sirk adı']
-  },
-  {
-    id: 'twin-doctors',
-    titleTr: 'Ameliyattaki Cerrah',
-    titleEn: 'The Surgeon',
-    difficulty: 'Kolay',
-    difficultyColor: 'bg-green-500/20 text-green-400 border-green-500/30',
-    promptTr: 'Bir çocuk kazadan sonra ameliyata alınır. Cerrah "Ben bunu ameliyat edemem, bu benim oğlum" der. Ancak cerrah çocuğun babası değildir. Cerrah kimdir?',
-    promptEn: 'A boy is rushed to surgery. The surgeon says "I can\'t operate, he is my son!" but the surgeon is not his father. Who is surgeon?',
-    fullStoryTr: 'Cerrah çocuğun annesidir.',
-    fullStoryEn: 'The surgeon is the boy\'s mother.',
-    hintsTr: ['Ebeveyn ilişkisini düşünün.'],
-    hintsEn: ['Think about parental roles.'],
-    keyFacts: ['anne', 'annesi'],
-    rules: [{ keywords: ['anne', 'mother'], answer: 'Evet' }],
-    irrelevantKeywords: ['hastane adı']
-  },
-  {
-    id: 'silent-library',
-    titleTr: 'Kütüphanedeki Not',
-    titleEn: 'Note in Library',
-    difficulty: 'Orta',
-    difficultyColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    promptTr: 'Kütüphanede kitap okuyan bir adam, sayfa arasındaki bir notu okuyunca koşarak dışarı çıkar ve bir hayat kurtarır. Neden?',
-    promptEn: 'A man reading a book in a library finds a note, rushes out and saves a life. Why?',
-    fullStoryTr: 'Not bir intihar mektubuydu ve yerini tarif ediyordu.',
-    fullStoryEn: 'The note was a suicide letter giving location.',
-    hintsTr: ['Not bir yardım çağrısıydı.'],
-    hintsEn: ['The note was a cry for help.'],
-    keyFacts: ['intihar', 'not', 'mektup'],
-    rules: [{ keywords: ['intihar', 'suicide'], answer: 'Evet' }],
-    irrelevantKeywords: ['kitap adı']
-  },
-  {
-    id: 'apple-shoot',
-    titleTr: 'Okçu ve Elma',
-    titleEn: 'The Archer and Apple',
-    difficulty: 'Kolay',
-    difficultyColor: 'bg-green-500/20 text-green-400 border-green-500/30',
-    promptTr: 'Bir okçu adamın başındaki elmayı vuramaz, oku adama isabet ettirir. Vurulan adam "Teşekkür ederim" der. Neden?',
-    promptEn: 'An archer misses the apple and hits the man instead. The man says "Thank you". Why?',
-    fullStoryTr: 'Adam zehirli bir yılan tarafından ısırılmıştı, ok zehirli bölgeyi kanatarak zehri dışarı çıkardı.',
-    fullStoryEn: 'The man was bitten by a snake, the arrow drained the venom.',
-    hintsTr: ['Adamın vücudunda başka bir tehlike vardı.'],
-    hintsEn: ['There was another danger.'],
-    keyFacts: ['yılan', 'zehir'],
-    rules: [{ keywords: ['yılan', 'zehir'], answer: 'Evet' }],
-    irrelevantKeywords: ['ok rengi']
-  },
-  {
-    id: 'submarine-hat',
-    titleTr: 'Denizaltındaki Şapka',
-    titleEn: 'Submarine Hat',
-    difficulty: 'Orta',
-    difficultyColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    promptTr: 'Batmakta olan denizaltıdan su yüzeyine sadece bir şapka çıkar. Denizciler kurtulur. Neden?',
-    promptEn: 'Only a hat floats up from sinking submarine, crew is saved. Why?',
-    fullStoryTr: 'Şapka torpido kovanından yukarı fırlatılmış acil durum haberleşme şamandırasıydı.',
-    fullStoryEn: 'The hat was attached to an emergency buoy sent up torpedo tube.',
-    hintsTr: ['Şapka bir sinyal aracıydı.'],
-    hintsEn: ['Hat was a signal buoy.'],
-    keyFacts: ['şamandıra', 'sinyal'],
-    rules: [{ keywords: ['sinyal', 'buoy'], answer: 'Evet' }],
-    irrelevantKeywords: ['deniz adı']
-  },
-  {
-    id: 'fatal-photo',
-    titleTr: 'Son Fotoğraf',
-    titleEn: 'Fatal Photograph',
-    difficulty: 'Orta',
-    difficultyColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    promptTr: 'Uçurum kenarında karısının fotoğrafını çeken adam, fotoğraf banyosundan sonra polise teslim olur. Neden?',
-    promptEn: 'Man takes photo of wife on cliff, sees developed photo and surrenders to police. Why?',
-    fullStoryTr: 'Fotoğrafta karısını arkasından kimin ittiğinin gölgesi görünüyordu.',
-    fullStoryEn: 'The photo captured the shadow of the person who pushed her.',
-    hintsTr: ['Fotoğraf bir kanıt ortaya çıkardı.'],
-    hintsEn: ['Photo revealed evidence.'],
-    keyFacts: ['gölge', 'itme', 'kanıt'],
-    rules: [{ keywords: ['gölge', 'shadow'], answer: 'Evet' }],
-    irrelevantKeywords: ['kamera markası']
-  },
-  {
-    id: 'wooden-plank',
-    titleTr: 'Nehirdeki Tahta',
-    titleEn: 'Wooden Plank in River',
-    difficulty: 'Kolay',
-    difficultyColor: 'bg-green-500/20 text-green-400 border-green-500/30',
-    promptTr: 'İki adam tek kişilik bir tahta parçasıyla nehri geçer ve ikisi de ıslanmadan karşıya ulaşır. Nasıl?',
-    promptEn: 'Two men cross a river on a one-man plank and both reach dry. How?',
-    fullStoryTr: 'İki adam nehrin karşı kıyılarındaydı, tahtayı sırayla kullandılar.',
-    fullStoryEn: 'They were on opposite sides of the river.',
-    hintsTr: ['Aynı taraftan başlamadılar.'],
-    hintsEn: ['They started on opposite sides.'],
-    keyFacts: ['karşı', 'kıyı'],
-    rules: [{ keywords: ['karşı', 'opposite'], answer: 'Evet' }],
-    irrelevantKeywords: ['nehir adı']
-  },
-  {
-    id: 'midnight-caller',
-    titleTr: 'Gece Yarısı Telefonu',
-    titleEn: 'Midnight Caller',
-    difficulty: 'Zor',
-    difficultyColor: 'bg-red-500/20 text-red-400 border-red-500/30',
-    promptTr: 'Adam kendi evini arar, hat meşgul çalınca intihar eder. Neden?',
-    promptEn: 'Man calls his own house, hears busy signal, shoots himself. Why?',
-    fullStoryTr: 'Adam evine bombalı tuzak kurmuştu ve telefon çalınca bomba patlayacaktı. Hat meşgulse bomba patlamış demekti.',
-    fullStoryEn: 'He rigged a phone-triggered bomb at home. Busy signal meant it detonated.',
-    hintsTr: ['Evde bir tuzak kurmuştu.'],
-    hintsEn: ['He set a trap at home.'],
-    keyFacts: ['bomba', 'tuzak'],
-    rules: [{ keywords: ['bomba', 'bomb'], answer: 'Evet' }],
-    irrelevantKeywords: ['telefon numarası']
-  },
-  {
-    id: 'blind-waiter',
-    titleTr: 'Garson ve Düşen Bardak',
-    titleEn: 'The Dropped Glass',
-    difficulty: 'Kolay',
-    difficultyColor: 'bg-green-500/20 text-green-400 border-green-500/30',
-    promptTr: 'Garson kaza ile bardağı düşürüp kırar. Masadaki kör adam hiç tepki vermez ama bardağın kırıldığını bilir. Nasıl?',
-    promptEn: 'Waiter drops a glass. Blind man doesn\'t flinch but knows it broke. How?',
-    fullStoryTr: 'Kör adam bardağın kırılma sesini duymuştur.',
-    fullStoryEn: 'He heard the sound of breaking glass.',
-    hintsTr: ['İşitme duyusu sağlamdı.'],
-    hintsEn: ['His hearing worked fine.'],
-    keyFacts: ['duydu', 'ses'],
-    rules: [{ keywords: ['duydu', 'sound'], answer: 'Evet' }],
-    irrelevantKeywords: ['bardak rengi']
+const WORKER_URL = import.meta.env.VITE_API_URL || 'https://portfolio-worker.onurd.com.tr';
+
+export const SURRENDER_LOCKOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+export const getSurrenderedMap = () => {
+  try {
+    const raw = localStorage.getItem('story_puzzle_surrenders_v1');
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
   }
-];
+};
+
+export const saveSurrenderedMap = (map) => {
+  try {
+    localStorage.setItem('story_puzzle_surrenders_v1', JSON.stringify(map));
+  } catch {}
+};
+
+export const formatDuration = (totalSeconds) => {
+  if (!totalSeconds || totalSeconds <= 0) return '00:00:00';
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+};
 
 // Deterministic daily story index calculator (No cronjob)
 const getDailyStoryIndex = (total) => {
@@ -463,7 +101,60 @@ export default function StoryPuzzle() {
   const [showFullAnswer, setShowFullAnswer] = useState(false);
   const [timeLeft, setTimeLeft] = useState('');
 
+  // 24-hour Surrender Lockout State
+  const [surrenderTimestamp, setSurrenderTimestamp] = useState(null);
+  const [remainingSurrenderSec, setRemainingSurrenderSec] = useState(0);
+
+  const isSurrendered = !isSolved && !!surrenderTimestamp && remainingSurrenderSec > 0;
+
   const chatEndRef = useRef(null);
+
+  // Sync surrender status whenever selected story changes
+  useEffect(() => {
+    if (!story?.id) return;
+    const surrenders = getSurrenderedMap();
+    const ts = surrenders[story.id];
+    if (ts) {
+      const diffMs = (ts + SURRENDER_LOCKOUT_MS) - Date.now();
+      if (diffMs > 0) {
+        setSurrenderTimestamp(ts);
+        setRemainingSurrenderSec(Math.ceil(diffMs / 1000));
+        setShowFullAnswer(true);
+        return;
+      } else {
+        // 24 hours passed, clean up expired lockout
+        delete surrenders[story.id];
+        saveSurrenderedMap(surrenders);
+      }
+    }
+    setSurrenderTimestamp(null);
+    setRemainingSurrenderSec(0);
+  }, [story?.id]);
+
+  // Live 24-hour countdown ticker when surrendered
+  useEffect(() => {
+    if (!surrenderTimestamp) return;
+
+    const tick = () => {
+      const diffMs = (surrenderTimestamp + SURRENDER_LOCKOUT_MS) - Date.now();
+      if (diffMs <= 0) {
+        // Expired! Reactivate story for solving/questioning
+        setSurrenderTimestamp(null);
+        setRemainingSurrenderSec(0);
+        const surrenders = getSurrenderedMap();
+        if (story?.id) {
+          delete surrenders[story.id];
+          saveSurrenderedMap(surrenders);
+        }
+      } else {
+        setRemainingSurrenderSec(Math.ceil(diffMs / 1000));
+      }
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [surrenderTimestamp, story?.id]);
 
   // Daily Countdown Timer
   useEffect(() => {
@@ -488,7 +179,9 @@ export default function StoryPuzzle() {
 
   // Auto-scroll chat log
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (typeof chatEndRef.current?.scrollIntoView === 'function') {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [chatLogs, isThinking]);
 
   const handleSelectStory = (index) => {
@@ -499,7 +192,48 @@ export default function StoryPuzzle() {
     setGuessInput('');
     setGuessFeedback(null);
     setIsSolved(false);
+
+    const nextStory = storyPool[index];
+    if (nextStory?.id) {
+      const surrenders = getSurrenderedMap();
+      const ts = surrenders[nextStory.id];
+      if (ts) {
+        const diffMs = (ts + SURRENDER_LOCKOUT_MS) - Date.now();
+        if (diffMs > 0) {
+          setSurrenderTimestamp(ts);
+          setRemainingSurrenderSec(Math.ceil(diffMs / 1000));
+          setShowFullAnswer(true);
+          return;
+        }
+      }
+    }
+    setSurrenderTimestamp(null);
+    setRemainingSurrenderSec(0);
     setShowFullAnswer(false);
+  };
+
+  const handleSurrender = () => {
+    if (isSolved || isSurrendered) return;
+
+    const confirmed = typeof window !== 'undefined' && window.confirm
+      ? window.confirm(
+          isTr
+            ? 'Teslim olmak istediğinize emin misiniz? Olay arka planı açılacak ancak 24 saat boyunca bu hikayeye soru yazamayacak ve çözemeyeceksiniz.'
+            : 'Are you sure you want to surrender? The solution will be revealed, but this puzzle will be locked for 24 hours.'
+        )
+      : true;
+
+    if (!confirmed) return;
+
+    const now = Date.now();
+    const surrenders = getSurrenderedMap();
+    if (story?.id) {
+      surrenders[story.id] = now;
+      saveSurrenderedMap(surrenders);
+    }
+    setSurrenderTimestamp(now);
+    setRemainingSurrenderSec(Math.ceil(SURRENDER_LOCKOUT_MS / 1000));
+    setShowFullAnswer(true);
   };
 
   // Generate new story with Cloudflare Workers AI
@@ -533,6 +267,7 @@ export default function StoryPuzzle() {
 
   const handleAskQuestion = async (e) => {
     e.preventDefault();
+    if (isSurrendered) return;
     const query = questionInput.trim();
     if (!query || isThinking) return;
 
@@ -560,20 +295,20 @@ export default function StoryPuzzle() {
         let finalAnswer = data.answer || 'EVET';
         let finalExplanation = '';
 
-        if (finalAnswer.includes('HAYIR') || finalAnswer.includes('NO')) {
+        if (data.status === 'warning' || finalAnswer.includes('UYARI') || finalAnswer.includes('WARNING')) {
+          finalAnswer = isTr ? '⚠️ UYARI: Soru Şekli Geçersiz' : '⚠️ WARNING: Invalid Format';
+          finalExplanation = isTr 
+            ? 'Lütfen sadece "Evet" veya "Hayır" cevabı verilebilecek sorular sorun!' 
+            : 'Please ask questions that can only be answered with Yes or No!';
+        } else if (finalAnswer.includes('HAYIR') || finalAnswer.includes('NO')) {
           finalAnswer = isTr ? 'HAYIR' : 'NO';
           finalExplanation = ''; // NEVER output extra text on HAYIR!
         } else if (finalAnswer.includes('EVET') || finalAnswer.includes('YES')) {
           finalAnswer = isTr ? 'EVET' : 'YES';
           finalExplanation = ''; // NEVER output extra text on EVET!
-        } else if (finalAnswer.includes('Önemsiz') || finalAnswer.includes('Alakasız')) {
+        } else if (finalAnswer.includes('Önemsiz') || finalAnswer.includes('Alakasız') || finalAnswer.includes('Irrelevant')) {
           finalAnswer = isTr ? 'Önemsiz' : 'Irrelevant';
           finalExplanation = '';
-        } else if (data.status === 'warning' || finalAnswer.includes('UYARI')) {
-          finalAnswer = isTr ? '⚠️ UYARI: Soru Şekli Geçersiz' : '⚠️ WARNING: Invalid Format';
-          finalExplanation = isTr 
-            ? 'Lütfen sadece "Evet" veya "Hayır" cevabı verilebilecek sorular sorun!' 
-            : 'Please ask questions that can only be answered with Yes or No!';
         }
 
         setTimeout(() => {
@@ -603,72 +338,15 @@ export default function StoryPuzzle() {
   };
 
   const evaluateLocally = (query) => {
-    const lowerQuery = query.toLowerCase();
-
-    // Open-ended question check
-    const openEndedWords = [
-      'neden', 'niçin', 'nasıl', 'kim', 'kimin', 'ne zaman', 'nerede', 'nereden', 'ne kadar', 'kaç', 'hangi',
-      'why', 'how', 'who', 'where', 'when', 'what'
-    ];
-
-    const isQuestionMark = query.endsWith('?');
-    const startsWithOpenEnded = openEndedWords.some(word => lowerQuery.startsWith(word) || lowerQuery.includes(` ${word} `));
-    
-    const yesNoSuffixes = ['mi', 'mı', 'mu', 'mü', 'miydi', 'mıydı', 'muydum', 'müdür', 'midir', 'mıdır', 'var mı', 'yok mu', 'oldu mu', 'kaldı mı', 'ettimi', 'etti mi'];
-    const hasYesNoSuffix = yesNoSuffixes.some(suf => lowerQuery.includes(suf));
-
-    let status = 'valid';
-    let answerText = 'EVET';
-    let explanation = '';
-
-    if (startsWithOpenEnded || (!hasYesNoSuffix && !isQuestionMark && !lowerQuery.includes('is') && !lowerQuery.includes('was') && !lowerQuery.includes('did'))) {
-      status = 'warning';
-      answerText = isTr ? '⚠️ UYARI: Soru Şekli Geçersiz' : '⚠️ WARNING: Invalid Format';
-      explanation = isTr 
-        ? 'Lütfen sadece "Evet" veya "Hayır" cevabı verilebilecek sorular sorun! (Örnek: "Adam kör müydü?", "Karısı öldü mü?")'
-        : 'Please ask questions that can only be answered with "Yes" or "No"!';
-    } else {
-      const isIrrelevant = (story.irrelevantKeywords || []).some(kw => lowerQuery.includes(kw));
-      if (isIrrelevant) {
-        status = 'irrelevant';
-        answerText = isTr ? 'Önemsiz' : 'Irrelevant';
-        explanation = '';
-      } else {
-        let matchedRule = (story.rules || []).find(rule => 
-          rule.keywords.some(kw => lowerQuery.includes(kw))
-        );
-
-        if (matchedRule) {
-          answerText = matchedRule.answer === 'Evet' 
-            ? (isTr ? 'EVET' : 'YES') 
-            : (isTr ? 'HAYIR' : 'NO');
-          explanation = ''; // STRICTLY NO EXTRA EXPLANATION!
-        } else {
-          // Specific rule check for "doğuştan" to avoid wrong fallback matches
-          if (lowerQuery.includes('doğuştan')) {
-            answerText = isTr ? 'HAYIR' : 'NO';
-            explanation = '';
-          } else {
-            const factMatch = (story.keyFacts || []).some(fact => lowerQuery.includes(fact));
-            if (factMatch) {
-              answerText = isTr ? 'EVET' : 'YES';
-            } else {
-              answerText = isTr ? 'HAYIR' : 'NO';
-            }
-            explanation = '';
-          }
-        }
-      }
-    }
-
+    const result = evaluateStoryQuestion(story, query, isTr);
     setChatLogs(prev => [
       ...prev,
       {
         id: Date.now() + 1,
         type: 'ai',
-        status,
-        answer: answerText,
-        explanation
+        status: result.status,
+        answer: result.answer,
+        explanation: result.explanation
       }
     ]);
     setIsThinking(false);
@@ -683,6 +361,7 @@ export default function StoryPuzzle() {
 
   const handleGuessSubmit = (e) => {
     e.preventDefault();
+    if (isSurrendered) return;
     if (!guessInput.trim()) return;
 
     const lowerGuess = guessInput.toLowerCase();
@@ -867,7 +546,7 @@ export default function StoryPuzzle() {
                 "{isTr ? story.promptTr : story.promptEn}"
               </p>
 
-              {/* Solved Status or Guess Button */}
+              {/* Solved Status, Surrendered Lock, or Guess Button */}
               {isSolved ? (
                 <div className="p-4 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-center space-y-2">
                   <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold">
@@ -878,31 +557,70 @@ export default function StoryPuzzle() {
                     {isTr ? 'Tebrikler, hikayeyi başarıyla buldunuz!' : 'Great job uncovering the mystery!'}
                   </p>
                 </div>
+              ) : isSurrendered ? (
+                <div className="p-4 bg-amber-950/40 border border-amber-500/30 rounded-xl text-center space-y-1.5 shadow-lg">
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-amber-400">
+                    <Lock className="w-4 h-4" />
+                    <span>{isTr ? 'Teslim Olundu - Çözülemez' : 'Surrendered - Locked'}</span>
+                  </div>
+                  <p className="text-[11px] text-amber-200/80">
+                    {isTr ? 'Teslim olduğunuz için bu hikayeyi çözemezsiniz. 24 saat sonra aktifleşecektir.' : 'You surrendered. This story cannot be solved and will reactivate in 24 hours.'}
+                  </p>
+                  <div className="flex items-center justify-center gap-1 font-mono font-bold text-xs text-amber-300 bg-amber-900/40 py-1 px-2.5 rounded-lg border border-amber-500/20 w-fit mx-auto mt-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{isTr ? `Kalan Kilit: ${formatDuration(remainingSurrenderSec)}` : `Lock: ${formatDuration(remainingSurrenderSec)}`}</span>
+                  </div>
+                </div>
               ) : (
                 <button
                   onClick={() => setGuessModalOpen(true)}
-                  className="w-full py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-violet-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-violet-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Lightbulb className="w-4 h-4" />
                   {isTr ? 'Hikayeyi Tahmin Et / Çöz' : 'Solve / Guess Story'}
                 </button>
               )}
 
-              {/* Reveal Full Answer Button */}
-              <button
-                onClick={() => setShowFullAnswer(!showFullAnswer)}
-                className="w-full mt-3 py-2 text-xs font-semibold text-gray-400 hover:text-gray-200 flex items-center justify-center gap-1.5 transition-colors"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                {showFullAnswer 
-                  ? (isTr ? 'Cevabı Gizle' : 'Hide Answer')
-                  : (isTr ? 'Tam Hikayeyi Göster (Teslim Ol)' : 'Reveal Full Story')}
-              </button>
+              {/* Reveal Full Answer / Surrender Action */}
+              {isSolved ? (
+                <button
+                  onClick={() => setShowFullAnswer(!showFullAnswer)}
+                  className="w-full mt-3 py-2 text-xs font-semibold text-gray-400 hover:text-gray-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  {showFullAnswer 
+                    ? (isTr ? 'Cevabı Gizle' : 'Hide Answer')
+                    : (isTr ? 'Tam Hikayeyi Göster' : 'Reveal Full Story')}
+                </button>
+              ) : isSurrendered ? (
+                <div className="w-full mt-3 py-2 text-xs font-semibold text-amber-300/90 flex items-center justify-center gap-1.5 bg-amber-950/20 rounded-xl border border-amber-500/20">
+                  <Lock className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{isTr ? 'Olay Hep Gösteriliyor (24s Kilitli)' : 'Backstory Always Revealed (24h Lock)'}</span>
+                </div>
+              ) : (
+                <button
+                  onClick={handleSurrender}
+                  className="w-full mt-3 py-2 text-xs font-semibold text-gray-400 hover:text-amber-400 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>{isTr ? 'Tam Hikayeyi Göster (Teslim Ol)' : 'Reveal Full Story (Surrender)'}</span>
+                </button>
+              )}
 
-              {/* Full Answer Reveal Box */}
-              {showFullAnswer && (
+              {/* Full Answer Reveal Box - Always shown when surrendered or solved or manually revealed */}
+              {(showFullAnswer || isSurrendered || isSolved) && (
                 <div className="mt-4 p-4 bg-purple-950/40 border border-purple-800/50 rounded-xl space-y-2 text-xs text-purple-200 animate-fadeIn">
-                  <span className="font-bold text-purple-300 block">{isTr ? '📖 Gerçek Hikaye Arka Planı:' : '📖 Full Story Backstory:'}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-purple-300 block">
+                      {isTr ? '📖 Gerçek Hikaye Arka Planı (Olay):' : '📖 Full Story Backstory:'}
+                    </span>
+                    {isSurrendered && (
+                      <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/30 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {formatDuration(remainingSurrenderSec)}
+                      </span>
+                    )}
+                  </div>
                   <p className="leading-relaxed">{isTr ? story.fullStoryTr : story.fullStoryEn}</p>
                 </div>
               )}
@@ -1027,22 +745,48 @@ export default function StoryPuzzle() {
               <div ref={chatEndRef} />
             </div>
 
+            {/* Surrender Lockout Banner */}
+            {isSurrendered && (
+              <div className="mx-4 mb-2 p-3 bg-amber-950/60 border border-amber-500/40 rounded-xl text-xs text-amber-200 flex items-center justify-between shadow-lg">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="font-medium">
+                    {isTr
+                      ? 'Teslim olundu! Olay açıldı, soru sorma ve tahmin etme 24 saat kilitlendi.'
+                      : 'Surrendered! Backstory revealed, questioning and solving locked for 24h.'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 font-mono font-bold text-amber-400 shrink-0 ml-2 bg-amber-900/60 px-2 py-0.5 rounded border border-amber-500/30">
+                  <Clock className="w-3 h-3" />
+                  <span>{formatDuration(remainingSurrenderSec)}</span>
+                </div>
+              </div>
+            )}
+
             {/* Input Form */}
             <form onSubmit={handleAskQuestion} className="p-4 border-t border-gray-800 bg-gray-950/60 flex gap-2">
               <input
                 type="text"
                 value={questionInput}
                 onChange={(e) => setQuestionInput(e.target.value)}
-                disabled={isThinking}
-                placeholder={isTr ? 'Evet/Hayır cevabı verilebilecek bir soru sorun...' : 'Ask a yes/no question...'}
-                className="flex-1 bg-gray-900 border border-gray-700 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-colors disabled:opacity-50"
+                disabled={isThinking || isSurrendered}
+                placeholder={
+                  isSurrendered
+                    ? (isTr
+                        ? `🔒 Teslim oldunuz: Soru sorma 24 saat kilitli (${formatDuration(remainingSurrenderSec)})`
+                        : `🔒 Surrendered: Questioning locked for 24h (${formatDuration(remainingSurrenderSec)})`)
+                    : (isTr
+                        ? 'Evet/Hayır cevabı verilebilecek bir soru sorun...'
+                        : 'Ask a yes/no question...')
+                }
+                className="flex-1 bg-gray-900 border border-gray-700 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               />
               <button
                 type="submit"
-                disabled={!questionInput.trim() || isThinking}
-                className="px-5 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 text-white font-bold rounded-xl transition-all shadow-lg shadow-violet-900/30 flex items-center justify-center"
+                disabled={!questionInput.trim() || isThinking || isSurrendered}
+                className="px-5 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-violet-900/30 flex items-center justify-center cursor-pointer"
               >
-                <Send className="w-4 h-4" />
+                {isSurrendered ? <Lock className="w-4 h-4 text-gray-400" /> : <Send className="w-4 h-4" />}
               </button>
             </form>
           </div>
@@ -1118,6 +862,9 @@ export default function StoryPuzzle() {
                   const originalIndex = storyPool.findIndex(st => st.id === s.id);
                   const isDaily = originalIndex === dailyIndex;
                   const isSelected = originalIndex === selectedStoryIndex;
+                  const surrendersMap = getSurrenderedMap();
+                  const storySurrenderTs = surrendersMap[s.id];
+                  const isStorySurrendered = Boolean(storySurrenderTs && (Date.now() - storySurrenderTs < SURRENDER_LOCKOUT_MS));
 
                   return (
                     <div
@@ -1141,6 +888,12 @@ export default function StoryPuzzle() {
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${s.difficultyColor}`}>
                               {s.difficulty}
                             </span>
+                            {isStorySurrendered && (
+                              <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+                                <Lock className="w-2.5 h-2.5" />
+                                {isTr ? 'Teslim Olundu' : 'Surrendered'}
+                              </span>
+                            )}
                           </div>
                           
                           {isSelected && (

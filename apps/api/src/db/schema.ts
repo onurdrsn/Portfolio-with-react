@@ -10,6 +10,8 @@ export const users = pgTable("users", {
   tempCodeExpiresAt: timestamp("temp_code_expires_at"),
   passcodeResendCount: integer("passcode_resend_count").notNull().default(0),
   lastPasscodeSentAt: timestamp("last_passcode_sent_at"),
+  failedAttempts: integer("failed_attempts").notNull().default(0),
+  lockedUntil: timestamp("locked_until"),
   isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

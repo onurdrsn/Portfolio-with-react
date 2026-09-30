@@ -40,15 +40,56 @@ async function ensureUsersTable(db: any) {
     await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS temp_code_expires_at timestamp;`);
     await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS passcode_resend_count integer NOT NULL DEFAULT 0;`);
     await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_passcode_sent_at timestamp;`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_attempts integer NOT NULL DEFAULT 0;`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until timestamp;`);
   } catch (e) {
     console.error("[Auth] ensureUsersTable error:", e);
   }
+}
+
+// ─── Rate Limiter (IP-based sliding window) ──────────────────────────────
+interface RateLimitRecord {
+  count: number;
+  resetAt: number;
+}
+const rateLimits = new Map<string, RateLimitRecord>();
+
+function checkRateLimit(key: string, limit: number, windowMs: number): { allowed: boolean; retryAfter: number } {
+  const now = Date.now();
+  const record = rateLimits.get(key);
+  if (!record || now > record.resetAt) {
+    rateLimits.set(key, { count: 1, resetAt: now + windowMs });
+    return { allowed: true, retryAfter: 0 };
+  }
+  if (record.count >= limit) {
+    const retryAfter = Math.ceil((record.resetAt - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+  record.count++;
+  return { allowed: true, retryAfter: 0 };
+}
+
+export function clearRateLimits() {
+  rateLimits.clear();
 }
 
 // ─── 1. Send Temporary Password (OTP) via Resend ────────────────────────
 const handleSendPasscode = async (c: any) => {
   const db = getDb(c.env.DATABASE_URL);
   await ensureUsersTable(db);
+
+  // Rate limit: max 5 requests per 2 minutes per IP
+  const clientIp = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || "local";
+  const ipLimit = checkRateLimit(`send_passcode_${clientIp}`, 5, 2 * 60 * 1000);
+  if (!ipLimit.allowed) {
+    return c.json(
+      {
+        error: `Çok fazla kod gönderme talebi yapıldı. Lütfen ${ipLimit.retryAfter} saniye bekleyiniz.`,
+        retryAfter: ipLimit.retryAfter,
+      },
+      429
+    );
+  }
 
   let body: any;
   try {
@@ -80,6 +121,20 @@ const handleSendPasscode = async (c: any) => {
 
   if (existingUsers.length > 0) {
     user = existingUsers[0];
+
+    // Check if account is currently locked due to 5 failed passcode attempts
+    if (user.lockedUntil && new Date() < new Date(user.lockedUntil)) {
+      const remainingSec = Math.ceil((new Date(user.lockedUntil).getTime() - Date.now()) / 1000);
+      return c.json(
+        {
+          error: `Hesabınız 5 kez hatalı şifre girildiği için kilitlenmiştir. Yeni şifre talep edemezsiniz. Kalan süre: ${Math.floor(remainingSec / 60)} dakika ${remainingSec % 60} saniye.`,
+          locked: true,
+          lockedUntil: user.lockedUntil,
+          remainingSec,
+        },
+        423
+      );
+    }
 
     // Check exponential backoff rate limit (starts at 30s, doubles each time: 30s, 60s, 120s...)
     if (user.lastPasscodeSentAt) {
@@ -203,6 +258,19 @@ const handleLoginPasscode = async (c: any) => {
   const db = getDb(c.env.DATABASE_URL);
   await ensureUsersTable(db);
 
+  // Rate limit: max 10 requests per minute per IP
+  const clientIp = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || "local";
+  const ipLimit = checkRateLimit(`login_passcode_${clientIp}`, 10, 60 * 1000);
+  if (!ipLimit.allowed) {
+    return c.json(
+      {
+        error: `Çok fazla şifre denemesi yapıldı. Lütfen ${ipLimit.retryAfter} saniye bekleyiniz.`,
+        retryAfter: ipLimit.retryAfter,
+      },
+      429
+    );
+  }
+
   let body: any;
   try {
     body = await c.req.json();
@@ -227,7 +295,35 @@ const handleLoginPasscode = async (c: any) => {
     return c.json({ error: "Bu e-posta adresine ait bir kullanıcı bulunamadı." }, 404);
   }
 
-  // 1. Check if matching OTP code
+  // 1. Check if account is locked due to 5 failed attempts
+  if (user.lockedUntil) {
+    const lockTime = new Date(user.lockedUntil).getTime();
+    if (Date.now() < lockTime) {
+      const remainingSec = Math.ceil((lockTime - Date.now()) / 1000);
+      const remainingMins = Math.floor(remainingSec / 60);
+      const remainingSecondsOnly = remainingSec % 60;
+      return c.json(
+        {
+          error: `5 kez hatalı şifre girdiğiniz için hesabınız kilitlendi. Lütfen bekleyiniz (${remainingMins} dk ${remainingSecondsOnly} sn).`,
+          locked: true,
+          lockedUntil: user.lockedUntil,
+          remainingSec,
+          remainingAttempts: 0,
+        },
+        423
+      );
+    } else {
+      // Lock period expired, reset failed attempts
+      await db
+        .update(users)
+        .set({ failedAttempts: 0, lockedUntil: null })
+        .where(eq(users.id, user.id));
+      user.failedAttempts = 0;
+      user.lockedUntil = null;
+    }
+  }
+
+  // 2. Check if matching OTP code
   let isValid = false;
   if (user.tempCode && user.tempCode.trim() === code) {
     if (user.tempCodeExpiresAt && new Date() > new Date(user.tempCodeExpiresAt)) {
@@ -240,16 +336,64 @@ const handleLoginPasscode = async (c: any) => {
   }
 
   if (!isValid) {
-    return c.json({ error: "Girdiğiniz parola geçersiz veya hatalı. Lütfen e-postanızı kontrol edin." }, 401);
+    const newAttempts = (user.failedAttempts || 0) + 1;
+    const MAX_ATTEMPTS = 5;
+
+    if (newAttempts >= MAX_ATTEMPTS) {
+      const lockDurationMs = 15 * 60 * 1000; // 15 minutes lockout
+      const lockedUntil = new Date(Date.now() + lockDurationMs);
+
+      await db
+        .update(users)
+        .set({
+          failedAttempts: MAX_ATTEMPTS,
+          lockedUntil,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+
+      return c.json(
+        {
+          error: "5 kez hatalı şifre girdiniz! Güvenlik sebebiyle şifre girme kilitlendi. 15 dakika boyunca hiçbir işlem yapamazsınız.",
+          locked: true,
+          lockedUntil: lockedUntil.toISOString(),
+          remainingSec: 15 * 60,
+          remainingAttempts: 0,
+          failedAttempts: MAX_ATTEMPTS,
+        },
+        423
+      );
+    } else {
+      await db
+        .update(users)
+        .set({
+          failedAttempts: newAttempts,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+
+      const remaining = MAX_ATTEMPTS - newAttempts;
+      return c.json(
+        {
+          error: `Girdiğiniz parola geçersiz veya hatalı. Kalan deneme hakkınız: ${remaining}`,
+          failedAttempts: newAttempts,
+          remainingAttempts: remaining,
+          locked: false,
+        },
+        401
+      );
+    }
   }
 
-  // Invalidate the temporary password immediately upon successful login and reset resend count
+  // 3. Successful login: Invalidate temporary password, reset failed attempts & lockout
   await db
     .update(users)
     .set({
       tempCode: null,
       tempCodeExpiresAt: null,
       passcodeResendCount: 0,
+      failedAttempts: 0,
+      lockedUntil: null,
       updatedAt: new Date(),
     })
     .where(eq(users.id, user.id));

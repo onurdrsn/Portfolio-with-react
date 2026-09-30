@@ -182,31 +182,71 @@ aiRouter.post("/story-evaluate", async (c) => {
       return c.json({ error: "Story and question are required" }, 400);
     }
 
-    const systemPrompt = `You are the AI judge in a Lateral Thinking Puzzle game (Olay Örgüsü Bulmacası).
-The secret story is:
-${story.fullStoryTr || story.fullStoryEn}
+    const riddlePremise = story.promptTr || story.promptEn || "";
+    const secretBackstory = story.fullStoryTr || story.fullStoryEn || "";
+    const keyFacts = Array.isArray(story.keyFacts) ? story.keyFacts.join(", ") : (story.keyFacts || "");
 
-The player's question is: "${question}"
+    const systemPrompt = `You are the master referee and judge in a Lateral Thinking Puzzle game ("Olay Örgüsü Bulmacası / Situation Puzzle / Black Stories").
+Players ask questions to solve the mystery. Your duty is to evaluate their questions with 100% strict factual and logical accuracy based on the known premise and the secret truth.
 
-Rules:
-1. If the question is OPEN-ENDED (e.g. asking "Neden", "Nasıl", "Kim", "Ne zaman", "Nerede" or requiring explanations instead of Yes/No):
-   Set "status": "warning", "answer": "⚠️ UYARI: Soru Şekli Geçersiz", "explanation": "Lütfen sadece 'Evet' veya 'Hayır' cevabı verilebilecek sorular sorun!"
-2. If the question asks about a detail or location that is IRRELEVANT to the mystery:
-   Set "status": "irrelevant", "answer": "Önemsiz / Alakasız", "explanation": "Bu detay hikayenin çözümü için önemsizdir."
-3. If the question can be answered with Yes or No:
-   Set "status": "valid", "answer": "EVET" or "HAYIR", "explanation": "<Short 1-sentence Turkish explanation if helpful>"
+=== PUZZLE DETAILS ===
+1. BILINEN OLAY / GORUNEN DURUM (Known Riddle Premise presented to player):
+"${riddlePremise}"
 
+2. GIZLI GERCEK / ARKA PLAN (Secret Backstory & Absolute Ground Truth):
+"${secretBackstory}"
+
+3. ONEMLI IPUCLARI / FAKTORLER (Key Facts):
+"${keyFacts}"
+
+=== PLAYER'S QUESTION ===
+"${question}"
+
+=== CRITICAL EVALUATION RULES ===
+Rule 1 - OPEN-ENDED QUESTIONS:
+If the question is open-ended (starts with or asks "Neden", "Niçin", "Nasıl", "Kim", "Ne zaman", "Nerede", "Hangi", "Kaç" or cannot be answered with a simple Yes/No):
+Set status = "warning", answer = "⚠️ UYARI: Soru Şekli Geçersiz", explanation = "Lütfen sadece 'Evet' veya 'Hayır' cevabı verilebilecek sorular sorun!"
+
+Rule 2 - IRRELEVANT DETAILS:
+If the question asks about completely irrelevant details that do not matter for solving the mystery (e.g. eye color, arrow color, clothing brand, trivial dates):
+Set status = "irrelevant", answer = "Önemsiz", explanation = "Bu detay hikayenin çözümü için önemsizdir."
+
+Rule 3 - STRICT ENTITY & ATTRIBUTE SEPARATION (DO NOT CONFUSE SUBJECTS!):
+Players ask specific questions about specific objects, persons, and actions. You MUST verify that the property belongs to the exact subject asked:
+- Example: If the man was poisoned by a snake, and an arrow hit the man and drained the poison:
+  * "Ok adama isabet etti mi?" -> EVET (The riddle explicitly states the arrow hit the man: "oku adama isabet ettirir").
+  * "Ok zehirli mi?" -> HAYIR (The ARROW was not poisoned! The snake was venomous, not the arrow!).
+  * "Adam zehirlendi mi?" -> EVET (The man was bitten by a poisonous snake).
+  * "Elmayı vurdu mu?" -> HAYIR (The archer missed the apple).
+  * "Okçu bilerek mi adamı vurdu?" -> HAYIR (The archer tried to hit the apple and missed).
+  * "Adam kurtuldu mu?" -> EVET (The arrow drained the venom, saving him).
+- Example: If ice in a drink melted and poisoned someone:
+  * "Buz zehirli miydi?" -> EVET.
+  * "Sıvı içeceğin kendisi mi zehirliydi?" -> HAYIR (The poison was inside the ice).
+
+Rule 4 - RIDDLE PREMISE IS GROUND TRUTH:
+If a question asks to confirm what is stated directly in the BILINEN OLAY (Known Riddle Premise), answer EVET. (Do not say Hayır to facts explicitly established in the riddle!).
+
+Rule 5 - THINK STEP-BY-STEP FIRST:
+You must provide your reasoning step in "thought" before giving the answer.
+1) Identify the exact entity/subject and property in the player's question.
+2) Check against both Bilinen Olay and Gizli Gerçek.
+3) Choose EVET or HAYIR or Önemsiz.
+
+=== OUTPUT FORMAT ===
 Return a JSON object in this EXACT format:
 {
-  "status": "valid",
-  "answer": "EVET",
-  "explanation": "..."
+  "thought": "<Brief step-by-step logic in Turkish analyzing the question subject vs facts>",
+  "status": "valid" | "warning" | "irrelevant",
+  "answer": "EVET" | "HAYIR" | "Önemsiz" | "⚠️ UYARI: Soru Şekli Geçersiz",
+  "explanation": ""
 }
-Output ONLY valid JSON.`;
+Output ONLY the raw JSON object. No markdown code blocks, no backticks, no extra text.`;
 
     const response = await c.env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
       messages: [{ role: "system", content: systemPrompt }],
-      max_tokens: 500
+      temperature: 0.1,
+      max_tokens: 400
     }) as any;
 
     const raw = response?.response ?? response?.text ?? "";
@@ -214,7 +254,30 @@ Output ONLY valid JSON.`;
     if (!jsonMatch) throw new Error("AI did not return valid JSON.");
 
     const parsed = JSON.parse(jsonMatch[0]);
-    return c.json(parsed);
+
+    let cleanAnswer = (parsed.answer || "").toUpperCase();
+    let status = parsed.status || "valid";
+
+    if (cleanAnswer.includes("HAYIR") || cleanAnswer.includes("NO")) {
+      cleanAnswer = "HAYIR";
+      status = "valid";
+    } else if (cleanAnswer.includes("EVET") || cleanAnswer.includes("YES")) {
+      cleanAnswer = "EVET";
+      status = "valid";
+    } else if (cleanAnswer.includes("ÖNEMSIZ") || cleanAnswer.includes("ONEMSIZ") || cleanAnswer.includes("ALAKASIZ") || cleanAnswer.includes("IRRELEVANT")) {
+      cleanAnswer = "Önemsiz";
+      status = "irrelevant";
+    } else if (status === "warning" || cleanAnswer.includes("UYARI") || cleanAnswer.includes("WARNING")) {
+      cleanAnswer = "⚠️ UYARI: Soru Şekli Geçersiz";
+      status = "warning";
+    }
+
+    return c.json({
+      status,
+      answer: cleanAnswer,
+      explanation: parsed.explanation || "",
+      thought: parsed.thought || ""
+    });
   } catch (error: any) {
     console.error("AI story-evaluate Error:", error);
     return c.json({ error: error.message || "Failed to evaluate question with Workers AI" }, 500);

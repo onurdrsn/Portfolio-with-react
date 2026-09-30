@@ -32,18 +32,31 @@ export async function apiFetch(path: string, options: ApiOptions = {}): Promise<
 async function handleResponse<T>(res: Response, silent = false, isGet = false): Promise<T> {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    let msg = err.error || "Sunucu işlem sırasında bir sorun yaşadı.";
-    
-    if (res.status === 401) msg = "Oturumunuz geçersiz veya zaman aşımına uğramış olabilir.";
-    else if (res.status === 403) msg = "Bu işlemi yapmaya yetkiniz bulunmuyor.";
-    else if (res.status === 404) msg = "Aradığınız içerik/veri bulunamadı.";
-    else if (res.status >= 500) msg = "Sunucumuz geçici bir hata verdi, yöneticiler uyarılıyor.";
+    let msg = err.error;
+    if (!msg) {
+      if (res.status === 401) msg = "Oturumunuz geçersiz veya zaman aşımına uğramış olabilir.";
+      else if (res.status === 403) msg = "Bu işlemi yapmaya yetkiniz bulunmuyor.";
+      else if (res.status === 404) msg = "Aradığınız içerik/veri bulunamadı.";
+      else if (res.status === 423) msg = "Hesabınız kilitlendi. Lütfen bekleyiniz.";
+      else if (res.status === 429) msg = "Çok fazla istek yapıldı. Lütfen biraz bekleyin.";
+      else if (res.status >= 500) msg = "Sunucumuz geçici bir hata verdi, yöneticiler uyarılıyor.";
+      else msg = "Sunucu işlem sırasında bir sorun yaşadı.";
+    }
 
-    // Do NOT show error toast pop-ups for 404/401 errors, or GET fetches, or silent requests
-    if (!silent && !isGet && res.status !== 404 && res.status !== 401) {
+    // Do NOT show error toast pop-ups for 404/401/423 errors, or GET fetches, or silent requests
+    if (!silent && !isGet && res.status !== 404 && res.status !== 401 && res.status !== 423) {
       toast.error(msg, { id: "api_global_error" });
     }
-    throw new Error(msg);
+
+    const errorObj: any = new Error(msg);
+    errorObj.status = res.status;
+    errorObj.locked = err.locked;
+    errorObj.lockedUntil = err.lockedUntil;
+    errorObj.remainingSec = err.remainingSec;
+    errorObj.remainingAttempts = err.remainingAttempts;
+    errorObj.failedAttempts = err.failedAttempts;
+    errorObj.retryAfter = err.retryAfter;
+    throw errorObj;
   }
   return res.json();
 }

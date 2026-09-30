@@ -45,7 +45,7 @@ vi.mock('../lib/email', () => ({
   generateOtpEmailHtml: vi.fn((name, code) => `<div>Code: ${code} for ${name}</div>`),
 }));
 
-import { authRouter } from './auth';
+import { authRouter, clearRateLimits } from './auth';
 
 describe('Auth Route - Passwordless OTP & Passcode Verification', () => {
   let app: Hono<any>;
@@ -58,6 +58,7 @@ describe('Auth Route - Passwordless OTP & Passcode Verification', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUsers = [];
+    clearRateLimits();
     app = new Hono();
     app.route('/api/auth', authRouter);
   });
@@ -269,6 +270,97 @@ describe('Auth Route - Passwordless OTP & Passcode Verification', () => {
       const cookieHeader = res.headers.get('set-cookie');
       expect(cookieHeader).toContain('token=');
       expect(cookieHeader).toContain('HttpOnly');
+    });
+
+    it('should track failed attempts and return remaining attempts on wrong passcode', async () => {
+      const activeUser = {
+        id: 'usr_fail_1',
+        email: 'fail1@test.com',
+        username: 'failUser',
+        isAdmin: false,
+        tempCode: '999999',
+        tempCodeExpiresAt: new Date(Date.now() + 8 * 60 * 1000),
+        failedAttempts: 2,
+      };
+      mockUsers = [activeUser];
+
+      const res = await app.request('/api/auth/login-passcode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'fail1@test.com', code: '000000' }),
+      }, mockEnv);
+
+      expect(res.status).toBe(401);
+      const json: any = await res.json();
+      expect(json.failedAttempts).toBe(3);
+      expect(json.remainingAttempts).toBe(2);
+      expect(json.error).toContain('Kalan deneme hakkınız: 2');
+    });
+
+    it('should lock account after 5 failed passcode attempts and return 423', async () => {
+      const activeUser = {
+        id: 'usr_lock_test',
+        email: 'lockout@test.com',
+        username: 'lockoutUser',
+        isAdmin: false,
+        tempCode: '123456',
+        tempCodeExpiresAt: new Date(Date.now() + 8 * 60 * 1000),
+        failedAttempts: 4,
+      };
+      mockUsers = [activeUser];
+
+      // 5th failed attempt
+      const res = await app.request('/api/auth/login-passcode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'lockout@test.com', code: '999999' }),
+      }, mockEnv);
+
+      expect(res.status).toBe(423);
+      const json: any = await res.json();
+      expect(json.locked).toBe(true);
+      expect(json.failedAttempts).toBe(5);
+      expect(json.remainingAttempts).toBe(0);
+      expect(json.error).toContain('5 kez hatalı şifre girdiniz');
+      expect(activeUser.lockedUntil).toBeDefined();
+    });
+
+    it('should reject login and reject sending passcode when account is locked', async () => {
+      const lockedUser = {
+        id: 'usr_already_locked',
+        email: 'locked@test.com',
+        username: 'lockedUser',
+        isAdmin: false,
+        tempCode: '123456',
+        tempCodeExpiresAt: new Date(Date.now() + 8 * 60 * 1000),
+        failedAttempts: 5,
+        lockedUntil: new Date(Date.now() + 10 * 60 * 1000), // locked for next 10 mins
+      };
+      mockUsers = [lockedUser];
+
+      // Attempt to login while locked
+      const loginRes = await app.request('/api/auth/login-passcode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'locked@test.com', code: '123456' }),
+      }, mockEnv);
+
+      expect(loginRes.status).toBe(423);
+      const loginJson: any = await loginRes.json();
+      expect(loginJson.locked).toBe(true);
+      expect(loginJson.error).toContain('hesabınız kilitlendi');
+
+      // Attempt to request new passcode while locked
+      const sendRes = await app.request('/api/auth/send-passcode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'locked@test.com' }),
+      }, mockEnv);
+
+      expect(sendRes.status).toBe(423);
+      const sendJson: any = await sendRes.json();
+      expect(sendJson.locked).toBe(true);
+      expect(sendJson.error).toContain('kilitlenmiştir');
     });
   });
 });
