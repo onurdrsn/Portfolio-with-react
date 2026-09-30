@@ -29,7 +29,7 @@ export default function V4Timeline() {
   }, []);
 
   return (
-    <section className="py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative" id="experience-v4">
+    <section className="py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative scroll-mt-20" id="experience">
       {/* Background Ambient Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-violet-600/10 rounded-full blur-[130px] pointer-events-none -z-10" />
 

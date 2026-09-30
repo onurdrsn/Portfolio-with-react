@@ -57,8 +57,11 @@ html {
 .bento-title-character {
   display: inline-block;
   opacity: 0;
-  animation: bentoTitleCharacter 0.24s ease-out forwards;
-  will-change: opacity, transform;
+}
+
+.bento-title-character.is-visible {
+  opacity: 0;
+  animation: bentoTitleCharacter 0.2s ease-out var(--character-delay) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

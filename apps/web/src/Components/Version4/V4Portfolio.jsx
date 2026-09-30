@@ -119,7 +119,7 @@ export default function V4Portfolio() {
   const activeItem = featuredProjects[deckIndex] || featuredProjects[0];
 
   return (
-    <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative" id="projects-v4">
+    <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative scroll-mt-20" id="projects">
       {/* Background Ambient Radial Auras */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-tr from-violet-600/10 via-purple-600/10 to-cyan-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
 

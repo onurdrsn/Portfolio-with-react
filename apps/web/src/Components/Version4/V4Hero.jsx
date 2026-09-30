@@ -168,7 +168,7 @@ export default function V4Hero() {
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start items-center mb-10">
               <a
-                href="#projects-v4"
+                href="#projects"
                 className="group relative px-7 py-3.5 bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600 text-white font-bold text-sm sm:text-base rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-violet-600/40 hover:scale-[1.03] active:scale-95 border border-violet-400/30 flex items-center gap-2"
               >
                 <span>{t("v4.hero.viewProjects")}</span>

@@ -12,6 +12,9 @@ export default function V4ParticleCanvas() {
     let animationFrameId;
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
+    const isMobile = window.innerWidth < 768;
+    const frameInterval = isMobile ? 1000 / 30 : 0;
+    let previousFrameTime = 0;
 
     const handleResize = () => {
       if (!canvas) return;
@@ -48,7 +51,10 @@ export default function V4ParticleCanvas() {
     window.addEventListener("mouseleave", handlePointerLeave);
 
     // Particle pool
-    const particleCount = Math.min(Math.floor((width * height) / 18000), 65);
+    const particleCount = Math.min(
+      Math.floor((width * height) / (isMobile ? 28000 : 18000)),
+      isMobile ? 18 : 65,
+    );
     const particles = [];
 
     const colors = ["#8b5cf6", "#a78bfa", "#06b6d4", "#ec4899", "#3b82f6"];
@@ -66,7 +72,16 @@ export default function V4ParticleCanvas() {
     }
 
     // Animation Loop
-    const render = () => {
+    const render = (time) => {
+      if (frameInterval && time - previousFrameTime < frameInterval) {
+        animationFrameId = requestAnimationFrame(render);
+        return;
+      }
+      const frameScale = previousFrameTime
+        ? Math.min((time - previousFrameTime) / (1000 / 60), 2)
+        : 1;
+      previousFrameTime = time;
+
       ctx.clearRect(0, 0, width, height);
 
       // Draw connections
@@ -93,8 +108,8 @@ export default function V4ParticleCanvas() {
         const p = particles[i];
 
         // Move
-        p.x += p.vx;
-        p.y += p.vy;
+        p.x += p.vx * frameScale;
+        p.y += p.vy * frameScale;
 
         // Bounce on edges
         if (p.x < 0 || p.x > width) p.vx *= -1;
@@ -106,7 +121,7 @@ export default function V4ParticleCanvas() {
           const dy = pointer.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < pointer.radius && dist > 0) {
-            const force = (1 - dist / pointer.radius) * 1.5;
+            const force = (1 - dist / pointer.radius) * 1.5 * frameScale;
             p.x -= (dx / dist) * force;
             p.y -= (dy / dist) * force;
           }
@@ -118,7 +133,7 @@ export default function V4ParticleCanvas() {
         ctx.fillStyle = p.color;
         ctx.globalAlpha = p.alpha;
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = isMobile ? 0 : 8;
         ctx.fill();
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
@@ -127,7 +142,7 @@ export default function V4ParticleCanvas() {
       animationFrameId = requestAnimationFrame(render);
     };
 
-    render();
+    render(0);
 
     return () => {
       window.removeEventListener("resize", handleResize);
