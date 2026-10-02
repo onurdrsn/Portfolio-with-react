@@ -29,13 +29,13 @@ export default function V4Timeline() {
   }, []);
 
   return (
-    <section className="py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative scroll-mt-20" id="experience">
-      {/* Background Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-violet-600/10 rounded-full blur-[130px] pointer-events-none -z-10" />
+    <section className="py-16 sm:py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative scroll-mt-20" id="experience">
+      {/* Background Ambient Glow — desktop only */}
+      <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-violet-600/10 rounded-full blur-[130px] pointer-events-none -z-10" />
 
       {/* Header */}
       <div className="text-center mb-16">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs font-bold uppercase tracking-widest mb-3 backdrop-blur-md shadow-[0_0_15px_rgba(139,92,246,0.15)]">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs font-bold uppercase tracking-widest mb-3 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
           <Briefcase size={13} className="text-violet-400" />
           <span>{t("v4.timeline.badge")}</span>
         </div>
@@ -55,14 +55,17 @@ export default function V4Timeline() {
         {timeline.map((item, idx) => (
           <div key={item.id || idx} className="relative group">
             {/* Glowing Node on Axis */}
-            <div className="absolute -left-[31px] sm:-left-[47px] top-1.5 w-5 h-5 rounded-full bg-gray-950 border-2 border-violet-500 flex items-center justify-center shadow-lg shadow-violet-950/60 group-hover:scale-125 group-hover:border-cyan-400 group-hover:bg-violet-600 transition-all duration-300">
+            <div className="absolute -left-[31px] sm:-left-[47px] top-1.5 w-5 h-5 rounded-full bg-gray-950 border-2 border-violet-500 flex items-center justify-center shadow-lg shadow-violet-950/60 sm:group-hover:scale-125 sm:group-hover:border-cyan-400 sm:group-hover:bg-violet-600 sm:transition-all duration-300">
               <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
             </div>
 
             {/* Content Card (Morphism Style) */}
-            <div className="relative rounded-3xl bg-gray-950/70 border border-white/10 hover:border-violet-500/40 p-6 sm:p-8 backdrop-blur-2xl shadow-xl hover:shadow-[0_8px_30px_rgba(139,92,246,0.18)] transition-all duration-300 group-hover:-translate-y-1 overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/15 before:to-transparent">
-              {/* Shimmer Light Reflection Sweep */}
-              <div className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+            <div className="relative rounded-2xl sm:rounded-3xl bg-gray-900/90 sm:bg-gray-950/70 border border-white/10 hover:border-violet-500/40 p-5 sm:p-8 sm:backdrop-blur-2xl shadow-lg sm:shadow-xl sm:hover:shadow-[0_8px_30px_rgba(139,92,246,0.18)] sm:transition-all duration-300 sm:group-hover:-translate-y-1 overflow-hidden">
+              {/* Top shimmer line */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+
+              {/* Shimmer sweep — desktop only */}
+              <div className="hidden sm:block pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
 
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3 relative z-10">
                 <div className="flex items-center gap-2">

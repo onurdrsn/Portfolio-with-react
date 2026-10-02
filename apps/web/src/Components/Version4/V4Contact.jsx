@@ -33,13 +33,13 @@ export default function V4Contact() {
   };
 
   return (
-    <section className="py-20 max-w-4xl mx-auto px-4 sm:px-6 relative" id="contact">
-      {/* Background Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[350px] bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-cyan-500/10 rounded-full blur-[130px] pointer-events-none -z-10" />
+    <section className="py-16 sm:py-20 max-w-4xl mx-auto px-4 sm:px-6 relative" id="contact">
+      {/* Background Ambient Glow — desktop only */}
+      <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[350px] bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-cyan-500/10 rounded-full blur-[130px] pointer-events-none -z-10" />
 
       {/* Header */}
       <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs font-bold uppercase tracking-widest mb-3 backdrop-blur-md shadow-[0_0_15px_rgba(139,92,246,0.15)]">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs font-bold uppercase tracking-widest mb-3 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
           <MessageSquare size={13} className="text-violet-400" />
           <span>{t("v4.contact.badge")}</span>
         </div>
@@ -55,9 +55,11 @@ export default function V4Contact() {
       </div>
 
       {/* Glass Card (Morphism Style) */}
-      <div className="relative bg-gradient-to-br from-violet-950/40 via-gray-950/80 to-purple-950/40 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 sm:p-10 shadow-[0_12px_48px_0_rgba(139,92,246,0.18)] overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-violet-400/40 before:to-transparent">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-violet-600/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-60 h-60 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative bg-gray-900/95 sm:bg-gradient-to-br sm:from-violet-950/40 sm:via-gray-950/80 sm:to-purple-950/40 sm:backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-10 shadow-xl sm:shadow-[0_12px_48px_0_rgba(139,92,246,0.18)] overflow-hidden">
+        {/* Top shimmer line */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/40 to-transparent" />
+        <div className="hidden sm:block absolute top-0 right-0 w-80 h-80 bg-violet-600/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden sm:block absolute bottom-0 left-0 w-60 h-60 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
 
         {sentSuccess ? (
           <div className="py-12 text-center space-y-4 animate-fadeIn relative z-10">

@@ -1,9 +1,86 @@
 @import "tailwindcss";
 
+/* ─── iOS Safari / Mobile White Flash Prevention ─────────────────────────────
+   The most common cause of white flash on iOS Safari is:
+   1. body/html having no background set (browser uses white as default)
+   2. backdrop-filter creating stacking contexts that repaint on scroll
+   3. fixed/sticky elements triggering full-page compositing
+   ─────────────────────────────────────────────────────────────────────────── */
 
-/* Smooth Scrolling */
-html {
-  scroll-behavior: smooth;
+html,
+body,
+#root {
+  background-color: #030712; /* gray-950 — matches V4 dark theme */
+  /* Prevent iOS Safari overscroll from revealing white background */
+  overscroll-behavior: none;
+  /* Ensure the background covers the entire screen including safe areas */
+  min-height: 100dvh;
+}
+
+/* Smooth native scroll on iOS without -webkit-overflow-scrolling (deprecated) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Mobile: Disable expensive backdrop-filter globally under 768px ─────────
+   backdrop-filter triggers a new GPU compositing layer per element.
+   On iOS, 5+ layers at once causes the white-flash stutter.
+   We replace it with a slightly more opaque solid background as fallback.
+   ─────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Kill ALL backdrop-filter effects on mobile */
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Compensate: make glass cards slightly more opaque so they still look good */
+  .bg-gray-950\/70 { background-color: rgb(3 7 18 / 0.88) !important; }
+  .bg-gray-950\/80 { background-color: rgb(3 7 18 / 0.92) !important; }
+  .bg-gray-950\/60 { background-color: rgb(3 7 18 / 0.85) !important; }
+  .bg-white\/\[0\.04\] { background-color: rgb(255 255 255 / 0.07) !important; }
+  .bg-white\/\[0\.05\] { background-color: rgb(255 255 255 / 0.08) !important; }
+
+  /* Disable heavy blur ambient glows on mobile */
+  .blur-\[130px\] { display: none !important; }
+  .blur-\[140px\] { display: none !important; }
+
+  /* Remove hover scale transforms (cause jank during scroll on mobile) */
+  .hover\:scale-\[1\.01\]:hover { transform: none !important; }
+  .hover\:-translate-y-1\.5:hover { transform: none !important; }
+  .hover\:-translate-y-1:hover { transform: none !important; }
+  .group-hover\:-translate-y-1 { transform: none !important; }
+}
+
+/* ─── Particle Canvas: convert from fixed to absolute on mobile ──────────────
+   A `position: fixed` canvas causes full-page repaints on EVERY scroll tick
+   on iOS. This is the #1 cause of the white flash + jank.
+   ─────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  canvas.particle-canvas {
+    /* On mobile: don't let the canvas force a full-page composite layer */
+    display: none;
+  }
+}
+
+/* ─── Reduced Motion: respect user preference ────────────────────────────────*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+
+/* Smooth Scrolling — desktop only (mobile uses native momentum scroll) */
+@media (min-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* Custom Animations */

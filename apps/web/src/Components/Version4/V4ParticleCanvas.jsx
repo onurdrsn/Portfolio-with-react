@@ -1,9 +1,17 @@
 import React, { useEffect, useRef } from "react";
 
+// Detect mobile once — canvas is completely disabled on mobile to prevent
+// the #1 cause of iOS scroll white-flash: fixed-position canvas compositing
+const isMobileDevice =
+  typeof window !== "undefined" && window.innerWidth < 768;
+
 export default function V4ParticleCanvas() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
+    // On mobile: canvas is not rendered, nothing to set up
+    if (isMobileDevice) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -12,8 +20,7 @@ export default function V4ParticleCanvas() {
     let animationFrameId;
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
-    const isMobile = window.innerWidth < 768;
-    const frameInterval = isMobile ? 1000 / 30 : 0;
+    const frameInterval = 0; // Desktop: full 60fps
     let previousFrameTime = 0;
 
     const handleResize = () => {
@@ -50,10 +57,10 @@ export default function V4ParticleCanvas() {
     window.addEventListener("touchmove", handlePointerMove, { passive: true });
     window.addEventListener("mouseleave", handlePointerLeave);
 
-    // Particle pool
+    // Particle pool — desktop only
     const particleCount = Math.min(
-      Math.floor((width * height) / (isMobile ? 28000 : 18000)),
-      isMobile ? 18 : 65,
+      Math.floor((width * height) / 18000),
+      65,
     );
     const particles = [];
 
@@ -133,7 +140,7 @@ export default function V4ParticleCanvas() {
         ctx.fillStyle = p.color;
         ctx.globalAlpha = p.alpha;
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = isMobile ? 0 : 8;
+        ctx.shadowBlur = 8;
         ctx.fill();
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
@@ -153,11 +160,15 @@ export default function V4ParticleCanvas() {
     };
   }, []);
 
+  // Mobile: no canvas at all — eliminates the fixed-position repaint cost
+  if (isMobileDevice) return null;
+
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0 opacity-60"
+      className="particle-canvas fixed inset-0 pointer-events-none z-0 opacity-60"
       style={{ touchAction: "none" }}
     />
   );
 }
+
