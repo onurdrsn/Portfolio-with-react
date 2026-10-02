@@ -7,20 +7,11 @@ import V4Timeline from "./V4Timeline";
 import V4Contact from "./V4Contact";
 import Footer from "../Footer";
 
-// content-visibility wrapper: skips rendering offscreen sections
-// This directly prevents the "load-on-scroll white flash" by deferring paint
-function LazySection({ children, minHeight = "400px" }) {
-  return (
-    <div
-      style={{
-        contentVisibility: "auto",
-        containIntrinsicSize: `auto none auto ${minHeight}`,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
+// NOTE: We intentionally do NOT use content-visibility:auto here.
+// Safari < 26 has incomplete support for containIntrinsicSize "auto none" syntax
+// which causes sections to render with 0 height and become invisible.
+// Instead we use a straightforward approach: all sections are in the DOM,
+// background is always gray-950, no white can ever show through.
 
 export default function Version4Home() {
   return (
@@ -35,29 +26,12 @@ export default function Version4Home() {
 
       {/* Main Content Sections */}
       <div className="relative z-10 bg-gray-950">
-        {/* Hero is always rendered — it's above the fold */}
         <V4Hero />
-
-        {/* Below-fold sections: deferred with content-visibility */}
-        <LazySection minHeight="600px">
-          <V4BentoGrid />
-        </LazySection>
-
-        <LazySection minHeight="800px">
-          <V4Portfolio />
-        </LazySection>
-
-        <LazySection minHeight="500px">
-          <V4Timeline />
-        </LazySection>
-
-        <LazySection minHeight="600px">
-          <V4Contact />
-        </LazySection>
-
-        <LazySection minHeight="100px">
-          <Footer />
-        </LazySection>
+        <V4BentoGrid />
+        <V4Portfolio />
+        <V4Timeline />
+        <V4Contact />
+        <Footer />
       </div>
     </div>
   );
