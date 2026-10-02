@@ -18,12 +18,30 @@ app.use(
   "*",
   cors({
     origin: (origin, c) => {
+      // Build allowed list from env + hardcoded safe origins
+      const frontendUrl = c.env?.FRONTEND_URL || "https://onurd.com.tr";
       const allowed = [
-        c.env?.FRONTEND_URL,
+        frontendUrl,
+        // www variant
+        frontendUrl.replace("://", "://www."),
+        // Worker self (for internal calls)
+        "https://portfolio-worker.onurd.com.tr",
+        // Local dev
         "http://localhost:5173",
         "http://localhost:4173",
       ].filter(Boolean);
-      return allowed.includes(origin) ? origin : (allowed[0] || "*");
+
+      if (!origin) {
+        // No Origin header → non-browser / same-origin request, allow
+        return null;
+      }
+
+      if (allowed.includes(origin)) {
+        return origin;
+      }
+
+      // Unknown origin → block (return null = no CORS header = browser blocks)
+      return null;
     },
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],

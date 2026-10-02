@@ -128,8 +128,8 @@ export default function V4Hero() {
 
   return (
     <section className="relative pt-24 pb-20 sm:pt-32 sm:pb-28 overflow-hidden">
-      {/* Background Aura Lighting (optimized with transform-gpu and responsive blur) */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-gradient-to-tr from-violet-600/20 via-purple-600/15 to-cyan-500/10 rounded-full blur-[80px] sm:blur-[140px] pointer-events-none -z-10 animate-pulse transform-gpu" />
+      {/* Background Aura Lighting — lighter on mobile, full on desktop */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[200px] sm:w-[700px] sm:h-[450px] bg-gradient-to-tr from-violet-600/20 via-purple-600/15 to-cyan-500/10 rounded-full blur-[40px] sm:blur-[140px] pointer-events-none -z-10 sm:animate-pulse transform-gpu" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">

@@ -17,8 +17,13 @@ async function ensureSettingsTable(db: any) {
 }
 
 export function registerSettingsRoutes(app: Hono<{ Bindings: Env; Variables: Variables }>) {
-  // GET /api/settings
+  // Public GET /api/settings — no auth required, explicit open CORS
   const getSettings = async (c: any) => {
+    // Explicitly allow all origins for this public read-only endpoint
+    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Methods", "GET, OPTIONS");
+    c.header("Access-Control-Allow-Headers", "Content-Type");
+
     const db = getDb(c.env.DATABASE_URL);
     try {
       const items = await db.select().from(siteSettings);
@@ -32,6 +37,14 @@ export function registerSettingsRoutes(app: Hono<{ Bindings: Env; Variables: Var
       return c.json({ uiVersion: "v1" });
     }
   };
+
+  // Handle OPTIONS preflight for settings
+  app.options("/api/settings", (c: any) => {
+    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Methods", "GET, OPTIONS");
+    c.header("Access-Control-Allow-Headers", "Content-Type");
+    return c.body(null, 204);
+  });
 
   app.get("/api/settings", getSettings);
   app.get("/api/settings/", getSettings);
