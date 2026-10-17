@@ -59,42 +59,48 @@ function MainNavigation() {
     };
 
     return (
-        <nav className="sticky top-0 z-50 bg-gray-950/80 backdrop-blur-xl border-b border-gray-800/80 shadow-2xl">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav aria-label="Main Navigation" className="sticky top-0 z-50 bg-ink/90 backdrop-blur-md border-b border-ink-line">
+            <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-10">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2.5 group">
                         <img
                             src="/assets/logo.svg"
-                            alt="Onur Dursun Logo Icon"
-                            className="w-9 h-9 rounded-xl object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                            alt="Onur Dursun Logo"
+                            className="w-8 h-8 rounded object-contain group-hover:opacity-80 transition-opacity"
                         />
-                        <span className="font-bold text-white tracking-tight text-sm sm:text-base group-hover:text-violet-300 transition-colors">Onur Dursun</span>
+                        <span className="font-semibold text-paper tracking-tight text-sm sm:text-base">Onur Dursun</span>
                     </Link>
 
                     {/* Desktop Navigation Links */}
-                    <div className="hidden md:flex items-center space-x-1 bg-gray-900/50 p-1.5 rounded-2xl border border-gray-800/80">
-                        <Link to="/" className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${location.pathname === '/' ? 'bg-violet-600/30 text-white border border-violet-500/30 shadow' : 'text-gray-300 hover:text-white hover:bg-gray-800/50'}`}>{t('nav.home') || 'Ana Sayfa'}</Link>
-                        <a href="/#projects" className="px-4 py-2 text-xs font-bold text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all">{t('nav.projects') || 'Projeler'}</a>
-                        <a href="/#experience" className="px-4 py-2 text-xs font-bold text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all">{t('nav.experience') || 'Deneyim'}</a>
-                        <Link to="/blog" className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${location.pathname.startsWith('/blog') ? 'bg-violet-600/30 text-white border border-violet-500/30' : 'text-violet-300 hover:text-violet-200 hover:bg-violet-950/40'}`}>Blog</Link>
-                        <Link to="/games" className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${location.pathname.startsWith('/games') ? 'bg-violet-600/30 text-white border border-violet-500/30' : 'text-gray-300 hover:text-white hover:bg-gray-800/50'}`}>{t('nav.games') || 'Oyunlar'}</Link>
+                    <div className="hidden md:flex items-center space-x-1 border border-ink-line bg-ink-raised p-1 rounded-md text-xs font-medium">
+                        <Link to="/" className={`px-3 py-1.5 rounded transition-colors ${location.pathname === '/' ? 'bg-paper text-ink font-semibold' : 'text-paper-muted hover:text-paper hover:bg-ink-hover'}`}>{t('nav.home') || 'Ana Sayfa'}</Link>
+                        <a href="/#projects" className="px-3 py-1.5 text-paper-muted hover:text-paper hover:bg-ink-hover rounded transition-colors">{t('nav.projects') || 'Projeler'}</a>
+                        <a href="/#experience" className="px-3 py-1.5 text-paper-muted hover:text-paper hover:bg-ink-hover rounded transition-colors">{t('nav.experience') || 'Deneyim'}</a>
+                        <Link to="/blog" className={`px-3 py-1.5 rounded transition-colors ${location.pathname.startsWith('/blog') ? 'bg-paper text-ink font-semibold' : 'text-paper-muted hover:text-paper hover:bg-ink-hover'}`}>Blog</Link>
+                        <Link to="/games" className={`px-3 py-1.5 rounded transition-colors ${location.pathname.startsWith('/games') ? 'bg-paper text-ink font-semibold' : 'text-paper-muted hover:text-paper hover:bg-ink-hover'}`}>{t('nav.games') || 'Oyunlar'}</Link>
                         {user?.isAdmin && (
-                            <Link to="/admin" className="px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 rounded-xl border border-amber-500/20 transition-all">{t('nav.admin') || 'Admin'}</Link>
+                            <Link to="/admin" className="px-3 py-1.5 font-code text-signal border border-signal/30 rounded transition-colors">{t('nav.admin') || 'Admin'}</Link>
                         )}
                     </div>
 
                     {/* Right Action Controls */}
                     <div className="hidden md:flex items-center gap-3">
-                        <button onClick={handleContactClick} className="px-5 py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-xs font-bold rounded-xl transition-all duration-300 shadow-lg shadow-violet-900/40 hover:scale-105 active:scale-95">{t('nav.contact') || 'İletişim'}</button>
+                        <button onClick={handleContactClick} className="px-4 py-2 bg-paper text-ink hover:bg-white text-xs font-semibold rounded-md transition-colors cursor-pointer">{t('nav.contact') || 'İletişim'}</button>
                         <LanguageSelector />
                     </div>
 
                     {/* Mobile Hamburger Toggle */}
                     <div className="flex md:hidden items-center gap-2">
                         <LanguageSelector />
-                        <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 text-gray-300 hover:text-white bg-gray-900 border border-gray-800 rounded-xl">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button
+                            type="button"
+                            onClick={() => setMobileOpen(!mobileOpen)}
+                            aria-expanded={mobileOpen}
+                            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                            className="p-2 text-paper-muted hover:text-paper bg-ink-raised border border-ink-line rounded-md"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
                             </svg>
                         </button>
@@ -104,16 +110,16 @@ function MainNavigation() {
 
             {/* Mobile Navigation Dropdown */}
             {mobileOpen && (
-                <div className="md:hidden bg-gray-950 border-b border-gray-800 px-4 py-4 space-y-2 animate-fadeIn">
-                    <Link to="/" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-200 hover:bg-gray-900">{t('nav.home') || 'Ana Sayfa'}</Link>
-                    <a href="/#projects" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-200 hover:bg-gray-900">{t('nav.projects') || 'Projeler'}</a>
-                    <a href="/#experience" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-200 hover:bg-gray-900">{t('nav.experience') || 'Deneyim'}</a>
-                    <Link to="/blog" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-violet-300 hover:bg-gray-900">Blog</Link>
-                    <Link to="/games" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-200 hover:bg-gray-900">{t('nav.games') || 'Oyunlar'}</Link>
+                <div className="md:hidden bg-ink-raised border-b border-ink-line px-5 py-4 space-y-2 animate-fadeIn">
+                    <Link to="/" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded text-sm font-medium text-paper hover:bg-ink">{t('nav.home') || 'Ana Sayfa'}</Link>
+                    <a href="/#projects" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded text-sm font-medium text-paper hover:bg-ink">{t('nav.projects') || 'Projeler'}</a>
+                    <a href="/#experience" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded text-sm font-medium text-paper hover:bg-ink">{t('nav.experience') || 'Deneyim'}</a>
+                    <Link to="/blog" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded text-sm font-medium text-paper hover:bg-ink">Blog</Link>
+                    <Link to="/games" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded text-sm font-medium text-paper hover:bg-ink">{t('nav.games') || 'Oyunlar'}</Link>
                     {user?.isAdmin && (
-                        <Link to="/admin" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-amber-300 bg-amber-500/10">{t('nav.admin') || 'Admin Paneli'}</Link>
+                        <Link to="/admin" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded text-sm font-code text-signal">{t('nav.admin') || 'Admin Paneli'}</Link>
                     )}
-                    <button onClick={handleContactClick} className="w-full text-left px-4 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-bold shadow">{t('nav.contact') || 'İletişim'}</button>
+                    <button onClick={handleContactClick} className="w-full text-center px-4 py-2.5 bg-paper text-ink font-semibold rounded-md text-sm cursor-pointer mt-2">{t('nav.contact') || 'İletişim'}</button>
                 </div>
             )}
         </nav>
@@ -128,55 +134,55 @@ function BlogNavigation() {
     const isBlogPost = location.pathname.startsWith('/blog/') && location.pathname !== '/blog';
 
     return (
-        <nav className="sticky top-0 z-50 bg-gray-950/90 backdrop-blur-md border-b border-gray-800 shadow-lg">
+        <nav aria-label="Blog Navigation" className="sticky top-0 z-50 bg-ink/90 backdrop-blur-md border-b border-ink-line">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
-                    {/* Logo Area */}
-                    <div className="flex items-center gap-4">
+                    {/* Left: Back Link & Editorial Blog Brand */}
+                    <div className="flex items-center gap-3 sm:gap-4">
                         {isBlogPost ? (
-                            <Link to="/blog" className="text-xs sm:text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1.5 py-1 px-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20">
-                                <span>←</span> {t('nav.backToBlog') ? t('nav.backToBlog').replace(/^←\s*/, '') : 'Blog Listesine Dön'}
+                            <Link to="/blog" className="text-xs sm:text-sm font-medium text-paper-muted hover:text-paper transition-colors flex items-center gap-1.5 py-1.5 px-3 rounded-md bg-ink-raised border border-ink-line hover:border-paper/40">
+                                <span aria-hidden="true">←</span> {t('nav.backToBlog') ? t('nav.backToBlog').replace(/^←\s*/, '') : 'Blog Listesi'}
                             </Link>
                         ) : (
-                            <Link to="/" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">
-                                <span>←</span> {t('nav.backToPortfolio') ? t('nav.backToPortfolio').replace(/^←\s*/, '') : 'Portfolio'}
+                            <Link to="/" className="text-xs sm:text-sm font-medium text-paper-muted hover:text-paper transition-colors flex items-center gap-1.5 py-1.5 px-3 rounded-md bg-ink-raised border border-ink-line hover:border-paper/40">
+                                <span aria-hidden="true">←</span> {t('nav.backToPortfolio') ? t('nav.backToPortfolio').replace(/^←\s*/, '') : 'Portfolio'}
                             </Link>
                         )}
-                        <div className="h-4 w-px bg-gray-700"></div>
-                        <Link to="/blog" className="flex items-center group">
-                            <span className="text-xl font-bold bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent group-hover:from-violet-300 group-hover:to-indigo-300 transition-all duration-300">
-                                Blog
+                        <div className="h-4 w-px bg-ink-line hidden sm:block"></div>
+                        <Link to="/blog" className="flex items-center gap-2 group">
+                            <span className="text-base sm:text-lg font-semibold text-paper tracking-tight">
+                                Journal <span className="font-code text-xs text-signal font-normal">/ Blog</span>
                             </span>
                         </Link>
                     </div>
 
-                    {/* Auth Area */}
-                    <div className="flex items-center space-x-2">
+                    {/* Auth & Localization Controls */}
+                    <div className="flex items-center space-x-2 sm:space-x-3">
                         {user ? (
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-400 hidden sm:inline-block">
-                                    {t('nav.welcomeUser', { username: user.username }) || `Hoş geldin, @${user.username}`}
+                                <span className="text-xs font-code text-paper-muted hidden md:inline-block">
+                                    {t('nav.welcomeUser', { username: user.username }) || `@${user.username}`}
                                 </span>
                                 {user.isAdmin && (
-                                    <Link to="/admin" className="px-4 py-1.5 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-lg border border-violet-500/20 transition-all duration-200 text-sm font-medium">
-                                        {t('nav.admin') || 'Admin Paneli'}
+                                    <Link to="/admin" className="px-3 py-1.5 text-signal hover:text-paper bg-signal/10 hover:bg-signal/20 rounded border border-signal/30 transition-colors text-xs font-code">
+                                        {t('nav.admin') || 'Admin'}
                                     </Link>
                                 )}
-                                <button onClick={logout} className="px-4 py-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-200 text-sm">
+                                <button onClick={logout} className="px-3 py-1.5 text-paper-muted hover:text-red-400 bg-ink-raised hover:bg-red-500/10 rounded border border-ink-line hover:border-red-500/30 transition-colors text-xs font-medium cursor-pointer">
                                     {t('nav.logout') || 'Çıkış'}
                                 </button>
                             </div>
                         ) : (
                             <div className="flex items-center gap-2">
-                                <Link to="/login" className="px-4 py-1.5 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all duration-200 text-sm font-medium">
+                                <Link to="/login" className="px-3 py-1.5 text-paper-muted hover:text-paper hover:bg-ink-raised rounded transition-colors text-xs font-medium">
                                     {t('nav.login') || 'Giriş Yap'}
                                 </Link>
-                                <Link to="/register" className="px-4 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg shadow-violet-600/20">
+                                <Link to="/register" className="px-3 py-1.5 bg-paper text-ink hover:bg-white rounded transition-colors text-xs font-semibold">
                                     {t('nav.register') || 'Kayıt Ol'}
                                 </Link>
                             </div>
                         )}
-                        <div className="ml-2 pl-2 border-l border-gray-800">
+                        <div className="ml-1 pl-2 border-l border-ink-line">
                             <LanguageSelector />
                         </div>
                     </div>
@@ -211,7 +217,14 @@ export default function App() {
         <AuthProvider>
             <UiVersionProvider>
                 <Router>
-                    <div className='bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-gray-200 min-h-screen font-inter'>
+                    <div className='bg-ink text-paper min-h-screen font-inter relative'>
+                        {/* A11y WCAG 2.4.1 Primary Skip Link: First focusable element */}
+                        <a
+                            href="#main-content"
+                            className="v4-skip-link fixed z-[99999] top-3 left-3 bg-paper text-ink px-4 py-2 rounded font-code text-xs font-bold border border-ink-line shadow-2xl transition-all"
+                        >
+                            İçeriğe Geç / Skip to Content
+                        </a>
                         <AppNavigation />
                         <Toaster
                             position="top-right"

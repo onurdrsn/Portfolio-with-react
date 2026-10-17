@@ -1,5 +1,91 @@
 @import "tailwindcss";
 
+/* ─── V4 design tokens ───────────────────────────────────────────────────────
+   Semantic, token-driven palette for the v4 UI (Swiss / minimal direction).
+   Contrast against --color-ink (#0a0a0b):
+     paper        #ededef  ≈ 17:1   primary text
+     paper-muted  #a1a1aa  ≈ 7.8:1  secondary text
+     paper-subtle #8a8a94  ≈ 5.6:1  metadata (still ≥ 4.5:1 for small text)
+     ink-line-strong #4a4a52 ≈ 3.1:1 interactive control boundaries (≥ 3:1)
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+  --font-code: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-ink: #0a0a0b;
+  --color-ink-raised: #121214;
+  --color-ink-hover: #18181b;
+  --color-ink-line: #232327;
+  --color-ink-line-strong: #4a4a52;
+
+  --color-paper: #ededef;
+  --color-paper-muted: #a1a1aa;
+  --color-paper-subtle: #8a8a94;
+
+  --color-signal: #4ade80;
+  --color-danger: #f87171;
+}
+
+/* Keep in-page anchors and focused elements clear of the sticky header
+   (WCAG 2.4.11 Focus Not Obscured). */
+html {
+  scroll-padding-top: 5rem;
+}
+
+.v4 {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.v4 ::selection {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+/* Visible, high-contrast focus ring for keyboard users only. */
+.v4 :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-paper);
+  outline-offset: 3px;
+}
+
+/* Programmatic focus targets (skip-link target, headings) don't need a ring. */
+.v4 :where([tabindex="-1"]):focus {
+  outline: none;
+}
+
+@media (forced-colors: active) {
+  .v4 :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+/* Skip link: hidden until focused, then pinned top-left so nothing shifts. */
+.v4-skip-link:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Native <dialog> (project details) */
+.v4-dialog::backdrop {
+  background: rgb(0 0 0 / 0.72);
+  /* Required so overscroll-behavior applies to the backdrop. */
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.v4-dialog:modal {
+  overscroll-behavior: contain;
+}
+
 /* ─── iOS Safari / Mobile White Flash Prevention ─────────────────────────────
    The most common cause of white flash on iOS Safari is:
    1. body/html having no background set (browser uses white as default)
@@ -10,11 +96,13 @@
 html,
 body,
 #root {
-  background-color: #030712; /* gray-950 — matches V4 dark theme */
-  /* Prevent iOS Safari overscroll from revealing white background */
-  overscroll-behavior: none;
-  /* Ensure the background covers the entire screen including safe areas */
+  background-color: #0a0a0b;
   min-height: 100dvh;
+}
+
+html,
+body {
+  overflow-x: clip;
 }
 
 /* Smooth native scroll on iOS without -webkit-overflow-scrolling (deprecated) */
@@ -215,6 +303,36 @@ body,
   perspective: 1000px;
 }
 
+.perspective-1200 {
+  perspective: 1200px;
+  -webkit-perspective: 1200px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.translate-z-0 {
+  transform: translateZ(0px);
+}
+
+.translate-z-20 {
+  transform: translateZ(20px);
+}
+
+.translate-z-25 {
+  transform: translateZ(25px);
+}
+
+.translate-z-35 {
+  transform: translateZ(35px);
+}
+
+.translate-z-45 {
+  transform: translateZ(45px);
+}
+
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
@@ -228,20 +346,21 @@ body,
   backface-visibility: hidden;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - Minimal Swiss Aesthetic */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1F2937;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #8B5CF6, #6366F1);
-  border-radius: 5px;
+  background: #27272a;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #7C3AED, #4F46E5);
+  background: #3f3f46;
 }

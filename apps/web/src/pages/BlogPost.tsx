@@ -107,25 +107,35 @@ export default function BlogPost() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-950">
-        <div className="w-10 h-10 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
+      <div className="flex justify-center items-center min-h-screen bg-ink" aria-busy="true">
+        <div className="w-8 h-8 rounded-full border-2 border-paper border-t-transparent animate-spin" />
       </div>
     );
   }
 
   if (error || !post) {
     return (
-      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center gap-4">
-        <span className="text-6xl">😕</span>
-        <p className="text-gray-400 text-lg">Yazı bulunamadı.</p>
-        <Link to="/blog" className="text-violet-400 hover:text-violet-300 flex items-center gap-2">
-          <ArrowLeft size={16} /> Blog'a dön
+      <div className="min-h-screen bg-ink text-paper flex flex-col items-center justify-center gap-4 px-6">
+        <span className="font-code text-xs text-signal">[404 / NOT FOUND]</span>
+        <h1 className="text-xl font-bold">Article not found</h1>
+        <p className="text-paper-muted text-sm max-w-sm text-center">
+          The requested article may have been removed or unpublished.
+        </p>
+        <Link
+          to="/blog"
+          className="mt-2 text-xs font-code text-paper hover:underline flex items-center gap-2"
+        >
+          <ArrowLeft size={14} /> Return to Journal
         </Link>
       </div>
     );
   }
 
-  const date = new Date(post.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+  const date = new Date(post.createdAt).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
   const mins = readingTime(post.content);
   const renderedContent = renderMarkdown(post.content);
 
@@ -134,25 +144,29 @@ export default function BlogPost() {
   const replies = (parentId: string) => comments.filter((c) => c.parentId === parentId);
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-24">
+    <div className="min-h-screen bg-ink text-paper pb-24">
       <style>{PROSE_STYLE}</style>
 
       {/* Reading progress bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-0.5 bg-gray-900">
+      <div className="fixed top-0 left-0 right-0 z-50 h-0.5 bg-ink-line">
         <div
-          className="h-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-100"
+          className="h-full bg-paper transition-all duration-100"
           style={{ width: `${scrollPct}%` }}
         />
       </div>
 
       {/* Cover */}
       {post.coverImage ? (
-        <div className="relative w-full h-[45vh] sm:h-[60vh] overflow-hidden">
-          <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/50 to-gray-950/10" />
+        <div className="relative w-full h-[45vh] sm:h-[55vh] overflow-hidden bg-ink">
+          <img
+            src={post.coverImage}
+            alt={post.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-transparent" />
         </div>
       ) : (
-        <div className="w-full h-20 bg-gray-950" />
+        <div className="w-full h-12 bg-ink" />
       )}
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 relative z-10" style={{ marginTop: post.coverImage ? "-12rem" : "2rem" }}>

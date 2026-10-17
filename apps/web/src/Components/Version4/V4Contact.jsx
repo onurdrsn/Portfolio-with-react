@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { Mail, Github, Linkedin, Send, MessageSquare, CheckCircle2 } from "lucide-react";
+import { Mail, Github, Linkedin, Send, CheckCircle2 } from "lucide-react";
 import { apiPost } from "../../lib/api";
+import { Container, Section, SectionHeader, buttonStyles } from "./V4Primitives";
 
 export default function V4Contact() {
   const { t } = useTranslation();
@@ -14,9 +15,9 @@ export default function V4Contact() {
     setIsSubmitting(true);
     const form = e.target;
     const formData = new FormData(form);
-    const name = (formData.get("Name") || "").toString();
-    const email = (formData.get("Email") || "").toString();
-    const message = (formData.get("Message") || "").toString();
+    const name = (formData.get("Name") || "").toString().trim();
+    const email = (formData.get("Email") || "").toString().trim();
+    const message = (formData.get("Message") || "").toString().trim();
 
     const toastId = toast.loading(t("v4.contact.toast.sending"));
     try {
@@ -33,149 +34,173 @@ export default function V4Contact() {
   };
 
   return (
-    <section className="py-16 sm:py-20 max-w-4xl mx-auto px-4 sm:px-6 relative" id="contact">
-      {/* Background Ambient Glow — desktop only */}
-      <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[350px] bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-cyan-500/10 rounded-full blur-[130px] pointer-events-none -z-10" />
-
-      {/* Header */}
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs font-bold uppercase tracking-widest mb-3 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
-          <MessageSquare size={13} className="text-violet-400" />
-          <span>{t("v4.contact.badge")}</span>
-        </div>
-        <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight">
-          {t("v4.contact.title")}{" "}
-          <span className="bg-gradient-to-r from-violet-400 via-purple-300 to-cyan-400 bg-clip-text text-transparent">
-            {t("v4.contact.titleHighlight")}
-          </span>
-        </h2>
-        <p className="text-gray-300 text-sm sm:text-base max-w-lg mx-auto mt-3 font-normal leading-relaxed">
-          {t("v4.contact.description")}
-        </p>
-      </div>
-
-      {/* Glass Card (Morphism Style) */}
-      <div className="relative bg-gray-900/95 sm:bg-gradient-to-br sm:from-violet-950/40 sm:via-gray-950/80 sm:to-purple-950/40 sm:backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-10 shadow-xl sm:shadow-[0_12px_48px_0_rgba(139,92,246,0.18)] overflow-hidden">
-        {/* Top shimmer line */}
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/40 to-transparent" />
-        <div className="hidden sm:block absolute top-0 right-0 w-80 h-80 bg-violet-600/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="hidden sm:block absolute bottom-0 left-0 w-60 h-60 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
-
-        {sentSuccess ? (
-          <div className="py-12 text-center space-y-4 animate-fadeIn relative z-10">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto text-2xl shadow-[0_0_25px_rgba(16,185,129,0.3)] backdrop-blur-md">
-              <CheckCircle2 size={32} />
-            </div>
-            <h3 className="text-2xl font-bold text-white tracking-tight">
-              {t("v4.contact.successTitle")}
-            </h3>
-            <p className="text-gray-300 text-sm max-w-md mx-auto font-normal leading-relaxed">
-              {t("v4.contact.successDescription")}
-            </p>
-            <button
-              onClick={() => setSentSuccess(false)}
-              className="mt-4 px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-900/40 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            >
-              {t("v4.contact.sendAnother")}
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                  {t("v4.contact.form.nameLabel")}
-                </label>
-                <input
-                  type="text"
-                  name="Name"
-                  required
-                  disabled={isSubmitting}
-                  placeholder={t("v4.contact.form.namePlaceholder")}
-                  className="w-full p-4 bg-white/[0.04] border border-white/10 rounded-2xl focus:outline-none focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20 text-white placeholder-gray-500 text-sm transition-all backdrop-blur-md"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                  {t("v4.contact.form.emailLabel")}
-                </label>
-                <input
-                  type="email"
-                  name="Email"
-                  required
-                  disabled={isSubmitting}
-                  placeholder={t("v4.contact.form.emailPlaceholder")}
-                  className="w-full p-4 bg-white/[0.04] border border-white/10 rounded-2xl focus:outline-none focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20 text-white placeholder-gray-500 text-sm transition-all backdrop-blur-md"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                {t("v4.contact.form.messageLabel")}
-              </label>
-              <textarea
-                name="Message"
-                rows="5"
-                required
-                disabled={isSubmitting}
-                placeholder={t("v4.contact.form.messagePlaceholder")}
-                className="w-full p-4 bg-white/[0.04] border border-white/10 rounded-2xl focus:outline-none focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20 text-white placeholder-gray-500 text-sm transition-all backdrop-blur-md resize-none"
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold text-sm sm:text-base py-4 px-8 rounded-2xl transition-all duration-300 shadow-xl shadow-violet-900/40 hover:shadow-violet-600/30 hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer border border-violet-400/30"
-            >
-              {isSubmitting ? (
-                <span>{t("v4.contact.form.submitting")}</span>
-              ) : (
+    <Section id="contact" labelledBy="contact-title" className="bg-ink text-paper scroll-mt-20">
+      <Container>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          {/* Left Column: Heading + Direct Channels */}
+          <div className="lg:col-span-5">
+            <SectionHeader
+              index="04"
+              eyebrow={t("v4.contact.badge")}
+              title={
                 <>
-                  <span>{t("v4.contact.form.submitButton")}</span>
-                  <Send size={16} />
+                  {t("v4.contact.title")}{" "}
+                  <span className="text-paper-muted">{t("v4.contact.titleHighlight")}</span>
                 </>
+              }
+              description={t("v4.contact.description")}
+              titleId="contact-title"
+            />
+
+            <div className="mt-8 pt-8 border-t border-ink-line space-y-3">
+              <a
+                href="mailto:onurdrsn55@gmail.com"
+                className="flex items-center gap-3 p-3 rounded-md border border-ink-line bg-ink-raised hover:border-ink-line-strong transition-colors group"
+              >
+                <div className="w-8 h-8 rounded border border-ink-line bg-ink flex items-center justify-center text-paper-subtle group-hover:text-paper transition-colors">
+                  <Mail size={16} />
+                </div>
+                <div>
+                  <div className="text-xs font-code text-paper-subtle">
+                    {t("v4.contact.channels.email")}
+                  </div>
+                  <div className="text-sm font-medium text-paper">
+                    onurdrsn55@gmail.com
+                  </div>
+                </div>
+              </a>
+
+              <a
+                href="https://github.com/onurdrsn"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-3 p-3 rounded-md border border-ink-line bg-ink-raised hover:border-ink-line-strong transition-colors group"
+              >
+                <div className="w-8 h-8 rounded border border-ink-line bg-ink flex items-center justify-center text-paper-subtle group-hover:text-paper transition-colors">
+                  <Github size={16} />
+                </div>
+                <div>
+                  <div className="text-xs font-code text-paper-subtle">
+                    {t("v4.contact.channels.github")}
+                  </div>
+                  <div className="text-sm font-medium text-paper">
+                    github.com/onurdrsn
+                  </div>
+                </div>
+              </a>
+
+              <a
+                href="https://linkedin.com/in/odursun"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-3 p-3 rounded-md border border-ink-line bg-ink-raised hover:border-ink-line-strong transition-colors group"
+              >
+                <div className="w-8 h-8 rounded border border-ink-line bg-ink flex items-center justify-center text-paper-subtle group-hover:text-paper transition-colors">
+                  <Linkedin size={16} />
+                </div>
+                <div>
+                  <div className="text-xs font-code text-paper-subtle">
+                    {t("v4.contact.channels.linkedin")}
+                  </div>
+                  <div className="text-sm font-medium text-paper">
+                    linkedin.com/in/odursun
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          {/* Right Column: Accessible Form Card */}
+          <div className="lg:col-span-7">
+            <div className="rounded-lg border border-ink-line bg-ink-raised p-6 sm:p-8">
+              {sentSuccess ? (
+                <div className="py-8 text-center space-y-4">
+                  <div className="w-12 h-12 rounded-full border border-signal/40 bg-signal/10 text-signal flex items-center justify-center mx-auto">
+                    <CheckCircle2 size={24} />
+                  </div>
+                  <h3 className="text-xl font-bold text-paper tracking-tight">
+                    {t("v4.contact.successTitle")}
+                  </h3>
+                  <p className="text-paper-muted text-sm max-w-sm mx-auto leading-relaxed">
+                    {t("v4.contact.successDescription")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setSentSuccess(false)}
+                    className={buttonStyles.secondary + " mt-4"}
+                  >
+                    {t("v4.contact.sendAnother")}
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-5" noValidate={false}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label htmlFor="contact-name" className="block text-xs font-code text-paper-muted uppercase tracking-wider mb-2">
+                        {t("v4.contact.form.nameLabel")}
+                      </label>
+                      <input
+                        id="contact-name"
+                        type="text"
+                        name="Name"
+                        required
+                        disabled={isSubmitting}
+                        placeholder={t("v4.contact.form.namePlaceholder")}
+                        className="w-full px-3.5 py-2.5 bg-ink border border-ink-line rounded-md text-sm text-paper placeholder-paper-subtle focus:border-paper focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="contact-email" className="block text-xs font-code text-paper-muted uppercase tracking-wider mb-2">
+                        {t("v4.contact.form.emailLabel")}
+                      </label>
+                      <input
+                        id="contact-email"
+                        type="email"
+                        name="Email"
+                        required
+                        disabled={isSubmitting}
+                        placeholder={t("v4.contact.form.emailPlaceholder")}
+                        className="w-full px-3.5 py-2.5 bg-ink border border-ink-line rounded-md text-sm text-paper placeholder-paper-subtle focus:border-paper focus:outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="contact-message" className="block text-xs font-code text-paper-muted uppercase tracking-wider mb-2">
+                      {t("v4.contact.form.messageLabel")}
+                    </label>
+                    <textarea
+                      id="contact-message"
+                      name="Message"
+                      rows="5"
+                      required
+                      disabled={isSubmitting}
+                      placeholder={t("v4.contact.form.messagePlaceholder")}
+                      className="w-full px-3.5 py-2.5 bg-ink border border-ink-line rounded-md text-sm text-paper placeholder-paper-subtle focus:border-paper focus:outline-none transition-colors resize-y"
+                    ></textarea>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={buttonStyles.primary + " w-full sm:w-auto"}
+                  >
+                    {isSubmitting ? (
+                      <span>{t("v4.contact.form.submitting")}</span>
+                    ) : (
+                      <>
+                        <span>{t("v4.contact.form.submitButton")}</span>
+                        <Send size={15} />
+                      </>
+                    )}
+                  </button>
+                </form>
               )}
-            </button>
-          </form>
-        )}
-
-        {/* Quick Contacts (Morphism Cards) */}
-        <div className="mt-10 pt-8 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
-          <a
-            href="mailto:onurdrsn55@gmail.com"
-            className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-violet-400/50 hover:bg-white/[0.07] transition-all text-center group backdrop-blur-md shadow-sm hover:scale-[1.02]"
-          >
-            <Mail size={20} className="mx-auto mb-2 text-violet-400 group-hover:scale-110 transition-transform" />
-            <h4 className="text-xs font-bold text-white mb-0.5">{t("v4.contact.channels.email")}</h4>
-            <p className="text-[11px] text-gray-400 truncate">onurdrsn55@gmail.com</p>
-          </a>
-
-          <a
-            href="https://github.com/onurdrsn"
-            target="_blank"
-            rel="noreferrer"
-            className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-violet-400/50 hover:bg-white/[0.07] transition-all text-center group backdrop-blur-md shadow-sm hover:scale-[1.02]"
-          >
-            <Github size={20} className="mx-auto mb-2 text-violet-400 group-hover:scale-110 transition-transform" />
-            <h4 className="text-xs font-bold text-white mb-0.5">{t("v4.contact.channels.github")}</h4>
-            <p className="text-[11px] text-gray-400">@onurdrsn</p>
-          </a>
-
-          <a
-            href="https://linkedin.com/in/odursun"
-            target="_blank"
-            rel="noreferrer"
-            className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-violet-400/50 hover:bg-white/[0.07] transition-all text-center group backdrop-blur-md shadow-sm hover:scale-[1.02]"
-          >
-            <Linkedin size={20} className="mx-auto mb-2 text-violet-400 group-hover:scale-110 transition-transform" />
-            <h4 className="text-xs font-bold text-white mb-0.5">{t("v4.contact.channels.linkedin")}</h4>
-            <p className="text-[11px] text-gray-400">@odursun</p>
-          </a>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }

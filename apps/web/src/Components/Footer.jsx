@@ -1,26 +1,28 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Heart } from "lucide-react";
+import { Container } from "./Version4/V4Primitives";
 
 export default function Footer() {
     const { t } = useTranslation();
 
     return (
-        <footer className="py-10 border-t border-gray-800/80 text-center mt-12 bg-gray-950/60 backdrop-blur-md">
-            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse"></span>
-                    <span className="text-xs font-bold text-gray-300">{t('footer.tagline') || 'Onur Dursun Portfolio Systems'}</span>
+        <footer className="py-12 border-t border-ink-line bg-ink text-paper-muted">
+            <Container>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-code">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-signal" aria-hidden="true"></span>
+                        <span className="text-paper font-medium">{t('footer.tagline') || 'Onur Dursun Portfolio Systems'}</span>
+                    </div>
+                    <p className="text-paper-subtle">
+                        &copy; {new Date().getFullYear()} {t('footer.rights') || 'Onur Dursun. All rights reserved.'}
+                    </p>
+                    <div className="flex items-center gap-5 text-paper-subtle">
+                        <a href="#projects" className="hover:text-paper transition-colors">{t('nav.projects') || 'Projeler'}</a>
+                        <a href="#experience" className="hover:text-paper transition-colors">{t('nav.experience') || 'Deneyim'}</a>
+                        <a href="/blog" className="hover:text-paper transition-colors">{t('nav.blog') || 'Blog'}</a>
+                    </div>
                 </div>
-                <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
-                    &copy; {new Date().getFullYear()} {t('footer.rights') || 'Onur Dursun. All rights reserved.'} {t('footer.builtWith') || 'Built with'} <Heart size={13} className="text-red-500 inline fill-red-500" /> & React + Cloudflare.
-                </p>
-                <div className="flex items-center gap-4 text-xs font-semibold text-gray-400">
-                    <a href="#projects" className="hover:text-violet-300 transition-colors">{t('nav.projects') || 'Projeler'}</a>
-                    <a href="#experience" className="hover:text-violet-300 transition-colors">{t('nav.experience') || 'Deneyim'}</a>
-                    <a href="/blog" className="hover:text-violet-300 transition-colors">{t('nav.blog') || 'Blog'}</a>
-                </div>
-            </div>
+            </Container>
         </footer>
     );
 }

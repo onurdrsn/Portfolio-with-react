@@ -12,6 +12,13 @@ describe('Worker Email Service', () => {
       expect(html).toContain('Onur');
       expect(html).toContain('987654');
       expect(html).toContain('* Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir.');
+      // Verify Schema.org EmailMessage & VerifyAction
+      expect(html).toContain('application/ld+json');
+      expect(html).toContain('"@type":"EmailMessage"');
+      expect(html).toContain('"@type":"VerifyAction"');
+      expect(html).toContain('"otp":"987654"');
+      // Verify Preheader Heuristic
+      expect(html).toContain('987654 is your verification code');
     });
   });
 

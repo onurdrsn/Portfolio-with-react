@@ -1,149 +1,217 @@
-import { useState } from "react";
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { Mail, Github, Linkedin, Send, MessageSquare } from 'lucide-react';
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
+import { motion, useReducedMotion } from "motion/react";
+import { Mail, Github, Linkedin, Send, CheckCircle2, ArrowUpRight } from "lucide-react";
 import { apiPost } from "../lib/api";
 
 export default function Contact() {
-    const { t } = useTranslation();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation();
+  const shouldReduceMotion = useReducedMotion();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        const form = e.target;
-        const formData = new FormData(form);
-        const name = (formData.get("Name") || "").toString();
-        const email = (formData.get("Email") || "").toString();
-        const message = (formData.get("Message") || "").toString();
+  const springTransition = shouldReduceMotion
+    ? { duration: 0.01 }
+    : { type: "spring", stiffness: 380, damping: 28, mass: 0.9 };
 
-        const toastId = toast.loading(t('contact.toast.sending') || "Mesajınız iletiliyor...");
-        try {
-            const res = await apiPost("/api/contact", { name, email, message });
-            toast.success(res?.message || t('contact.toast.success') || "Mesajınız başarıyla gönderildi!", { id: toastId });
-            form.reset();
-        } catch (error) {
-            toast.error(error.message || t('contact.toast.error') || "Mesaj gönderilirken bir hata oluştu.", { id: toastId });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const form = e.target;
+    const formData = new FormData(form);
+    const name = (formData.get("Name") || "").toString();
+    const email = (formData.get("Email") || "").toString();
+    const message = (formData.get("Message") || "").toString();
 
-    return (
-        <section className="py-16 px-4 sm:px-6 max-w-4xl mx-auto" id="contact">
-            {/* Section Header */}
-            <div className="text-center mb-12">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-bold uppercase tracking-widest mb-3">
-                    <MessageSquare size={13} />
-                    <span>{t('contact.badge') || "İletişim Kurun"}</span>
-                </div>
-                <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight">
-                    {t('contact.title') || "Birlikte"} <span className="bg-gradient-to-r from-violet-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">{t('contact.titleHighlight') || "Harika İşler Yapalım"}</span>
-                </h2>
-                <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto mt-3">
-                    {t('contact.subtitle') || "Projeniz, sorularınız veya iş birliği fırsatları için mesaj bırakabilirsiniz."}
-                </p>
-            </div>
-
-            {/* Contact Form */}
-            <div className="bg-gradient-to-br from-gray-900/90 via-gray-900/50 to-gray-950/90 backdrop-blur-2xl border border-gray-800 rounded-3xl p-6 sm:p-10 shadow-2xl">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div>
-                            <label htmlFor="name" className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                                {t('contact.form.nameLabel') || "Adınız Soyadınız"}
-                            </label>
-                            <input
-                                type="text"
-                                id="name"
-                                name="Name"
-                                placeholder={t('contact.form.namePlaceholder') || "John Doe"}
-                                required
-                                disabled={isSubmitting}
-                                className="w-full p-3.5 bg-gray-950/80 border border-gray-800 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 text-white placeholder-gray-600 text-sm transition-all"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="email" className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                                {t('contact.form.emailLabel') || "E-Posta Adresiniz"}
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="Email"
-                                placeholder={t('contact.form.emailPlaceholder') || "john@example.com"}
-                                required
-                                disabled={isSubmitting}
-                                className="w-full p-3.5 bg-gray-950/80 border border-gray-800 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 text-white placeholder-gray-600 text-sm transition-all"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label htmlFor="message" className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                            {t('contact.form.messageLabel') || "Mesajınız"}
-                        </label>
-                        <textarea
-                            id="message"
-                            name="Message"
-                            placeholder={t('contact.form.messagePlaceholder') || "Proje detaylarını yazabilirsiniz..."}
-                            rows="5"
-                            required
-                            disabled={isSubmitting}
-                            className="w-full p-3.5 bg-gray-950/80 border border-gray-800 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 text-white placeholder-gray-600 text-sm transition-all resize-none"
-                        ></textarea>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-sm sm:text-base py-4 px-8 rounded-xl transition-all duration-300 shadow-lg shadow-violet-900/40 flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                        {isSubmitting ? (
-                            <span>{t('contact.form.sending') || "Gönderiliyor..."}</span>
-                        ) : (
-                            <>
-                                <span>{t('contact.form.sendButton') || "Mesajı Gönder"}</span>
-                                <Send size={16} />
-                            </>
-                        )}
-                    </button>
-                </form>
-
-                {/* Contact Quick Info Grid */}
-                <div className="mt-10 pt-8 border-t border-gray-800/80 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <a
-                        href="mailto:onurdrsn55@gmail.com"
-                        className="p-4 rounded-2xl bg-gray-950/60 border border-gray-800 hover:border-violet-500/40 transition-all text-center group"
-                    >
-                        <Mail size={20} className="mx-auto mb-2 text-violet-400 group-hover:scale-110 transition-transform" />
-                        <h4 className="text-xs font-bold text-white mb-0.5">{t('contact.info.email') || "E-Posta"}</h4>
-                        <p className="text-[11px] text-gray-400 truncate">onurdrsn55@gmail.com</p>
-                    </a>
-
-                    <a
-                        href="https://github.com/onurdrsn"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-4 rounded-2xl bg-gray-950/60 border border-gray-800 hover:border-violet-500/40 transition-all text-center group"
-                    >
-                        <Github size={20} className="mx-auto mb-2 text-violet-400 group-hover:scale-110 transition-transform" />
-                        <h4 className="text-xs font-bold text-white mb-0.5">GitHub</h4>
-                        <p className="text-[11px] text-gray-400">@onurdrsn</p>
-                    </a>
-
-                    <a
-                        href="https://linkedin.com/in/odursun"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-4 rounded-2xl bg-gray-950/60 border border-gray-800 hover:border-violet-500/40 transition-all text-center group"
-                    >
-                        <Linkedin size={20} className="mx-auto mb-2 text-violet-400 group-hover:scale-110 transition-transform" />
-                        <h4 className="text-xs font-bold text-white mb-0.5">LinkedIn</h4>
-                        <p className="text-[11px] text-gray-400">@odursun</p>
-                    </a>
-                </div>
-            </div>
-        </section>
+    const toastId = toast.loading(
+      t("contact.toast.sending") || "Mesajınız iletiliyor..."
     );
+    try {
+      const res = await apiPost("/api/contact", { name, email, message });
+      toast.success(
+        res?.message || t("contact.toast.success") || "Mesajınız başarıyla gönderildi!",
+        { id: toastId }
+      );
+      form.reset();
+      setSubmitted(true);
+    } catch (error) {
+      toast.error(
+        error.message || t("contact.toast.error") || "Mesaj gönderilirken bir hata oluştu.",
+        { id: toastId }
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-paper" id="contact">
+      {/* Editorial Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14 pb-6 border-b border-ink-line">
+        <div>
+          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-paper">
+            {t("contact.title") || "Birlikte"} {t("contact.titleHighlight") || "İnşa Edelim"}
+          </h2>
+        </div>
+        <p className="text-sm text-paper-muted max-w-sm font-normal">
+          {t("contact.subtitle") ||
+            "Projeniz, mimari danışmanlık veya teknik iş birlikleri için doğrudan iletişime geçin."}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Direct Reach Cards */}
+        <div className="lg:col-span-5 space-y-4">
+          <p className="text-sm text-paper-muted leading-relaxed font-normal">
+            Doğrudan e-posta üzerinden veya teknik profillerimden irtibat kurabilirsiniz:
+          </p>
+
+          <a
+            href="mailto:onurdrsn55@gmail.com"
+            className="flex items-center gap-3 p-3.5 rounded-lg border border-ink-line bg-ink-raised hover:border-ink-line-strong transition-colors group"
+          >
+            <div className="w-9 h-9 rounded border border-ink-line bg-ink flex items-center justify-center text-paper-muted group-hover:text-paper">
+              <Mail size={16} />
+            </div>
+            <div>
+              <div className="text-xs font-code text-paper-subtle">Direct Email</div>
+              <div className="text-sm font-medium text-paper">onurdrsn55@gmail.com</div>
+            </div>
+          </a>
+
+          <a
+            href="https://github.com/onurdrsn"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 p-3.5 rounded-lg border border-ink-line bg-ink-raised hover:border-ink-line-strong transition-colors group"
+          >
+            <div className="w-9 h-9 rounded border border-ink-line bg-ink flex items-center justify-center text-paper-muted group-hover:text-paper">
+              <Github size={16} />
+            </div>
+            <div>
+              <div className="text-xs font-code text-paper-subtle">GitHub Repository</div>
+              <div className="text-sm font-medium text-paper">github.com/onurdrsn</div>
+            </div>
+          </a>
+
+          <a
+            href="https://linkedin.com/in/odursun"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 p-3.5 rounded-lg border border-ink-line bg-ink-raised hover:border-ink-line-strong transition-colors group"
+          >
+            <div className="w-9 h-9 rounded border border-ink-line bg-ink flex items-center justify-center text-paper-muted group-hover:text-paper">
+              <Linkedin size={16} />
+            </div>
+            <div>
+              <div className="text-xs font-code text-paper-subtle">Professional Network</div>
+              <div className="text-sm font-medium text-paper">linkedin.com/in/odursun</div>
+            </div>
+          </a>
+        </div>
+
+        {/* Right Column: Accessible Form with Spring Micro-interaction */}
+        <div className="lg:col-span-7">
+          <div className="rounded-lg border border-ink-line bg-ink-raised p-6 sm:p-8">
+            {submitted ? (
+              <div className="text-center py-8 space-y-4">
+                <div className="w-12 h-12 rounded-full border border-signal/40 bg-signal/10 text-signal flex items-center justify-center mx-auto">
+                  <CheckCircle2 size={24} />
+                </div>
+                <h3 className="text-xl font-bold text-paper">Mesajınız Alındı</h3>
+                <p className="text-xs sm:text-sm text-paper-muted max-w-sm mx-auto">
+                  Mesajınız doğrudan e-posta kutuma iletildi. En kısa sürede dönüş yapacağım.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSubmitted(false)}
+                  className="px-4 py-2 rounded bg-ink border border-ink-line text-xs font-code text-paper hover:bg-ink-hover transition-colors cursor-pointer mt-2"
+                >
+                  Yeni Mesaj Gönder
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-xs font-code text-paper-muted uppercase tracking-wider mb-2"
+                    >
+                      {t("contact.form.nameLabel") || "Adınız Soyadınız"}
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="Name"
+                      required
+                      disabled={isSubmitting}
+                      placeholder={t("contact.form.namePlaceholder") || "John Doe"}
+                      className="w-full px-3.5 py-2.5 bg-ink border border-ink-line rounded-md text-xs sm:text-sm text-paper placeholder-paper-subtle focus:border-paper focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-xs font-code text-paper-muted uppercase tracking-wider mb-2"
+                    >
+                      {t("contact.form.emailLabel") || "E-Posta Adresiniz"}
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="Email"
+                      required
+                      disabled={isSubmitting}
+                      placeholder={t("contact.form.emailPlaceholder") || "john@example.com"}
+                      className="w-full px-3.5 py-2.5 bg-ink border border-ink-line rounded-md text-xs sm:text-sm text-paper placeholder-paper-subtle focus:border-paper focus:outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="message"
+                    className="block text-xs font-code text-paper-muted uppercase tracking-wider mb-2"
+                  >
+                    {t("contact.form.messageLabel") || "Mesajınız"}
+                  </label>
+                  <textarea
+                    id="message"
+                    name="Message"
+                    rows={4}
+                    required
+                    disabled={isSubmitting}
+                    placeholder={
+                      t("contact.form.messagePlaceholder") ||
+                      "Tell me about your project or inquiry..."
+                    }
+                    className="w-full px-3.5 py-2.5 bg-ink border border-ink-line rounded-md text-xs sm:text-sm text-paper placeholder-paper-subtle focus:border-paper focus:outline-none transition-colors resize-y"
+                  />
+                </div>
+
+                <motion.button
+                  type="submit"
+                  disabled={isSubmitting}
+                  whileHover={shouldReduceMotion ? undefined : { scale: 1.015 }}
+                  whileTap={shouldReduceMotion ? undefined : { scale: 0.985 }}
+                  transition={springTransition}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded bg-paper text-ink font-semibold text-xs sm:text-sm hover:bg-white transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <span>
+                    {isSubmitting
+                      ? t("contact.form.sending") || "Sending..."
+                      : t("contact.form.sendButton") || t("v4.contact.form.submitButton") || "Send Message"}
+                  </span>
+                  <Send size={14} />
+                </motion.button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }

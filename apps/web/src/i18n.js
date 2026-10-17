@@ -31,4 +31,13 @@ i18n
         }
     });
 
+// Keep <html lang> in sync with the active language (WCAG 3.1.1) so screen
+// readers pick the right pronunciation rules after a language switch.
+const syncDocumentLanguage = (lng) => {
+    if (typeof document === 'undefined' || !lng) return;
+    document.documentElement.lang = lng.split('-')[0];
+};
+syncDocumentLanguage(i18n.resolvedLanguage || i18n.language);
+i18n.on('languageChanged', syncDocumentLanguage);
+
 export default i18n;

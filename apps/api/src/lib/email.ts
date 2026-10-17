@@ -161,14 +161,36 @@ export async function sendContactNotificationEmail(params: {
 }
 
 export function generateOtpEmailHtml(userName: string, code: string): string {
+  const jsonLd = JSON.stringify({
+    "@context": "http://schema.org",
+    "@type": "EmailMessage",
+    "description": "Güvenlik Doğrulama Kodu",
+    "action": {
+      "@type": "VerifyAction",
+      "name": "Kodu Doğrula",
+      "otp": code,
+    },
+  });
+
   return `
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Giriş Parolanız</title>
+  <!-- Schema.org Markup for Email Clients (Gmail & Apple Mail Copy Code / VerifyAction) -->
+  <script type="application/ld+json">
+${jsonLd}
+  </script>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f3f4f6;">
+  <!-- Hidden Preheader & Client Heuristics for One-Time Password Detection -->
+  <div style="display: none; max-height: 0px; font-size: 0px; line-height: 0px; overflow: hidden; mso-hide: all; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;">
+    ${code} is your verification code. Doğrulama kodunuz: ${code}. Bu kod 10 dakika boyunca geçerlidir.
+    &#847; &zwnj; &nbsp; &#8199; &shy; &#847; &zwnj; &nbsp; &#8199; &shy; &#847; &zwnj; &nbsp; &#8199; &shy;
+  </div>
+
   <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="min-width: 100%; background-color: #0b0f19; padding: 40px 15px;">
     <tr>
       <td align="center">
@@ -198,15 +220,19 @@ export function generateOtpEmailHtml(userName: string, code: string): string {
                 Portfolyo ve yönetim sistemine erişim sağlamak için talep ettiğiniz tek kullanımlık geçici parolanız aşağıdadır:
               </p>
 
-              <!-- Passcode Display Box -->
+              <!-- Passcode Display Box with Semantic and Accessible Markup -->
               <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 26px 0;">
                 <tr>
                   <td align="center" style="background: #181d30; border: 2px dashed #7c3aed; border-radius: 16px; padding: 22px 10px;">
                     <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #a5b4fc; font-weight: 700; margin-bottom: 8px;">
-                      Giriş Parolanız
+                      Giriş Doğrulama Kodunuz
                     </div>
-                    <div style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #ffffff; text-shadow: 0 0 20px rgba(167, 139, 250, 0.6); padding-left: 8px;">
-                      ${code}
+                    <div
+                      role="textbox"
+                      aria-label="Doğrulama Kodu: ${code}"
+                      style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #ffffff; text-shadow: 0 0 20px rgba(167, 139, 250, 0.6); padding-left: 8px; user-select: all; -webkit-user-select: all;"
+                    >
+                      <span translate="no">${code}</span>
                     </div>
                   </td>
                 </tr>

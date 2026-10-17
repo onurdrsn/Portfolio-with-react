@@ -79,6 +79,13 @@ export function UiVersionProvider({ children }: { children: React.ReactNode }) {
 
 export function useUiVersion() {
   const ctx = useContext(UiVersionContext);
-  if (!ctx) throw new Error("useUiVersion must be used within UiVersionProvider");
+  if (!ctx) {
+    return {
+      uiVersion: "v1" as UiVersion,
+      loading: false,
+      setUiVersion: async () => {},
+      refetchSettings: async () => {},
+    };
+  }
   return ctx;
 }

@@ -1,14 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useUiVersion } from "../contexts/UiVersionContext";
 import { useTranslation } from "react-i18next";
+import { motion, useReducedMotion } from "motion/react";
 import toast from "react-hot-toast";
-import { Mail, KeyRound, ArrowRight, RefreshCw, CheckCircle2, Clock, Sparkles, Lock, ShieldAlert } from "lucide-react";
+import {
+  Mail,
+  KeyRound,
+  ArrowRight,
+  RefreshCw,
+  CheckCircle2,
+  Clock,
+  ShieldAlert,
+  ArrowLeft,
+  Lock,
+  Terminal,
+  Monitor,
+  Sparkles,
+  Layers,
+} from "lucide-react";
 
 export default function Login() {
   const { t } = useTranslation();
   const { sendPasscode, loginWithPasscode } = useAuth();
+  const { uiVersion } = useUiVersion();
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
+
+  const springTransition = shouldReduceMotion
+    ? { duration: 0.01 }
+    : { type: "spring", stiffness: 380, damping: 28, mass: 0.9 };
 
   // Step 1: 'email', Step 2: 'code'
   const [step, setStep] = useState<"email" | "code">("email");
@@ -98,14 +120,15 @@ export default function Login() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Step 1: Request temporary passcode via Resend
   const handleRequestPasscode = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) return setError(t("auth.errors.emptyEmail"));
     if (isAccountLocked) {
-      return setError(`Hesabınız 5 kez hatalı şifre girildiği için kilitlenmiştir. Yeni şifre talep edemezsiniz. Kalan süre: ${formatTime(lockoutRemainingSec)}`);
-    }
-    if (!email.trim()) {
-      return setError(t("auth.errors.invalidEmail"));
+      return setError(
+        t("auth.errors.accountLocked", {
+          time: formatTime(lockoutRemainingSec),
+        }) || "Hesap kilitli! Lütfen sürenin bitmesini bekleyin."
+      );
     }
     if (resendCooldown > 0) {
       return setError(t("auth.errors.cooldown", { seconds: resendCooldown }));
@@ -119,29 +142,18 @@ export default function Login() {
       await sendPasscode(email.trim());
       toast.success(t("auth.toasts.sent"), { id: toastId });
       setStep("code");
-      setTimeLeft(600); // 10 minutes
+      setTimeLeft(600);
       setTimerActive(true);
-      setResendCooldown(30); // Initial 30s cooldown
+      setResendCooldown(30);
       setResendCount(1);
     } catch (err: any) {
       toast?.dismiss?.(toastId);
-      if (err.locked || err.status === 423) {
-        const lockDuration = err.remainingSec || (15 * 60);
-        setLockoutRemainingSec(lockDuration);
-        const cleanEmail = email.trim().toLowerCase();
-        if (cleanEmail) {
-          try {
-            localStorage.setItem(`auth_locked_until_${cleanEmail}`, String(Date.now() + lockDuration * 1000));
-          } catch {}
-        }
-      }
-      setError(err.message || t("auth.errors.emailFailed"));
+      setError(err.message || t("auth.errors.general"));
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2 Resend: Exponentially increasing cooldown (30s, 60s, 120s, 240s...)
   const handleResendPasscode = async () => {
     if (loading || resendCooldown > 0 || isAccountLocked) return;
     setError(null);
@@ -153,31 +165,28 @@ export default function Login() {
       toast.success(t("auth.toasts.resent"), { id: toastId });
       setTimeLeft(600);
       setTimerActive(true);
-      // Double the cooldown: 30 * 2^resendCount
       const nextCooldown = Math.min(30 * Math.pow(2, resendCount), 3600);
       setResendCooldown(nextCooldown);
       setResendCount((prev) => prev + 1);
     } catch (err: any) {
       toast?.dismiss?.(toastId);
-      if (err.locked || err.status === 423) {
-        const lockDuration = err.remainingSec || (15 * 60);
-        setLockoutRemainingSec(lockDuration);
-      }
-      setError(err.message || t("auth.errors.emailFailed"));
+      setError(err.message || t("auth.errors.general"));
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: Verify passcode and log in
   const handleVerifyPasscode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isAccountLocked) {
-      return setError(`Hesabınız 5 kez hatalı şifre girildiği için kilitlenmiştir. Kalan süre: ${formatTime(lockoutRemainingSec)}`);
+      return setError(
+        t("auth.errors.accountLocked", {
+          time: formatTime(lockoutRemainingSec),
+        }) || "Hesap kilitli! Lütfen sürenin bitmesini bekleyin."
+      );
     }
-    if (!code.trim()) {
-      return setError(t("auth.errors.enterPasscode"));
-    }
+    if (!code.trim()) return setError(t("auth.errors.emptyCode"));
+    if (timeLeft === 0) return setError(t("auth.errors.expired"));
 
     setError(null);
     setLoading(true);
@@ -186,24 +195,31 @@ export default function Login() {
     try {
       await loginWithPasscode(email.trim(), code.trim());
       toast.success(t("auth.toasts.loginSuccess"), { id: toastId });
+      setFailedAttempts(0);
       const cleanEmail = email.trim().toLowerCase();
       if (cleanEmail) localStorage.removeItem(`auth_locked_until_${cleanEmail}`);
       navigate("/blog");
     } catch (err: any) {
       toast?.dismiss?.(toastId);
-      const newAttempts = err.failedAttempts ?? (failedAttempts + 1);
+      const newAttempts = err.failedAttempts ?? failedAttempts + 1;
       setFailedAttempts(newAttempts);
 
       if (err.locked || err.status === 423 || newAttempts >= 5) {
-        const lockDuration = err.remainingSec || (15 * 60);
+        const lockDuration = err.remainingSec || 15 * 60;
         setLockoutRemainingSec(lockDuration);
         const cleanEmail = email.trim().toLowerCase();
         if (cleanEmail) {
           try {
-            localStorage.setItem(`auth_locked_until_${cleanEmail}`, String(Date.now() + lockDuration * 1000));
+            localStorage.setItem(
+              `auth_locked_until_${cleanEmail}`,
+              String(Date.now() + lockDuration * 1000)
+            );
           } catch {}
         }
-        setError(err.message || "5 kez hatalı şifre girdiniz! Güvenlik sebebiyle şifre girme kilitlendi. Lütfen 15 dakika bekleyiniz.");
+        setError(
+          err.message ||
+            "5 kez hatalı şifre girdiniz! Güvenlik sebebiyle şifre girme kilitlendi. Lütfen 15 dakika bekleyiniz."
+        );
       } else {
         setError(err.message || t("auth.errors.invalidPasscode"));
       }
@@ -212,106 +228,223 @@ export default function Login() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-gradient-to-b from-gray-900 via-gray-900/95 to-gray-950 border border-gray-800 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-violet-950/20 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-violet-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  // Theme configurations based on uiVersion
+  const theme = {
+    v1: {
+      bg: "bg-ink",
+      card: "border-ink-line bg-ink-raised shadow-2xl",
+      eyebrow: "text-paper-muted",
+      accentDot: "bg-signal",
+      badge: "Editorial Swiss Minimal (v1)",
+      inputBg: "bg-ink border-ink-line focus:border-paper text-paper placeholder-paper-subtle",
+      btnPrimary: "bg-paper text-ink hover:bg-white",
+      btnOutline: "border-ink-line text-paper hover:bg-ink-hover",
+    },
+    v2: {
+      bg: "bg-[#0f141c]",
+      card: "border-[#2a3441] bg-[#1a2332]/95 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-md rounded-lg",
+      eyebrow: "text-blue-300 font-mono",
+      accentDot: "bg-blue-400",
+      badge: "Desktop OS Environment (v2)",
+      inputBg: "bg-[#0b1017] border-[#2a3441] focus:border-blue-400 text-slate-100 placeholder-slate-500 font-mono",
+      btnPrimary: "bg-blue-600 text-white hover:bg-blue-500 shadow-md",
+      btnOutline: "border-[#2a3441] text-slate-300 hover:bg-[#253347]",
+    },
+    v3: {
+      bg: "bg-black",
+      card: "border-cyan-500/40 bg-black/90 shadow-[0_0_35px_rgba(6,182,212,0.18)] backdrop-blur-md font-mono rounded-none relative overflow-hidden",
+      eyebrow: "text-cyan-400 font-mono",
+      accentDot: "bg-cyan-400 animate-ping",
+      badge: "CyberDeck HUD Terminal (v3)",
+      inputBg: "bg-black/90 border-cyan-500/50 focus:border-cyan-300 text-cyan-200 placeholder-cyan-800 font-mono",
+      btnPrimary: "bg-cyan-500 text-black hover:bg-cyan-400 font-bold tracking-wider",
+      btnOutline: "border-cyan-500/40 text-cyan-400 hover:bg-cyan-950/40",
+    },
+    v4: {
+      bg: "bg-[#07090e]",
+      card: "border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] shadow-[0_24px_64px_rgba(0,0,0,0.7)] backdrop-blur-xl rounded-2xl",
+      eyebrow: "text-violet-400 font-code",
+      accentDot: "bg-gradient-to-r from-violet-500 to-emerald-400",
+      badge: "Cyber-Modern Bento Glass (v4)",
+      inputBg: "bg-black/40 border-white/10 focus:border-violet-400/80 text-paper placeholder-paper-subtle",
+      btnPrimary: "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-600/25",
+      btnOutline: "border-white/10 text-paper-muted hover:text-paper hover:bg-white/[0.04]",
+    },
+  }[uiVersion] || {
+    bg: "bg-ink",
+    card: "border-ink-line bg-ink-raised shadow-2xl",
+    eyebrow: "text-paper-muted",
+    accentDot: "bg-signal",
+    badge: "Editorial Swiss Minimal (v1)",
+    inputBg: "bg-ink border-ink-line focus:border-paper text-paper placeholder-paper-subtle",
+    btnPrimary: "bg-paper text-ink hover:bg-white",
+    btnOutline: "border-ink-line text-paper hover:bg-ink-hover",
+  };
 
-          {/* Header */}
-          <div className="text-center mb-8 relative z-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-600/20 to-purple-600/20 border border-violet-500/30 mb-4 shadow-lg shadow-violet-900/20">
-              {step === "email" ? (
-                <Mail className="w-8 h-8 text-violet-400" />
-              ) : (
-                <KeyRound className="w-8 h-8 text-violet-400" />
-              )}
+  return (
+    <div className={`min-h-screen ${theme.bg} text-paper flex items-center justify-center px-4 py-16 transition-colors duration-500 relative`}>
+      {/* Background Ambience / Grid Overlay for v3 and v4 */}
+      {uiVersion === "v3" && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.08)_0%,transparent_70%)] [background-size:24px_24px] opacity-60"
+        />
+      )}
+      {uiVersion === "v4" && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(139,92,246,0.15),transparent)]"
+        />
+      )}
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Version Pill Indicator */}
+        <div className="flex items-center justify-between mb-3 px-1 text-[11px] font-code">
+          <span className="flex items-center gap-1.5 text-paper-muted">
+            <span className={`w-1.5 h-1.5 rounded-full ${theme.accentDot}`} />
+            <span>UI: <strong className="text-paper">{theme.badge}</strong></span>
+          </span>
+          <span className="text-paper-subtle uppercase tracking-wider text-[10px]">AUTH-GATEWAY</span>
+        </div>
+
+        {/* Linux Desktop Window Header Decoration (v2 only) */}
+        {uiVersion === "v2" && (
+          <div className="bg-[#242f3d] border-t border-x border-[#3b4859] rounded-t-lg px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-[#ff5f56] inline-block border border-black/20" />
+              <span className="w-3 h-3 rounded-full bg-[#ffbd2e] inline-block border border-black/20" />
+              <span className="w-3 h-3 rounded-full bg-[#27c93f] inline-block border border-black/20" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              {step === "email" ? t("auth.loginTitle") : t("auth.loginPasscodeTitle")}
+            <span className="text-xs font-mono text-slate-300">auth_session.sh — login</span>
+            <span className="text-xs font-mono text-slate-500">bash</span>
+          </div>
+        )}
+
+        {/* Cyberdeck Corner Accents (v3 only) */}
+        {uiVersion === "v3" && (
+          <div className="flex justify-between items-center text-[10px] font-mono text-cyan-400 bg-cyan-950/60 border-t border-x border-cyan-500/60 px-3 py-1">
+            <span>[PORT: 0x443_SECURE_VERIFY]</span>
+            <span className="animate-pulse">● LIVE_FEED</span>
+          </div>
+        )}
+
+        {/* Main Card Container */}
+        <motion.div
+          initial={{ opacity: 0, transform: "translateY(16px)" }}
+          animate={{ opacity: 1, transform: "translateY(0)" }}
+          transition={springTransition}
+          className={`border ${theme.card} p-8 sm:p-10 text-paper ${
+            uiVersion === "v2" ? "rounded-b-lg rounded-t-none border-t-0" : ""
+          } ${uiVersion === "v3" ? "border-t-0" : ""}`}
+        >
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <span className={`w-1.5 h-1.5 rounded-full ${theme.accentDot}`}></span>
+              <span className={`text-xs font-code tracking-widest uppercase ${theme.eyebrow}`}>
+                {uiVersion === "v3" ? "ROOT // ACCESS_VERIFICATION" : "Authentication"}
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-paper">
+              {step === "email" ? t("auth.loginTitle") || "Giriş Yap" : t("auth.loginPasscodeTitle") || "Doğrulama Kodu"}
             </h1>
-            <p className="text-gray-400 text-xs sm:text-sm mt-1.5 max-w-xs mx-auto">
+            <p className="text-xs sm:text-sm text-paper-muted mt-2 leading-relaxed">
               {step === "email"
-                ? t("auth.loginDesc")
-                : t("auth.loginPasscodeDesc", { email })}
+                ? t("auth.loginDesc") || "Şifresiz, tek kullanımlık geçici parola (OTP) ile güvenli giriş yapın."
+                : t("auth.loginPasscodeDesc", { email }) || `${email} adresine iletilen 6 haneli kodu giriniz.`}
             </p>
           </div>
 
           {/* Error Banner */}
           {error && (
-            <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-xs sm:text-sm leading-relaxed flex items-center gap-2">
-              <span>⚠️</span>
+            <div
+              role="alert"
+              className="mb-6 p-3.5 rounded border border-danger/40 bg-danger/10 text-danger text-xs font-code leading-relaxed flex items-start gap-2"
+            >
+              <span className="shrink-0 font-bold">[!]</span>
               <span>{error}</span>
             </div>
           )}
 
           {/* STEP 1: Email Input */}
           {step === "email" ? (
-            <form onSubmit={handleRequestPasscode} className="flex flex-col gap-4 relative z-10">
+            <form onSubmit={handleRequestPasscode} className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                  {t("auth.email")}
+                <label
+                  htmlFor="login-email"
+                  className="block text-xs font-code text-paper-muted uppercase tracking-wider mb-2"
+                >
+                  {t("auth.email") || "E-Posta Adresi"}
                 </label>
                 <div className="relative">
-                  <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <Mail
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-paper-subtle pointer-events-none"
+                  />
                   <input
+                    id="login-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder={t("auth.emailPlaceholder") || "adiniz@example.com"}
                     autoFocus
-                    className="w-full rounded-2xl bg-gray-950/80 border border-gray-800 pl-11 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all placeholder:text-gray-600"
+                    className={`w-full pl-10 pr-4 py-3 rounded-md text-xs sm:text-sm focus:outline-none transition-colors ${theme.inputBg}`}
                   />
                 </div>
               </div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-violet-900/40 flex items-center justify-center gap-2 mt-2 group cursor-pointer"
+                whileHover={shouldReduceMotion ? undefined : { scale: 1.015 }}
+                whileTap={shouldReduceMotion ? undefined : { scale: 0.985 }}
+                transition={springTransition}
+                className={`w-full py-3 rounded-md font-semibold text-xs sm:text-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50 ${theme.btnPrimary}`}
               >
                 {loading ? (
-                  <span>{t("auth.sendingPasscode")}</span>
+                  <span>{t("auth.sendingPasscode") || "Parola Gönderiliyor..."}</span>
                 ) : (
                   <>
-                    <span>{t("auth.sendPasscode")}</span>
-                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                    <span>{t("auth.sendPasscode") || "Giriş Parolası Gönder"}</span>
+                    <ArrowRight size={14} />
                   </>
                 )}
-              </button>
+              </motion.button>
             </form>
           ) : (
-            /* STEP 2: Temporary Code Input */
-            <form onSubmit={handleVerifyPasscode} className="flex flex-col gap-4 relative z-10">
-              {/* Sent Alert */}
-              <div className="p-3 bg-violet-950/40 border border-violet-500/20 rounded-xl flex items-center justify-between text-xs text-violet-300">
+            /* STEP 2: Temporary Code Input (OTP) */
+            <form onSubmit={handleVerifyPasscode} className="space-y-5">
+              {/* Sent Status Badge */}
+              <div className="p-3 bg-ink border border-ink-line rounded-md flex items-center justify-between text-xs font-code text-paper-muted">
                 <span className="flex items-center gap-1.5 truncate">
-                  <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                  <CheckCircle2 size={14} className="text-signal shrink-0" />
                   <span className="truncate">{email}</span>
                 </span>
                 <button
                   type="button"
                   disabled={isAccountLocked}
-                  onClick={() => { setStep("email"); setError(null); }}
-                  className="text-violet-400 hover:text-white underline text-[11px] shrink-0 ml-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                  onClick={() => {
+                    setStep("email");
+                    setError(null);
+                  }}
+                  className="text-paper hover:underline text-[11px] shrink-0 ml-2 disabled:opacity-40 cursor-pointer"
                 >
-                  {t("auth.changeEmail")}
+                  {t("auth.changeEmail") || "Değiştir"}
                 </button>
               </div>
 
               {/* 5-Attempt Security Lockout Banner */}
               {isAccountLocked ? (
-                <div className="p-4 rounded-2xl bg-red-950/50 border border-red-500/40 text-red-200 flex flex-col gap-2 shadow-lg">
-                  <div className="flex items-center gap-2 font-bold text-red-400 text-sm">
-                    <ShieldAlert size={18} className="shrink-0 text-red-400" />
-                    <span>{t("auth.lockoutTitle")}</span>
+                <div className="p-4 rounded border border-danger/40 bg-danger/10 text-danger flex flex-col gap-2">
+                  <div className="flex items-center gap-2 font-bold font-code text-xs">
+                    <ShieldAlert size={16} className="shrink-0 text-danger" />
+                    <span>{t("auth.lockoutTitle") || "Giriş Kilitlendi"}</span>
                   </div>
-                  <p className="text-xs text-red-300/90 leading-relaxed">
-                    {t("auth.lockoutDesc")}
+                  <p className="text-xs leading-relaxed text-danger/90">
+                    {t("auth.lockoutDesc") || "Çok sayıda hatalı giriş denemesi nedeniyle hesap geçici olarak kilitlendi."}
                   </p>
-                  <div className="flex items-center gap-1.5 font-mono font-bold text-xs text-red-400 bg-red-900/30 px-3 py-1.5 rounded-lg border border-red-500/20 w-fit">
+                  <div className="flex items-center gap-1.5 font-code text-xs text-danger">
                     <Clock size={13} />
                     <span>{t("auth.remainingLockout", { time: formatTime(lockoutRemainingSec) })}</span>
                   </div>
@@ -320,17 +453,29 @@ export default function Login() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider">
-                    {t("auth.passcode")}
+                  <label
+                    htmlFor="login-passcode"
+                    className="block text-xs font-code text-paper-muted uppercase tracking-wider"
+                  >
+                    {t("auth.passcode") || "Doğrulama Kodu"}
                   </label>
-                  <div className={`flex items-center gap-1 text-xs font-mono font-bold ${timeLeft < 60 ? "text-red-400 animate-pulse" : "text-violet-400"}`}>
+                  <div
+                    className={`flex items-center gap-1 text-xs font-code font-bold ${
+                      timeLeft < 60 ? "text-danger animate-pulse" : "text-signal"
+                    }`}
+                  >
                     <Clock size={13} />
                     <span>{formatTime(timeLeft)}</span>
                   </div>
                 </div>
+
                 <div className="relative">
-                  <KeyRound size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <KeyRound
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-paper-subtle pointer-events-none"
+                  />
                   <input
+                    id="login-passcode"
                     type="text"
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\s+/g, ""))}
@@ -339,43 +484,49 @@ export default function Login() {
                     placeholder="123456"
                     maxLength={10}
                     autoFocus
-                    className="w-full rounded-2xl bg-gray-950/80 border border-gray-800 pl-11 pr-4 py-3.5 text-white text-base tracking-[0.3em] font-mono text-center focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all placeholder:tracking-normal placeholder:font-sans placeholder:text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className={`w-full pl-10 pr-4 py-3 rounded-md text-base tracking-[0.35em] text-center focus:outline-none transition-colors placeholder:tracking-normal placeholder:font-sans disabled:opacity-40 ${theme.inputBg}`}
                   />
                 </div>
+
                 {failedAttempts > 0 && !isAccountLocked ? (
-                  <p className="text-[11px] text-amber-400 mt-2 text-center font-medium">
+                  <p className="text-[11px] font-code text-amber-400 mt-2 text-center">
                     ⚠️ {t("auth.remainingAttempts", { count: Math.max(0, 5 - failedAttempts) })}
                   </p>
                 ) : (
-                  <p className="text-[11px] text-gray-500 mt-2 text-center">
-                    {t("auth.passcodeNotice")}
+                  <p className="text-[11px] font-code text-paper-subtle mt-2 text-center">
+                    {t("auth.passcodeNotice") || "* Bu parola giriş yapılana kadar 10 dakika boyunca geçerlidir."}
                   </p>
                 )}
               </div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={loading || timeLeft === 0 || isAccountLocked}
-                className="w-full py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-violet-900/40 flex items-center justify-center gap-2 cursor-pointer"
+                whileHover={shouldReduceMotion ? undefined : { scale: 1.015 }}
+                whileTap={shouldReduceMotion ? undefined : { scale: 0.985 }}
+                transition={springTransition}
+                className={`w-full py-3 rounded-md font-semibold text-xs sm:text-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50 ${theme.btnPrimary}`}
               >
-                {loading ? t("auth.verifying") : t("auth.verifyAndLogin")}
-              </button>
+                {loading
+                  ? t("auth.verifying") || "Doğrulanıyor..."
+                  : t("auth.verifyAndLogin") || "Giriş Yap"}
+              </motion.button>
 
               <button
                 type="button"
                 onClick={handleResendPasscode}
                 disabled={loading || resendCooldown > 0 || isAccountLocked}
-                className="w-full py-2.5 text-xs font-medium text-gray-400 hover:text-white transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2 text-xs font-code text-paper-muted hover:text-paper transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
               >
                 {resendCooldown > 0 ? (
                   <>
-                    <Clock size={13} className="text-violet-400 animate-pulse" />
+                    <Clock size={13} className="text-paper-muted animate-pulse" />
                     <span>{t("auth.resendCooldown", { seconds: resendCooldown })}</span>
                   </>
                 ) : (
                   <>
                     <RefreshCw size={13} />
-                    <span>{t("auth.resendPasscode")}</span>
+                    <span>{t("auth.resendPasscode") || "Yeni Kod Gönder"}</span>
                   </>
                 )}
               </button>
@@ -383,23 +534,24 @@ export default function Login() {
           )}
 
           {/* Register Link */}
-          <p className="text-center text-xs sm:text-sm text-gray-500 mt-6">
-            {t("auth.noAccount")}{" "}
-            <Link to="/register" className="text-violet-400 hover:text-violet-300 font-bold">
-              {t("auth.registerLink")}
+          <p className="text-center text-xs text-paper-muted mt-8">
+            {t("auth.noAccount") || "Hesabınız yok mu?"}{" "}
+            <Link to="/register" className="text-paper font-semibold hover:underline">
+              {t("auth.registerLink") || "Kayıt Olun"}
             </Link>
           </p>
 
           {/* Footer Back Link */}
-          <div className="mt-6 pt-6 border-t border-gray-800/80 text-center">
+          <div className="mt-6 pt-6 border-t border-ink-line text-center">
             <Link
               to="/blog"
-              className="text-xs text-gray-400 hover:text-violet-400 transition-colors inline-flex items-center gap-1"
+              className="text-xs font-code text-paper-muted hover:text-paper transition-colors inline-flex items-center gap-1.5"
             >
-              <span>{t("auth.backToBlog")}</span>
+              <ArrowLeft size={13} />
+              <span>{t("auth.backToBlog") || "Blog'a Geri Dön"}</span>
             </Link>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

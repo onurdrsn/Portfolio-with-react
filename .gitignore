@@ -31,3 +31,8 @@ dist-ssr
 .dev.vars
 *.env*
 *.sql
+
+# Agents & Skill local artifacts
+.agent/
+.agents/
+skills-lock.json

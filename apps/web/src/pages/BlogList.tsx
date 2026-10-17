@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { ArrowRight, Tag, Calendar, User, Clock } from "lucide-react";
 import { apiGet } from "../lib/api";
 
 interface Post {
@@ -18,161 +20,240 @@ export default function BlogList() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
-  const allTags = Array.from(new Set(posts.flatMap((p) => p.tags)));
+  const springTransition = shouldReduceMotion
+    ? { duration: 0.01 }
+    : { type: "spring", stiffness: 380, damping: 28, mass: 0.9 };
 
-  useEffect(() => {
+  const allTags = Array.from(new Set(posts.flatMap((p) => p.tags || [])));
+
+  const fetchPosts = () => {
     setLoading(true);
+    setError(null);
     const tagQuery = activeTag ? `&tag=${encodeURIComponent(activeTag)}` : "";
     apiGet<{ posts: Post[] }>(`/api/posts?limit=100${tagQuery}`)
-      .then((data) => setPosts(data.posts))
+      .then((data) => setPosts(data.posts || []))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [page, activeTag]);
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, [activeTag]);
 
   return (
-    <div className="min-h-screen bg-gray-950 pt-8 pb-20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-14">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent mb-4">
-            Blog
-          </h1>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto">
-            Yazılım, projeler ve düşünceler üzerine notlar.
-          </p>
-        </div>
+    <div className="min-h-screen bg-ink text-paper py-16 px-5 sm:px-8 lg:px-12">
+      <div className="max-w-6xl mx-auto">
+        {/* Editorial Header */}
+        <header className="mb-12 pb-8 border-b border-ink-line">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-signal"></span>
+                <span className="text-xs font-code tracking-widest uppercase text-paper-muted">
+                  Technical Journal / 05
+                </span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-paper">
+                Articles &{" "}
+                <span className="text-paper-muted font-normal italic font-serif">
+                  Engineering Notes
+                </span>
+              </h1>
+            </div>
 
-        {/* Tag Filter */}
-        {allTags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-10 justify-center">
-            <button
-              onClick={() => setActiveTag(null)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                activeTag === null
-                  ? "bg-violet-600 text-white"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-              }`}
-            >
-              Tümü
-            </button>
-            {allTags.map((tag) => (
+            <p className="text-xs sm:text-sm text-paper-muted max-w-md font-sans leading-relaxed">
+              Deep dives into distributed systems, serverless worker architectures, real-time WebSockets, and modern frontend design engineering.
+            </p>
+          </div>
+
+          {/* Tag Filter Pills */}
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mt-8 pt-6 border-t border-ink-line/60">
+              <span className="text-xs font-code text-paper-muted mr-1">Filter:</span>
               <button
-                key={tag}
-                onClick={() => setActiveTag(tag === activeTag ? null : tag)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  activeTag === tag
-                    ? "bg-violet-600 text-white"
-                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                type="button"
+                onClick={() => setActiveTag(null)}
+                className={`px-3 py-1 rounded text-xs font-code transition-colors cursor-pointer ${
+                  activeTag === null
+                    ? "bg-paper text-ink font-semibold"
+                    : "bg-ink-raised text-paper-muted hover:text-paper border border-ink-line"
                 }`}
               >
-                #{tag}
+                All ({posts.length})
               </button>
+              {allTags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setActiveTag(tag === activeTag ? null : tag)}
+                  className={`px-3 py-1 rounded text-xs font-code transition-colors cursor-pointer ${
+                    activeTag === tag
+                      ? "bg-paper text-ink font-semibold"
+                      : "bg-ink-raised text-paper-muted hover:text-paper border border-ink-line"
+                  }`}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          )}
+        </header>
+
+        {/* Content Section with Zero-CLS Skeleton */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-busy="true">
+            {[1, 2, 3, 4, 5, 6].map((k) => (
+              <div
+                key={k}
+                className="rounded-lg bg-ink-raised border border-ink-line p-5 flex flex-col justify-between h-[340px] relative overflow-hidden"
+              >
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.8s_infinite] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent pointer-events-none" />
+                <div className="space-y-4">
+                  <div className="h-40 bg-ink rounded border border-ink-line/60" />
+                  <div className="flex gap-2">
+                    <div className="h-4 w-12 bg-ink-line rounded" />
+                    <div className="h-4 w-16 bg-ink-line rounded" />
+                  </div>
+                  <div className="h-6 w-3/4 bg-ink-line rounded" />
+                  <div className="h-4 w-full bg-ink-line/60 rounded" />
+                </div>
+                <div className="h-4 w-24 bg-ink-line rounded mt-4" />
+              </div>
             ))}
           </div>
-        )}
-
-        {/* Content */}
-        {loading && (
-          <div className="flex justify-center py-20">
-            <div className="w-10 h-10 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
+        ) : error ? (
+          <div className="py-20 text-center border border-ink-line rounded-lg bg-ink-raised p-8">
+            <p className="text-paper-muted text-sm font-code mb-4">
+              [!] Failed to load articles: {error}
+            </p>
+            <button
+              onClick={fetchPosts}
+              className="px-4 py-2 rounded bg-paper text-ink text-xs font-code font-bold hover:bg-white transition-colors cursor-pointer"
+            >
+              Retry Request
+            </button>
           </div>
-        )}
-
-        {error && (
-          <div className="text-center py-20 text-red-400">
-            Yazılar yüklenirken hata oluştu: {error}
+        ) : posts.length === 0 ? (
+          <div className="py-24 text-center border border-ink-line rounded-lg bg-ink-raised p-8">
+            <p className="text-paper-muted text-sm font-code">
+              No published articles found in this filter category.
+            </p>
           </div>
+        ) : (
+          <motion.div
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <AnimatePresence mode="popLayout">
+              {posts.map((post) => (
+                <motion.div
+                  key={post.id}
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={springTransition}
+                >
+                  <BlogCard post={post} shouldReduceMotion={shouldReduceMotion} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
         )}
-
-        {!loading && !error && posts.length === 0 && (
-          <div className="text-center py-20 text-gray-500">
-            Henüz blog yazısı yok.
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post) => (
-            <BlogCard key={post.id} post={post} />
-          ))}
-        </div>
-
-        {/* Pagination removed - Showing all posts single page flow */}
       </div>
     </div>
   );
 }
 
-function BlogCard({ post }: { post: Post }) {
-  const date = new Date(post.createdAt).toLocaleDateString("tr-TR", {
+function BlogCard({
+  post,
+  shouldReduceMotion,
+}: {
+  post: Post;
+  shouldReduceMotion: boolean | null;
+}) {
+  const date = new Date(post.createdAt).toLocaleDateString("en-US", {
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
   });
 
+  const springTransition = shouldReduceMotion
+    ? { duration: 0.01 }
+    : { type: "spring", stiffness: 380, damping: 28, mass: 0.9 };
+
   return (
-    <Link
-      to={`/blog/${post.slug}`}
-      className="group flex flex-col rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 hover:border-violet-500/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/10"
+    <motion.div
+      whileHover={shouldReduceMotion ? undefined : { scale: 1.015 }}
+      whileTap={shouldReduceMotion ? undefined : { scale: 0.985 }}
+      transition={springTransition}
+      className="h-full"
     >
-      {/* Cover */}
-      <div className="h-44 bg-gradient-to-br from-violet-900/40 via-gray-900 to-indigo-900/40 relative overflow-hidden">
-        {post.coverImage ? (
-          <img
-            src={post.coverImage}
-            alt={post.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-5xl opacity-20">✍️</span>
-          </div>
-        )}
-        {!post.published && (
-          <span className="absolute top-3 right-3 px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 text-xs rounded-full">
-            Taslak
-          </span>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-col flex-1 p-5 gap-3">
-        {/* Tags */}
-        {post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {post.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="px-2 py-0.5 text-xs rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20"
-              >
-                #{tag}
+      <Link
+        to={`/blog/${post.slug}`}
+        className="group flex flex-col justify-between h-full rounded-lg bg-ink-raised border border-ink-line hover:border-paper/40 transition-colors overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper"
+      >
+        <div>
+          {/* Cover Image or Monogram */}
+          <div className="h-44 bg-ink border-b border-ink-line relative overflow-hidden flex items-center justify-center">
+            {post.coverImage ? (
+              <img
+                src={post.coverImage}
+                alt={post.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+              />
+            ) : (
+              <div className="text-paper-subtle font-code text-xs uppercase tracking-widest flex items-center gap-2">
+                <span>[ JOURNAL ENTRY ]</span>
+              </div>
+            )}
+            {!post.published && (
+              <span className="absolute top-3 right-3 px-2 py-0.5 bg-ink text-signal border border-signal/40 text-[10px] font-code uppercase rounded">
+                Draft
               </span>
-            ))}
+            )}
           </div>
-        )}
 
-        <h2 className="text-lg font-semibold text-white group-hover:text-violet-300 transition-colors line-clamp-2">
-          {post.title}
-        </h2>
+          <div className="p-5">
+            {/* Tag Pills */}
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {post.tags.slice(0, 3).map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2 py-0.5 text-[10px] font-code rounded bg-ink text-paper-muted border border-ink-line"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
 
-        {post.excerpt && (
-          <p className="text-gray-400 text-sm leading-relaxed line-clamp-3 flex-1">
-            {post.excerpt}
-          </p>
-        )}
+            <h2 className="text-base sm:text-lg font-bold text-paper group-hover:text-white transition-colors line-clamp-2 mb-2">
+              {post.title}
+            </h2>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-800">
-          <span className="text-xs text-gray-500">{date}</span>
-          {post.author && (
-            <span className="text-xs text-gray-500">
-              @{post.author.username}
-            </span>
-          )}
+            {post.excerpt && (
+              <p className="text-paper-muted text-xs sm:text-sm line-clamp-3 leading-relaxed">
+                {post.excerpt}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
-    </Link>
+
+        {/* Footer Meta */}
+        <div className="p-5 pt-3 border-t border-ink-line flex items-center justify-between text-xs font-code text-paper-muted">
+          <span>{date}</span>
+          <div className="flex items-center gap-1 group-hover:text-paper transition-colors">
+            <span>Read article</span>
+            <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+          </div>
+        </div>
+      </Link>
+    </motion.div>
   );
 }

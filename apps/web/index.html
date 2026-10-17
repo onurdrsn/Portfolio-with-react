@@ -1,20 +1,98 @@
 <!doctype html>
-<html lang="en" style="background:#030712">
+<html lang="en" style="background:#0a0a0b">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<!-- Prevents iOS Safari from flashing white on overscroll/load -->
-		<meta name="theme-color" content="#030712" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+		<title>Onur Dursun | Senior Full Stack & Distributed Systems Architect</title>
+		
+		<!-- Primary Meta Tags -->
+		<meta name="title" content="Onur Dursun | Senior Full Stack & Distributed Systems Architect" />
+		<meta name="description" content="Portfolio of Onur Dursun: Senior Full Stack Architect specializing in Cloudflare edge serverless architectures, real-time WebSocket systems, distributed databases, and high-concurrency web applications." />
+		<meta name="keywords" content="Onur Dursun, Full Stack Architect, Cloudflare Workers, TypeScript, React, Hono, Neon PostgreSQL, WebSockets, Distributed Systems" />
+		<meta name="author" content="Onur Dursun" />
+		<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+		<link rel="canonical" href="https://onurd.com.tr/" />
+
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://onurd.com.tr/" />
+		<meta property="og:title" content="Onur Dursun | Senior Full Stack & Distributed Systems Architect" />
+		<meta property="og:description" content="Explore production architectures, serverless edge systems, real-time multiplayer networks, and technical deep-dives by Onur Dursun." />
+		<meta property="og:image" content="https://onurd.com.tr/assets/logo.svg" />
+		<meta property="og:site_name" content="Onur Dursun Portfolio" />
+		<meta property="og:locale" content="en_US" />
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:url" content="https://onurd.com.tr/" />
+		<meta name="twitter:title" content="Onur Dursun | Senior Full Stack & Distributed Systems Architect" />
+		<meta name="twitter:description" content="Explore production architectures, serverless edge systems, real-time multiplayer networks, and technical deep-dives by Onur Dursun." />
+		<meta name="twitter:image" content="https://onurd.com.tr/assets/logo.svg" />
+		<meta name="twitter:creator" content="@onurdrsn" />
+
+		<!-- Mobile & Web App Capabilities -->
+		<meta name="theme-color" content="#0a0a0b" media="(prefers-color-scheme: dark)" />
+		<meta name="theme-color" content="#0a0a0b" media="(prefers-color-scheme: light)" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="apple-mobile-web-app-title" content="Onur Dursun" />
+		<meta name="format-detection" content="telephone=no" />
+
+		<!-- Icons -->
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="alternate icon" href="/assets/logo.svg" />
-		<title>Onur Dursun | Software Engineer Portfolio</title>
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap" rel="stylesheet">
+		<link rel="apple-touch-icon" href="/favicon.png" />
+
+		<!-- Performance Preconnects (Zero CLS / Fast Font Hydration) -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+		<link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+		<!-- Structured Data (JSON-LD: Person & ProfilePage) -->
+		<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@graph": [
+				{
+					"@type": "Person",
+					"@id": "https://onurd.com.tr/#person",
+					"name": "Onur Dursun",
+					"jobTitle": "Senior Full Stack & Distributed Systems Architect",
+					"url": "https://onurd.com.tr",
+					"image": "https://onurd.com.tr/assets/logo.svg",
+					"email": "mailto:onurdrsn55@gmail.com",
+					"sameAs": [
+						"https://github.com/onurdrsn",
+						"https://linkedin.com/in/odursun"
+					],
+					"knowsAbout": [
+						"Cloudflare Workers",
+						"Serverless Architecture",
+						"Distributed Systems",
+						"TypeScript",
+						"React",
+						"Tailwind CSS",
+						"WebSockets",
+						"PostgreSQL",
+						"Neon Database",
+						"Hono.js"
+					]
+				},
+				{
+					"@type": "ProfilePage",
+					"@id": "https://onurd.com.tr/#webpage",
+					"url": "https://onurd.com.tr",
+					"name": "Onur Dursun Portfolio",
+					"about": { "@id": "https://onurd.com.tr/#person" }
+				}
+			]
+		}
+		</script>
 	</head>
-	<body style="background:#030712;margin:0">
-		<div id="root" style="background:#030712"></div>
+	<body style="background:#0a0a0b;margin:0;min-height:100vh">
+		<div id="root" style="background:#0a0a0b;min-height:100vh"></div>
 		<script type="module" src="/src/main.jsx"></script>
-  	</body>
+	</body>
 </html>

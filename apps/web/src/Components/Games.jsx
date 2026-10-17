@@ -1,169 +1,188 @@
+import React from "react";
 import { Link } from "react-router-dom";
-import { useTranslation } from 'react-i18next';
-import { Castle, Router, Keyboard, Target, BrainCircuit, Swords, Rocket } from 'lucide-react';
+import { useTranslation } from "react-i18next";
+import { motion, useReducedMotion } from "motion/react";
+import {
+  Castle,
+  Router,
+  Keyboard,
+  Target,
+  BrainCircuit,
+  Swords,
+  Rocket,
+  ArrowRight,
+  ArrowLeft,
+  Gamepad2,
+} from "lucide-react";
 
-function Games() {
+export default function Games() {
   const { t } = useTranslation();
+  const shouldReduceMotion = useReducedMotion();
+
+  const springTransition = shouldReduceMotion
+    ? { duration: 0.01 }
+    : { type: "spring", stiffness: 380, damping: 28, mass: 0.9 };
+
   const games = [
     {
       path: "/games/space-ace-3d",
-      iconComponent: <Rocket size={64} className="text-purple-400 animate-bounce" />,
       titleKey: "games.gameNames.spaceAce3D",
-      color: "from-purple-500/30 via-indigo-500/30 to-cyan-500/30",
-      hoverColor: "hover:border-purple-500/60"
+      badge: "3D WebGL",
+      icon: <Rocket size={24} className="text-paper" />,
     },
-    //{
-    //  path: "/games/cyber-strike-3d",
-    //  iconComponent: <Rocket size={64} className="text-cyan-400 animate-pulse" />,
-    //  titleKey: "games.gameNames.cyberStrike3D",
-    //  color: "from-cyan-500/20 via-purple-500/20 to-pink-500/20",
-    //  hoverColor: "hover:border-cyan-500/50"
-    //},
     {
       path: "/games/neon-duel",
-      iconComponent: <Swords size={64} className="text-pink-400 animate-pulse" />,
       titleKey: "games.gameNames.neonDuel",
-      color: "from-pink-500/20 via-purple-500/20 to-cyan-500/20",
-      hoverColor: "hover:border-pink-500/50"
+      badge: "Action",
+      icon: <Swords size={24} className="text-paper" />,
     },
     {
       path: "/games/storypuzzle",
-      iconComponent: <BrainCircuit size={64} className="text-emerald-400" />,
       titleKey: "games.gameNames.storyPuzzle",
-      color: "from-emerald-500/20 to-teal-500/20",
-      hoverColor: "hover:border-emerald-500/50"
+      badge: "Puzzle / AI",
+      icon: <BrainCircuit size={24} className="text-paper" />,
     },
     {
       path: "/games/minesweeper",
-      icon: "🧨",
       titleKey: "games.gameNames.minesweeper",
-      color: "from-red-500/20 to-orange-500/20",
-      hoverColor: "hover:border-red-500/50"
+      badge: "Classic",
+      icon: <span className="text-2xl leading-none">🧨</span>,
     },
     {
       path: "/games/tictactoe",
-      icon: "❌⭕",
       titleKey: "games.gameNames.tictactoe",
-      color: "from-blue-500/20 to-cyan-500/20",
-      hoverColor: "hover:border-blue-500/50"
+      badge: "Mini",
+      icon: <span className="text-2xl leading-none">✕◯</span>,
     },
     {
       path: "/games/hangman",
-      icon: "🧍‍♂️",
       titleKey: "games.gameNames.hangman",
-      color: "from-purple-500/20 to-pink-500/20",
-      hoverColor: "hover:border-purple-500/50"
+      badge: "Wordplay",
+      icon: <span className="text-2xl leading-none">🔤</span>,
     },
     {
       path: "/games/memory",
-      icon: "🧠",
       titleKey: "games.gameNames.memory",
-      color: "from-green-500/20 to-emerald-500/20",
-      hoverColor: "hover:border-green-500/50"
+      badge: "Cognitive",
+      icon: <span className="text-2xl leading-none">🧠</span>,
     },
     {
       path: "/games/router",
-      iconComponent: <Router size={64} className="text-violet-400" />,
       titleKey: "games.gameNames.router",
-      color: "from-violet-500/20 to-purple-500/20",
-      hoverColor: "hover:border-violet-500/50"
+      badge: "Simulation",
+      icon: <Router size={24} className="text-paper" />,
     },
     {
       path: "/games/towerdefense",
-      iconComponent: <Castle size={64} className="text-purple-400" />,
       titleKey: "games.gameNames.towerDefense",
-      color: "from-purple-500/20 to-indigo-500/20",
-      hoverColor: "hover:border-purple-500/50"
+      badge: "Strategy",
+      icon: <Castle size={24} className="text-paper" />,
     },
     {
       path: "/games/typingspeed",
-      iconComponent: <Keyboard size={64} className="text-cyan-400" />,
       titleKey: "games.gameNames.typingSpeed",
-      color: "from-cyan-500/20 to-blue-500/20",
-      hoverColor: "hover:border-cyan-500/50"
+      badge: "Benchmark",
+      icon: <Keyboard size={24} className="text-paper" />,
     },
     {
       path: "/games/flappybird",
-      icon: "🐦",
       titleKey: "games.gameNames.flappyBird",
-      color: "from-yellow-500/20 to-orange-500/20",
-      hoverColor: "hover:border-yellow-500/50"
+      badge: "Arcade",
+      icon: <span className="text-2xl leading-none">🐦</span>,
     },
     {
       path: "/games/breakout",
-      iconComponent: <Target size={64} className="text-pink-400" />,
       titleKey: "games.gameNames.breakout",
-      color: "from-pink-500/20 to-rose-500/20",
-      hoverColor: "hover:border-pink-500/50"
-    }
+      badge: "Retro",
+      icon: <Target size={24} className="text-paper" />,
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white py-16 px-6">
-      {/* Header */}
-      <div className="text-center mb-12">
-        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-          {t('games.title')} <span className="bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">{t('games.titleHighlight')}</span>
-        </h2>
-        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-          {t('games.subtitle')}
-        </p>
-      </div>
+    <div className="min-h-screen bg-ink text-paper py-16 px-5 sm:px-8 lg:px-12">
+      <div className="max-w-6xl mx-auto">
+        {/* Editorial Section Header */}
+        <header className="mb-14 pb-8 border-b border-ink-line">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-signal"></span>
+                <span className="text-xs font-code tracking-widest uppercase text-paper-muted">
+                  Interactive Lab / 04
+                </span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-paper">
+                {t("games.title") || "Web Games &"}{" "}
+                <span className="text-paper-muted font-normal italic font-serif">
+                  {t("games.titleHighlight") || "Canvas Experiments"}
+                </span>
+              </h1>
+            </div>
 
-      {/* Games Grid */}
-      <div className="grid gap-6 max-w-6xl mx-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {games.map((game, index) => (
+            <p className="text-xs sm:text-sm text-paper-muted max-w-md font-sans leading-relaxed">
+              {t("games.subtitle") ||
+                "A curated playground of interactive mini-games, algorithmic puzzles, and browser canvas simulations built with vanilla JS and React."}
+            </p>
+          </div>
+        </header>
+
+        {/* Games Editorial Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {games.map((game, idx) => (
+            <motion.div
+              key={game.path}
+              whileHover={shouldReduceMotion ? undefined : { scale: 1.015 }}
+              whileTap={shouldReduceMotion ? undefined : { scale: 0.985 }}
+              transition={springTransition}
+              className="h-full"
+            >
+              <Link
+                to={game.path}
+                className="group flex flex-col justify-between h-full p-6 rounded-lg bg-ink-raised border border-ink-line hover:border-paper/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-12 h-12 rounded-md bg-ink border border-ink-line flex items-center justify-center group-hover:border-paper/30 transition-colors">
+                      {game.icon}
+                    </div>
+                    <span className="text-[10px] font-code uppercase tracking-wider text-paper-muted px-2 py-1 rounded bg-ink border border-ink-line">
+                      {game.badge}
+                    </span>
+                  </div>
+
+                  <span className="text-xs font-code text-paper-muted block mb-1">
+                    [0{idx + 1}]
+                  </span>
+                  <h2 className="text-base sm:text-lg font-bold text-paper tracking-tight group-hover:text-white transition-colors">
+                    {t(game.titleKey) || game.titleKey.split(".").pop()}
+                  </h2>
+                </div>
+
+                <div className="mt-8 pt-4 border-t border-ink-line flex items-center justify-between">
+                  <span className="text-xs font-code text-paper-muted group-hover:text-paper transition-colors">
+                    {t("games.playNow") || "Launch Simulation"}
+                  </span>
+                  <ArrowRight
+                    size={14}
+                    className="text-paper-muted group-hover:text-paper group-hover:translate-x-1 transition-transform"
+                  />
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Back Link */}
+        <div className="mt-16 pt-8 border-t border-ink-line flex items-center justify-between">
           <Link
-            key={index}
-            to={game.path}
-            className={`group relative bg-gradient-to-br ${game.color} backdrop-blur-sm border border-gray-700/50 ${game.hoverColor} rounded-xl p-8 text-center transition-all duration-300 hover:shadow-2xl hover:shadow-violet-500/20 hover:-translate-y-2`}
+            to="/"
+            className="inline-flex items-center gap-2 text-xs font-code text-paper-muted hover:text-paper transition-colors"
           >
-            {/* Icon Container */}
-            <div className="flex items-center justify-center mb-4 h-24">
-              {game.iconComponent ? (
-                <div className="transform group-hover:scale-110 transition-transform duration-300">
-                  {game.iconComponent}
-                </div>
-              ) : (
-                <div className="text-6xl transform group-hover:scale-110 transition-transform duration-300">
-                  {game.icon}
-                </div>
-              )}
-            </div>
-
-            {/* Title */}
-            <h3 className="text-xl font-bold text-white group-hover:text-violet-400 transition-colors duration-300">
-              {t(game.titleKey)}
-            </h3>
-
-            {/* Play Button Indicator */}
-            <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <span className="inline-flex items-center gap-2 text-violet-400 text-sm font-semibold">
-                {t('games.playNow')}
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </span>
-            </div>
+            <ArrowLeft size={14} />
+            <span>{t("games.backToHome") || "Return to Portfolio"}</span>
           </Link>
-        ))}
-      </div>
-
-      {/* Back to Home */}
-      <div className="text-center mt-12">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-violet-400 hover:text-violet-300 font-semibold transition-colors duration-300"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          {t('games.backToHome')}
-        </Link>
+        </div>
       </div>
     </div>
   );
 }
-
-export default Games;
