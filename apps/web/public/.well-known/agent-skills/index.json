@@ -1,6 +1,5 @@
 {
   "$schema": "https://agentskills.io/schemas/v0.2.0/index.json",
-  "specVersion": "0.91",
   "skills": [
     {
       "name": "portfolio-overview",
