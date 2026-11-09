@@ -9,3 +9,19 @@
 /.well-known/ai-catalog.json
   Content-Type: application/json; charset=utf-8
   Access-Control-Allow-Origin: *
+
+/.well-known/agent-card.json
+  Content-Type: application/json; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/.well-known/agent-skills/index.json
+  Content-Type: application/json; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/.well-known/agent-skills/*.md
+  Content-Type: text/markdown; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/.well-known/api-catalog
+  Content-Type: application/linkset+json; charset=utf-8
+  Access-Control-Allow-Origin: *

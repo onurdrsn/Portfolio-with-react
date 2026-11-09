@@ -1,0 +1,13 @@
+{
+  "$schema": "https://agentskills.io/schemas/v0.2.0/index.json",
+  "specVersion": "0.91",
+  "skills": [
+    {
+      "name": "portfolio-overview",
+      "type": "skill-md",
+      "description": "Explore production architectures, serverless edge networks, and developer portfolio data.",
+      "url": "https://onurd.com.tr/.well-known/agent-skills/portfolio-overview.md",
+      "digest": "sha256:4d603a11b68ceac836f452df37a918a38b1d9bfcf7e7f67ad84a299298c40dc6"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://a2a-protocol.org/schemas/v1/agent-card.json",
+  "name": "Onur Dursun Portfolio Agent",
+  "version": "1.0.0",
+  "description": "Autonomous portfolio and architecture directory agent for Onur Dursun.",
+  "url": "https://onurd.com.tr",
+  "provider": {
+    "name": "Onur Dursun",
+    "url": "https://onurd.com.tr"
+  },
+  "supportedInterfaces": [
+    {
+      "url": "https://onurd.com.tr/api/a2a",
+      "transportProtocol": "HTTP-REST"
+    }
+  ],
+  "capabilities": [
+    "portfolio-inquiry",
+    "project-specs-lookup",
+    "contact-relay"
+  ],
+  "skills": [
+    {
+      "id": "portfolio-overview",
+      "name": "Portfolio Overview",
+      "description": "Provides full technical architecture summaries, stack details, and case studies."
+    },
+    {
+      "id": "llms-reference",
+      "name": "LLM Context Provider",
+      "description": "Serves machine-readable technical knowledge via markdown."
+    }
+  ]
+}

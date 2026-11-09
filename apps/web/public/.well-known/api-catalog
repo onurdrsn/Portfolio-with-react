@@ -1,0 +1,25 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://onurd.com.tr/api",
+      "service-desc": [
+        {
+          "href": "https://onurd.com.tr/openapi.json",
+          "type": "application/openapi+json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://onurd.com.tr/llms.txt",
+          "type": "text/markdown"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://onurd.com.tr/api/health",
+          "type": "application/json"
+        }
+      ]
+    }
+  ]
+}
