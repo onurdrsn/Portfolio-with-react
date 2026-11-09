@@ -1,0 +1,37 @@
+{
+  "issuer": "https://onurd.com.tr",
+  "authorization_endpoint": "https://onurd.com.tr/login",
+  "token_endpoint": "https://onurd.com.tr/api/token",
+  "registration_endpoint": "https://onurd.com.tr/api/agent/auth",
+  "scopes_supported": [
+    "portfolio:read",
+    "contact:write"
+  ],
+  "response_types_supported": [
+    "token"
+  ],
+  "agent_auth": {
+    "skill": "https://onurd.com.tr/.well-known/agent-skills/index.json",
+    "register_uri": "https://onurd.com.tr/api/agent/auth",
+    "identity_types_supported": [
+      "anonymous",
+      "identity_assertion"
+    ],
+    "anonymous": {
+      "credential_types_supported": [
+        "bearer"
+      ],
+      "claim_uri": "https://onurd.com.tr/api/agent/claim"
+    },
+    "identity_assertion": {
+      "assertion_types_supported": [
+        "urn:ietf:params:oauth:token-type:id-jag",
+        "verified_email"
+      ],
+      "credential_types_supported": [
+        "bearer"
+      ],
+      "claim_uri": "https://onurd.com.tr/api/agent/claim"
+    }
+  }
+}

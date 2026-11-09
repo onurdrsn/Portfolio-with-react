@@ -1,0 +1,13 @@
+{
+  "resource": "https://onurd.com.tr/api",
+  "authorization_servers": [
+    "https://onurd.com.tr"
+  ],
+  "scopes_supported": [
+    "portfolio:read",
+    "contact:write"
+  ],
+  "bearer_methods_supported": [
+    "header"
+  ]
+}
