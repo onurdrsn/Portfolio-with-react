@@ -49,6 +49,20 @@ app.use(
   })
 );
 
+//robots.txt
+app.get('/robots.txt', (c) => {
+  return c.text("User-agent: *\nDisallow: /");
+});
+
+// root direct
+app.get('/', (c) => {
+  c.header('X-Robots-Tag', 'noindex, nofollow');
+  return c.json({
+    service: 'portfolio-worker',
+    status: 'online',
+  }, 200);
+});
+
 // Routes
 app.route("/api/auth", authRouter);
 app.route("/api/posts", postsRouter);
