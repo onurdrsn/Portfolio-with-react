@@ -8,4 +8,16 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
+  build: {
+    target: 'esnext',
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-ui': ['lucide-react'], // veya framer-motion gibi kullandığınız UI kütüphaneleri
+        },
+      },
+    },
+  },
 })
