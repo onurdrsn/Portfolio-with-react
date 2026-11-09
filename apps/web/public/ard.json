@@ -1,5 +1,6 @@
 {
   "$schema": "https://specs.agenticresourcediscovery.org/v1/schema.json",
+  "specVersion": "0.91",
   "entries": [
     {
       "@context": "https://agenticresourcediscovery.org/context/v1",
