@@ -1,0 +1,18 @@
+{
+  "$schema": "https://specs.ard.org/v1/schema.json",
+  "name": "Onur Dursun Portfolio",
+  "description": "Personal developer portfolio and technical project catalog.",
+  "url": "https://onurd.com.tr",
+  "version": "1.0.0",
+  "capabilities": [
+    "portfolio-overview",
+    "project-directory"
+  ],
+  "resources": [
+    {
+      "name": "llms-manifest",
+      "type": "text/markdown",
+      "url": "https://onurd.com.tr/llms.txt"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# Onur Dursun Portfolio
+
+> Senior Full Stack & Distributed Systems Architect portfolio, production architectures, and technical projects.
+
+## Core Information
+- [About & Skills](https://onurd.com.tr/#about): Overview of technical expertise including Cloudflare Workers, distributed systems, and full-stack development.
+- [Projects](https://onurd.com.tr/#projects): Case studies and technical specifications of distributed and real-time projects.
+- [Contact](https://onurd.com.tr/#contact): Communication channels and professional profiles.
+
+## Optional Resources
+- [GitHub Profile](https://github.com/onurdrsn): Open-source repositories and code contributions.
+- [LinkedIn Profile](https://linkedin.com/in/odursun): Professional background and career history.
