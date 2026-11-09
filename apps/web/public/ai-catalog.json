@@ -1,16 +1,23 @@
 {
   "$schema": "https://specs.ard.org/v1/schema.json",
+  "schema_version": "1.0.0",
+  "id": "onurd-portfolio",
   "name": "Onur Dursun Portfolio",
   "description": "Personal developer portfolio and technical project catalog.",
   "url": "https://onurd.com.tr",
   "version": "1.0.0",
+  "provider": {
+    "name": "Onur Dursun",
+    "url": "https://onurd.com.tr"
+  },
   "capabilities": [
     "portfolio-overview",
     "project-directory"
   ],
   "resources": [
     {
-      "name": "llms-manifest",
+      "id": "llms-manifest",
+      "name": "LLMs Context",
       "type": "text/markdown",
       "url": "https://onurd.com.tr/llms.txt"
     }
