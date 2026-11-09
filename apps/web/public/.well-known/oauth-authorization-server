@@ -32,6 +32,10 @@
         "bearer"
       ],
       "claim_uri": "https://onurd.com.tr/api/agent/claim"
-    }
+    },
+    "revocation_uri": "https://onurd.com.tr/api/agent/revoke",
+    "events_supported": [
+      "https://schemas.agentauth.org/events/revocation"
+    ]
   }
 }
