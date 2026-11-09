@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     tailwindcss(),
@@ -14,8 +13,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-ui': ['lucide-react'], // veya framer-motion gibi kullandığınız UI kütüphaneleri
+          'vendor-core': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-i18n': ['react-i18next', 'i18next'],
+          'vendor-ui': ['lucide-react', 'react-hot-toast'],
         },
       },
     },

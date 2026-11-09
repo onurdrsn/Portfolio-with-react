@@ -1,42 +1,53 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { UiVersionProvider, useUiVersion } from './contexts/UiVersionContext';
-import LinuxDesktop from './Components/LinuxDesktop';
-import CyberDeckHUD from './Components/CyberDeckHUD';
-import Version4Home from './Components/Version4/Version4Home';
+import { Toaster } from 'react-hot-toast';
 
-// Pages
-import BlogList from './pages/BlogList';
-import BlogPost from './pages/BlogPost';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import AdminPanel from './pages/AdminPanel';
-
-// Components
-import Contact from "./Components/Contact";
-import Footer from "./Components/Footer";
+// Ana Sayfa Bileşenleri (İlk açılış hızını korumak için doğrudan import)
 import Intro from "./Components/Intro";
 import Portfolio from "./Components/Portfolio";
 import Timeline from "./Components/Timeline";
-import EventCalculator from "./Components/42Calculator";
-import Games from "./Components/Games";
-import Minesweeper from "./Components/Minesweeper";
-import TicTacToe from "./Components/TicTacToe";
-import Hangman from './Components/Hangman';
-import MemoryGame from './Components/MemoryGame';
-import RouterGame from './Components/RouterGame';
-import TowerDefense from './Components/TowerDefense';
-import TypingSpeedGame from './Components/TypingSpeedGame';
-import FlappyBird from './Components/FlappyBird';
-import BreakoutGame from './Components/Breakout';
-import StoryPuzzle from './Components/StoryPuzzle';
-import NeonDuel from './Components/NeonDuel';
-import CyberStrike3D from './Components/CyberStrike3D';
-import SpaceAce3D from './Components/SpaceAce3D';
+import Contact from "./Components/Contact";
+import Footer from "./Components/Footer";
 import LanguageSelector from './Components/LanguageSelector';
 
+// UI Versiyonları (Lazy)
+const LinuxDesktop = lazy(() => import('./Components/LinuxDesktop'));
+const CyberDeckHUD = lazy(() => import('./Components/CyberDeckHUD'));
+const Version4Home = lazy(() => import('./Components/Version4/Version4Home'));
+
+// Sayfalar (Lazy)
+const BlogList = lazy(() => import('./pages/BlogList'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+
+// Oyunlar ve Araçlar (Lazy - En büyük JS paketleri)
+const EventCalculator = lazy(() => import("./Components/42Calculator"));
+const Games = lazy(() => import("./Components/Games"));
+const Minesweeper = lazy(() => import("./Components/Minesweeper"));
+const TicTacToe = lazy(() => import("./Components/TicTacToe"));
+const Hangman = lazy(() => import('./Components/Hangman'));
+const MemoryGame = lazy(() => import('./Components/MemoryGame'));
+const RouterGame = lazy(() => import('./Components/RouterGame'));
+const TowerDefense = lazy(() => import('./Components/TowerDefense'));
+const TypingSpeedGame = lazy(() => import('./Components/TypingSpeedGame'));
+const FlappyBird = lazy(() => import('./Components/FlappyBird'));
+const BreakoutGame = lazy(() => import('./Components/Breakout'));
+const StoryPuzzle = lazy(() => import('./Components/StoryPuzzle'));
+const NeonDuel = lazy(() => import('./Components/NeonDuel'));
+const CyberStrike3D = lazy(() => import('./Components/CyberStrike3D'));
+const SpaceAce3D = lazy(() => import('./Components/SpaceAce3D'));
+
+// Minimal Yükleme Fallback'i
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[50vh] text-paper-muted text-xs font-code">
+    Loading...
+  </div>
+);
 // Main Navigation (For Portfolio and Games)
 function MainNavigation() {
     const { t } = useTranslation();
@@ -192,8 +203,6 @@ function BlogNavigation() {
     );
 }
 
-import { Toaster } from 'react-hot-toast';
-
 // Router for picking the correct Navbar
 function AppNavigation() {
     const { uiVersion } = useUiVersion();
@@ -218,7 +227,6 @@ export default function App() {
             <UiVersionProvider>
                 <Router>
                     <div className='bg-ink text-paper min-h-screen font-inter relative'>
-                        {/* A11y WCAG 2.4.1 Primary Skip Link: First focusable element */}
                         <a
                             href="#main-content"
                             className="v4-skip-link fixed z-[99999] top-3 left-3 bg-paper text-ink px-4 py-2 rounded font-code text-xs font-bold border border-ink-line shadow-2xl transition-all"
@@ -234,38 +242,41 @@ export default function App() {
                             }}
                         />
 
-                        <Routes>
-                            {/* Main */}
-                            <Route path="/" element={<MainPage />} />
+                        {/* Tüm lazy rotaları Suspense içine alıyoruz */}
+                        <Suspense fallback={<PageLoader />}>
+                            <Routes>
+                                {/* Main */}
+                                <Route path="/" element={<MainPage />} />
 
-                            {/* Blog */}
-                            <Route path="/blog" element={<BlogList />} />
-                            <Route path="/blog/:slug" element={<BlogPost />} />
+                                {/* Blog */}
+                                <Route path="/blog" element={<BlogList />} />
+                                <Route path="/blog/:slug" element={<BlogPost />} />
 
-                            {/* Auth */}
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/register" element={<Register />} />
+                                {/* Auth */}
+                                <Route path="/login" element={<Login />} />
+                                <Route path="/register" element={<Register />} />
 
-                            {/* Admin */}
-                            <Route path="/admin" element={<AdminPanel />} />
+                                {/* Admin */}
+                                <Route path="/admin" element={<AdminPanel />} />
 
-                            {/* Tools */}
-                            <Route path="/42calculator" element={<EventCalculator />} />
-                            <Route path="/games" element={<Games />} />
-                            <Route path="/games/minesweeper" element={<Minesweeper />} />
-                            <Route path="/games/tictactoe" element={<TicTacToe />} />
-                            <Route path="/games/hangman" element={<Hangman />} />
-                            <Route path="/games/memory" element={<MemoryGame />} />
-                            <Route path="/games/router" element={<RouterGame />} />
-                            <Route path="/games/towerdefense" element={<TowerDefense />} />
-                            <Route path="/games/typingspeed" element={<TypingSpeedGame />} />
-                            <Route path="/games/flappybird" element={<FlappyBird />} />
-                            <Route path="/games/breakout" element={<BreakoutGame />} />
-                            <Route path="/games/storypuzzle" element={<StoryPuzzle />} />
-                            <Route path="/games/neon-duel" element={<NeonDuel />} />
-                            <Route path="/games/cyber-strike-3d" element={<CyberStrike3D />} />
-                            <Route path="/games/space-ace-3d" element={<SpaceAce3D />} />
-                        </Routes>
+                                {/* Tools & Games */}
+                                <Route path="/42calculator" element={<EventCalculator />} />
+                                <Route path="/games" element={<Games />} />
+                                <Route path="/games/minesweeper" element={<Minesweeper />} />
+                                <Route path="/games/tictactoe" element={<TicTacToe />} />
+                                <Route path="/games/hangman" element={<Hangman />} />
+                                <Route path="/games/memory" element={<MemoryGame />} />
+                                <Route path="/games/router" element={<RouterGame />} />
+                                <Route path="/games/towerdefense" element={<TowerDefense />} />
+                                <Route path="/games/typingspeed" element={<TypingSpeedGame />} />
+                                <Route path="/games/flappybird" element={<FlappyBird />} />
+                                <Route path="/games/breakout" element={<BreakoutGame />} />
+                                <Route path="/games/storypuzzle" element={<StoryPuzzle />} />
+                                <Route path="/games/neon-duel" element={<NeonDuel />} />
+                                <Route path="/games/cyber-strike-3d" element={<CyberStrike3D />} />
+                                <Route path="/games/space-ace-3d" element={<SpaceAce3D />} />
+                            </Routes>
+                        </Suspense>
                     </div>
                 </Router>
             </UiVersionProvider>
@@ -276,23 +287,20 @@ export default function App() {
 const MainPage = () => {
     const { uiVersion } = useUiVersion();
 
-    if (uiVersion === 'v2') {
-        return <LinuxDesktop />;
-    }
-    if (uiVersion === 'v3') {
-        return <CyberDeckHUD />;
-    }
-    if (uiVersion === 'v4') {
-        return <Version4Home />;
-    }
-
     return (
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-            <Intro />
-            <Portfolio />
-            <Timeline />
-            <Contact />
-            <Footer />
-        </div>
+        <Suspense fallback={<PageLoader />}>
+            {uiVersion === 'v2' && <LinuxDesktop />}
+            {uiVersion === 'v3' && <CyberDeckHUD />}
+            {uiVersion === 'v4' && <Version4Home />}
+            {(!uiVersion || uiVersion === 'v1') && (
+                <div id="main-content" className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+                    <Intro />
+                    <Portfolio />
+                    <Timeline />
+                    <Contact />
+                    <Footer />
+                </div>
+            )}
+        </Suspense>
     );
 };

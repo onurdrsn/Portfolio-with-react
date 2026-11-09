@@ -1,0 +1,19 @@
+{
+  "$schema": "https://specs.agenticresourcediscovery.org/v1/schema.json",
+  "entries": [
+    {
+      "@context": "https://agenticresourcediscovery.org/context/v1",
+      "identifier": "urn:air:onurd.com.tr:portfolio",
+      "displayName": "Onur Dursun Portfolio & AI Systems",
+      "type": "application/agent-skills+md",
+      "url": "https://onurd.com.tr/llms.txt",
+      "description": "Production architectures, Cloudflare edge serverless systems, and technical projects by Onur Dursun.",
+      "capabilities": ["FullStackDevelopment", "DistributedSystems", "EdgeComputing"],
+      "representativeQueries": [
+        "who is onur dursun",
+        "cloudflare workers real time architecture portfolio",
+        "full stack distributed systems developer portfolio"
+      ]
+    }
+  ]
+}
